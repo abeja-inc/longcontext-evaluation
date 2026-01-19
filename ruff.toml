@@ -1,0 +1,36 @@
+target-version = "py311"
+line-length = 88
+indent-width = 4
+include = ["src/**/*.py"]
+extend-include = ["*.ipynb"]
+
+exclude = [
+  "__pycache__",
+  ".git",
+  ".venv",
+  "node_modules",
+  ".ruff_cache",
+  "*.txt",
+  "*.csv",
+  "*.json",
+  "*.md",
+]
+
+[lint]
+select = ["E", "F", "I001"]
+ignore = ["E501", "E402", "E721", "E731", "E741", "F722"]
+fixable = ["I001"]
+unfixable = ["F401", "F841"]
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[lint.isort]
+lines-after-imports = 2
+combine-as-imports = true
+order-by-type = true
