@@ -1,0 +1,20 @@
+services:
+  vllm:
+    container_name: longcontext-evaluation-vllm
+    image: longcontext-evaluation-vllm-openai:${TAG:-latest}
+    build:
+        context: ../..
+        dockerfile: containers/docker/Dockerfile
+        args:
+          BASE_IMAGE: vllm/vllm-openai:v0.13.0
+    working_dir: /workspace
+    environment:
+      HF_HUB_ENABLE_HF_TRANSFER: "1"
+      UV_LINK_MODE: "copy"
+      UV_PROJECT_ENVIRONMENT: /opt/venv
+      UV_CACHE_DIR: /.cache/uv
+      HF_HOME: /.cache/huggingface
+      PATH: /opt/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    volumes:
+      - ../..:/workspace
+      - ../../.cache:/.cache
