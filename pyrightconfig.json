@@ -1,7 +1,7 @@
 {
     "pythonVersion": "3.11",
-    "include": ["src"],
-    "ignore": ["**/__init__.py", "*.md"],
+    "include": ["packages/**/*.py"],
+    "ignore": ["**/__init__.py"],
     "reportMissingTypeStubs": false,
     "typeCheckingMode": "strict",
 }
