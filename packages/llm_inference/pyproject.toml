@@ -7,7 +7,7 @@ authors = [{ name = "Tomoki Fujihara", email = "tomoki.fujihara@abejainc.com"}]
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
 dependencies = [
-    "openai>=2.15.0",
+    "pydantic>=2.12.5",
 ]
 
 [build-system]
