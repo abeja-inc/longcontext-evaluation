@@ -9,6 +9,7 @@ dependencies = [
     "ruff>=0.14.13",
     "benchmarks",
     "llm_inference",
+    "python-dotenv>=1.2.1",
 ]
 
 [tool.uv.workspace]
