@@ -11,7 +11,11 @@ LLM のロングコンテキスト処理性能を評価するためのベンチ�
 ## Installation
 ### For Docker
 ```sh
-docker compose -f containers/docker/docker-compose.yaml up --build
+# Check import
+docker compose -f containers/docker/docker-compose.yaml run --rm vllm
+
+# Start container
+docker compose -f containers/docker/docker-compose.yaml run --rm --entrypoint /bin/bash vllm
 ```
 
 ### For slurm
