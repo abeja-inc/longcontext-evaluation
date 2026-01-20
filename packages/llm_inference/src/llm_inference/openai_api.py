@@ -12,17 +12,17 @@ class OpenAIGenerator(BaseGenerator):
     def __init__(
         self,
         *,
+        client: OpenAI,
         model: str,
         max_context_length: int,
         max_output_tokens: int,
         logger: Logger,
-        **kwargs: Any,
     ) -> None:
         self.model = model
         self.max_context_length = max_context_length
         self.max_output_tokens = max_output_tokens
         self.logger = logger
-        self.client = OpenAI(**kwargs)
+        self.client = client
 
     def _call_token_count_api(self, input: Prompt | Conversation) -> int:
         response = self.client.responses.input_tokens.count(  # pyright: ignore[reportUnknownVariableType]
