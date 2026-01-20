@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, TypeVar
 
 from .data import Conversation, Prompt, Response
+
+
+InputType = TypeVar("InputType", Prompt, Conversation)
 
 
 class BaseGenerator(ABC):
@@ -24,12 +27,12 @@ class BaseGenerator(ABC):
 
     def _filter_long_inputs(
         self,
-        inputs: list[Prompt] | list[Conversation],
+        inputs: list[InputType],
         max_context_length: int,
         max_output_tokens: int,
         buffer_tokens: int,
-    ) -> tuple[list[Prompt] | list[Conversation], list[int]]:
-        filtered_inputs: list[Prompt] | list[Conversation] = []
+    ) -> tuple[list[InputType], list[int]]:
+        filtered_inputs: list[InputType] = []
         skip_idx: list[int] = []
         for index, input in enumerate(inputs):
             if self._is_over_context_length(

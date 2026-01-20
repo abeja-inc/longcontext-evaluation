@@ -24,13 +24,17 @@ class OpenAIGenerator(BaseGenerator):
         self.logger = logger
         self.client = OpenAI(**kwargs)
 
-    def _count_tokens(self, input: Prompt | Conversation) -> int:
-        response = self.client.responses.input_tokens.count(
-            model=self.model, input=input.prompt
+    def _call_token_count_api(self, input: Prompt | Conversation) -> int:
+        response = self.client.responses.input_tokens.count(  # pyright: ignore[reportUnknownVariableType]
+            model=self.model,
+            input=input.prompt,  # pyright: ignore[reportArgumentType]
         )
         return response.input_tokens
 
-    def call_response_api(
+    def _count_tokens(self, input: Prompt | Conversation) -> int:
+        return self._call_token_count_api(input=input)
+
+    def _call_response_api(
         self,
         *,
         inputs: list[Prompt] | list[Conversation],
@@ -58,22 +62,23 @@ class OpenAIGenerator(BaseGenerator):
                     )
                 )
             else:
-                api_response: OpenAIResponse = self.client.responses.create(
+                api_response: OpenAIResponse = self.client.responses.create(  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
                     model=self.model,
-                    input=input.prompt,
+                    input=input.prompt,  # pyright: ignore[reportArgumentType]
                     max_output_tokens=self.max_output_tokens,
                     **kwargs,
                 )
 
                 outputs: list[OutputContent] = [
                     OutputContent(
-                        content=api_response.output_text, reasoning_content=None
+                        content=api_response.output_text,  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                        reasoning_content=None,
                     )
                 ]
 
                 metadata: dict[str, Any] = input.metadata or {}
-                if api_response.usage:
-                    metadata["usage"] = api_response.usage.model_dump()
+                if api_response.usage:  # pyright: ignore[reportUnknownMemberType]
+                    metadata["usage"] = api_response.usage.model_dump()  # pyright: ignore[reportUnknownMemberType]
 
                 responses.append(
                     Response(
@@ -91,13 +96,13 @@ class OpenAIGenerator(BaseGenerator):
         buffer_tokens: int = 10,
         **kwargs: Any,
     ) -> list[Response]:
-        return self.call_response_api(
+        return self._call_response_api(
             inputs=conversations, buffer_tokens=buffer_tokens, **kwargs
         )
 
     def completion(
         self, *, prompts: list[Prompt], buffer_tokens: int = 10, **kwargs: Any
     ) -> list[Response]:
-        return self.call_response_api(
+        return self._call_response_api(
             inputs=prompts, buffer_tokens=buffer_tokens, **kwargs
         )
