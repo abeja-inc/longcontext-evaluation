@@ -13,32 +13,33 @@ class OpenAIGenerator(BaseGenerator):
         self,
         *,
         client: OpenAI,
-        model: str,
+        model_name: str,
         max_context_length: int,
         max_output_tokens: int,
         logger: Logger,
     ) -> None:
-        self.model = model
-        self.max_context_length = max_context_length
-        self.max_output_tokens = max_output_tokens
-        self.logger = logger
+        super().__init__(
+            model_name=model_name,
+            max_context_length=max_context_length,
+            max_output_tokens=max_output_tokens,
+            logger=logger,
+        )
         self.client = client
 
-    def _call_token_count_api(self, input: Prompt | Conversation) -> int:
-        response = self.client.responses.input_tokens.count(  # pyright: ignore[reportUnknownVariableType]
-            model=self.model,
-            input=input.prompt,  # pyright: ignore[reportArgumentType]
+    def _call_token_count_api(self, input: Prompt | Conversation, **kwargs: Any) -> int:
+        response = self.client.responses.input_tokens.count(
+            model=self.model_name, input=input.prompt, **kwargs
         )
         return response.input_tokens
 
-    def _count_tokens(self, input: Prompt | Conversation) -> int:
-        return self._call_token_count_api(input=input)
+    def _count_tokens(self, input: Prompt | Conversation, **kwargs: Any) -> int:
+        return self._call_token_count_api(input=input, **kwargs)
 
     def _call_response_api(
         self,
         *,
         inputs: list[Prompt] | list[Conversation],
-        buffer_tokens: int = 10,
+        long_input_filter_kwargs: dict[str, Any] = {},
         **kwargs: Any,
     ) -> list[Response]:
         responses: list[Response] = []
@@ -47,7 +48,7 @@ class OpenAIGenerator(BaseGenerator):
                 input=input,
                 max_context_length=self.max_context_length,
                 max_output_tokens=self.max_output_tokens,
-                buffer_tokens=buffer_tokens,
+                **long_input_filter_kwargs,
             ):
                 responses.append(
                     Response(
@@ -62,23 +63,22 @@ class OpenAIGenerator(BaseGenerator):
                     )
                 )
             else:
-                api_response: OpenAIResponse = self.client.responses.create(  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
-                    model=self.model,
-                    input=input.prompt,  # pyright: ignore[reportArgumentType]
+                api_response: OpenAIResponse = self.client.responses.create(
+                    model=self.model_name,
+                    input=input.prompt,
                     max_output_tokens=self.max_output_tokens,
                     **kwargs,
                 )
 
                 outputs: list[OutputContent] = [
                     OutputContent(
-                        content=api_response.output_text,  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-                        reasoning_content=None,
+                        content=api_response.output_text, reasoning_content=None
                     )
                 ]
 
                 metadata: dict[str, Any] = input.metadata or {}
-                if api_response.usage:  # pyright: ignore[reportUnknownMemberType]
-                    metadata["usage"] = api_response.usage.model_dump()  # pyright: ignore[reportUnknownMemberType]
+                if api_response.usage:
+                    metadata["usage"] = api_response.usage.model_dump()
 
                 responses.append(
                     Response(
@@ -93,16 +93,22 @@ class OpenAIGenerator(BaseGenerator):
         self,
         *,
         conversations: list[Conversation],
-        buffer_tokens: int = 10,
+        long_input_filter_kwargs: dict[str, Any] = {},
         **kwargs: Any,
     ) -> list[Response]:
         return self._call_response_api(
-            inputs=conversations, buffer_tokens=buffer_tokens, **kwargs
+            inputs=conversations,
+            long_input_filter_kwargs=long_input_filter_kwargs,
+            **kwargs,
         )
 
     def completion(
-        self, *, prompts: list[Prompt], buffer_tokens: int = 10, **kwargs: Any
+        self,
+        *,
+        prompts: list[Prompt],
+        long_input_filter_kwargs: dict[str, Any] = {},
+        **kwargs: Any,
     ) -> list[Response]:
         return self._call_response_api(
-            inputs=prompts, buffer_tokens=buffer_tokens, **kwargs
+            inputs=prompts, long_input_filter_kwargs=long_input_filter_kwargs, **kwargs
         )
