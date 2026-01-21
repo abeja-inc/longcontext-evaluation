@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from llm_inference.data import Conversation, Prompt
 from llm_inference.openai_api import OpenAIGenerator
+from openai import OpenAI
 
 
 # -----------------------------
@@ -29,13 +30,17 @@ def main() -> None:
         raise RuntimeError("OPENAI_API_KEY is not set")
 
     model = "gpt-4o-2024-11-20"
+    max_context_length = 8192
+    max_output_tokens = 128
+
+    client = OpenAI(api_key=api_key)
 
     gen = OpenAIGenerator(
-        model=model,
-        max_context_length=int(os.getenv("MAX_CONTEXT_LENGTH", "8192")),
-        max_output_tokens=int(os.getenv("MAX_OUTPUT_TOKENS", "128")),
+        client=client,
+        model_name=model,
+        max_context_length=max_context_length,
+        max_output_tokens=max_output_tokens,
         logger=logger,
-        api_key=api_key,
     )
 
     # -------------------------
@@ -66,7 +71,7 @@ def main() -> None:
     over = gen._is_over_context_length(
         input=short_prompt,
         max_context_length=50,  # わざと小さく
-        max_output_tokens=gen.max_output_tokens,
+        max_output_tokens=max_output_tokens,
         buffer_tokens=100,
     )
     logger.info("over_context prompt (expect True) = %s", over)
@@ -74,7 +79,7 @@ def main() -> None:
     ok = gen._is_over_context_length(
         input=short_prompt,
         max_context_length=5000,
-        max_output_tokens=gen.max_output_tokens,
+        max_output_tokens=max_output_tokens,
         buffer_tokens=100,
     )
     logger.info("over_context prompt (expect False) = %s", ok)
@@ -82,7 +87,7 @@ def main() -> None:
     over = gen._is_over_context_length(
         input=short_conversation,
         max_context_length=50,  # わざと小さく
-        max_output_tokens=gen.max_output_tokens,
+        max_output_tokens=max_output_tokens,
         buffer_tokens=100,
     )
     logger.info("over_context conversation (expect True) = %s", over)
@@ -90,7 +95,7 @@ def main() -> None:
     ok = gen._is_over_context_length(
         input=short_conversation,
         max_context_length=5000,
-        max_output_tokens=gen.max_output_tokens,
+        max_output_tokens=max_output_tokens,
         buffer_tokens=100,
     )
     logger.info("over_context conversation (expect False) = %s", ok)
@@ -101,18 +106,23 @@ def main() -> None:
     logger.info("=== (C) chat ===")
 
     gen_small_ctx = OpenAIGenerator(
-        model=model,
+        client=client,
+        model_name=model,
         max_context_length=1128,
-        max_output_tokens=gen.max_output_tokens,
+        max_output_tokens=max_output_tokens,
         logger=logger,
-        api_key=api_key,
     )
 
-    r_over = gen_small_ctx.chat(conversations=[short_conversation], buffer_tokens=1000)
+    r_over = gen_small_ctx.chat(
+        conversations=[short_conversation],
+        long_input_filter_kwargs={"buffer_tokens": 1000},
+    )
     logger.info("chat(over) outputs[0].content = %r", r_over[0].outputs[0].content)
 
     r_ok = gen.chat(
-        conversations=[short_conversation], buffer_tokens=10, temperature=0.2
+        conversations=[short_conversation],
+        long_input_filter_kwargs={"buffer_tokens": 10},
+        temperature=0.2,
     )
     logger.info("chat(ok) model_output = %r", r_ok[0].outputs[0].content)
     logger.info("chat(ok) metadata keys = %s", list((r_ok[0].metadata or {}).keys()))
@@ -125,7 +135,9 @@ def main() -> None:
         Prompt.model_validate({"prompt": "Say 'OK' only."}),
         Prompt.model_validate({"prompt": "Give one haiku about winter."}),
     ]
-    r_comp = gen.completion(prompts=prompts, temperature=0.2)
+    r_comp = gen.completion(
+        prompts=prompts, temperature=0.2, long_input_filter_kwargs={"buffer_tokens": 10}
+    )
     for i, rr in enumerate(r_comp):
         logger.info("completion[%d] input=%r", i, rr.input)
         logger.info("completion[%d] output=%r", i, rr.outputs[0].content)
