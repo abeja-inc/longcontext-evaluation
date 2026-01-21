@@ -26,6 +26,7 @@ def main() -> None:
     logger = build_logger()
 
     model_path = os.getenv("MODEL_PATH")
+    max_model_len = os.getenv("MAX_MODEL_LEN")
     model = os.getenv("MODEL_NAME")
     base_url = os.getenv("BASE_URL")
     api_key = os.getenv("API_KEY")
@@ -40,7 +41,7 @@ def main() -> None:
         raise RuntimeError("API_KEY is not set")
 
     tokenizer = AutoTokenizer.from_pretrained(model_path)
-    max_context_length = 8192
+    max_context_length = max_model_len
     max_output_tokens = 128
 
     client = OpenAI(api_key=api_key, base_url=base_url)

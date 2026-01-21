@@ -11,6 +11,7 @@ export BASE_URL="${BASE_URL:-http://${HOST}:${PORT}/v1}"
 export API_KEY="${API_KEY:-EMPTY}"
 export MODEL_NAME="${MODEL_NAME}"
 export MODEL_PATH="${MODEL_PATH}"
+export MAX_MODEL_LEN="${MAX_MODEL_LEN}"
 
 echo "[runner] starting vLLM server..."
 vllm serve "${MODEL_PATH}" \
