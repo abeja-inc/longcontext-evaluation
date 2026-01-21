@@ -27,7 +27,7 @@ class VLLMOfflineGenerator(BaseGenerator):
         )
 
         self.llm = LLM(
-            model_name_or_path=model_name, max_model_len=max_context_length, **kwargs
+            model=self.model_name, max_model_len=self.max_context_length, **kwargs
         )
         self.tokenizer = self.llm.get_tokenizer()
         self.reasoning_parser = resolve_reasoning_parser(reasoning_parser)
@@ -66,7 +66,7 @@ class VLLMOfflineGenerator(BaseGenerator):
                 if self.reasoning_parser:
                     response_outputs = []
                     for output in vllm_resp.outputs:
-                        content, reasoning_content = self.reasoning_parser.parse(
+                        reasoning_content, content = self.reasoning_parser.parse(
                             output.text
                         )
                         response_outputs.append(
@@ -98,9 +98,10 @@ class VLLMOfflineGenerator(BaseGenerator):
         **kwargs: Any,
     ) -> list[Response]:
         if sampling_params:
-            sampling_params.max_new_tokens = self.max_output_tokens
+            sampling_params.max_tokens = self.max_output_tokens
         else:
-            sampling_params = SamplingParams(max_new_tokens=self.max_output_tokens)
+            sampling_params = SamplingParams(max_tokens=self.max_output_tokens)
+        self.logger.info(f"Sampling parameters: {sampling_params}")
 
         filtered_conversations, skip_idx = self._filter_long_inputs(
             inputs=conversations,
@@ -128,9 +129,10 @@ class VLLMOfflineGenerator(BaseGenerator):
         **kwargs: Any,
     ) -> list[Response]:
         if sampling_params:
-            sampling_params.max_new_tokens = self.max_output_tokens
+            sampling_params.max_tokens = self.max_output_tokens
         else:
-            sampling_params = SamplingParams(max_new_tokens=self.max_output_tokens)
+            sampling_params = SamplingParams(max_tokens=self.max_output_tokens)
+        self.logger.info(f"Sampling parameters: {sampling_params}")
 
         filtered_prompts, skip_idx = self._filter_long_inputs(
             inputs=prompts,
@@ -139,7 +141,9 @@ class VLLMOfflineGenerator(BaseGenerator):
             buffer_tokens=buffer_tokens,
         )
         responses: list[VLLMResponse] = self.llm.generate(
-            filtered_prompts, sampling_params=sampling_params, **kwargs
+            [prompt.prompt for prompt in filtered_prompts],
+            sampling_params=sampling_params,
+            **kwargs,
         )
         return self._format_response(
             inputs=prompts, vllm_responses=responses, skip_idx=skip_idx
