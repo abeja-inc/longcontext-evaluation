@@ -1,0 +1,19 @@
+download_datasource: true
+dataset_configs:
+     openai_mrcr:
+        output_filepath: datasets/benchmarks/openai_mrcr/english/mrcr.jsonl
+        huggingface_dataset_name: openai/mrcr
+        data_files:
+            2needle:
+                - 2needle/2needle_0.parquet
+                - 2needle/2needle_1.parquet
+            4needle:
+                - 4needle/4needle_0.parquet
+                - 4needle/4needle_1.parquet
+            8needle:
+                - 8needle/8needle_0.parquet
+                - 8needle/8needle_1.parquet
+
+     openai_mrcr_translation_japanese:
+        output_filepath: datasets/benchmarks/openai_mrcr/japanese/mrcr_japanese.jsonl
+        huggingface_dataset_name: abeja/OpenAI-MRCR-Translation-JPN

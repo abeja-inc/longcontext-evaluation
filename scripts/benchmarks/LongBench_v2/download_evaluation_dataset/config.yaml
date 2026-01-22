@@ -1,0 +1,9 @@
+download_datasource: false
+count_tokens: true
+tokenizer_path: models/Qwen3-0.6B
+prompt_template_path: scripts/benchmarks/LongBench_v2/prompts/0shot.txt
+dataset_configs:
+     longbench_v2:
+        output_filepath: datasets/benchmarks/longbench_v2/english/longbench_v2.jsonl
+        huggingface_dataset_name: THUDM/LongBench-v2
+        split: train
