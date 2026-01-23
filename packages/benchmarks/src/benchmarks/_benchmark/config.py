@@ -22,4 +22,4 @@ class RunOptions:
     results_format: Literal["jsonl", "csv"] = "jsonl"
 
     # optional wandb
-    wandb_run_config: dict[str, Any] | None = None
+    wandb_run: Any | None = None

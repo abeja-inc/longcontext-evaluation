@@ -115,19 +115,13 @@ class BenchmarkRunner:
                 self.logger.info("[RESULTS] saved manifest: %s", manifest_path)
 
         # ---- W&B phase (optional) ----
-        if opts.wandb_run_config is not None:
+        if opts.wandb_run is not None:
             if results is None:
                 if opts.results_builder is None:
-                    raise ValueError(
-                        "wandb_run_config is set but results_builder is None."
-                    )
+                    raise ValueError("wandb_run is set but results_builder is None.")
                 results = opts.results_builder.build_results(
                     model_name=model_name,
                     prediction_dir=pred_dir,
                     summary_json=summary_json,
                 )
-
-            # ここはあなたの実装に合わせる（wandb_run_config を init して Run を渡す or config を渡す）
-            push_results_to_wandb(
-                results=results, wandb_run_config=opts.wandb_run_config
-            )
+            push_results_to_wandb(results=results, wandb_run=opts.wandb_run)

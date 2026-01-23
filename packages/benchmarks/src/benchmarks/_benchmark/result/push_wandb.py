@@ -2,6 +2,7 @@ import json
 from typing import Any
 
 import wandb
+from wandb.sdk.wandb_run import Run
 
 from .data import Results
 from .utils import iter_all_columns, to_jsonable
@@ -16,10 +17,11 @@ def _to_wandb_cell(v: Any) -> Any:
         return str(v)
 
 
-def push_results_to_wandb(
-    *, results: Results, wandb_run_config: dict[str, Any]
-) -> None:
-    run = wandb.init(**wandb_run_config)
+def push_results_to_wandb(*, results: Results, wandb_run: Any) -> None:
+    run = wandb_run
+    if not isinstance(run, Run):
+        raise ValueError("wandb_run is not an instance of wandb.sdk.wandb_run.Run")
+
     # summary
     if results.summary:
         for k, v in results.summary.items():
@@ -37,4 +39,3 @@ def push_results_to_wandb(
             tbl.add_data(*[_to_wandb_cell(r.get(c)) for c in cols])
 
         wandb.log({f"tables/{table.name}": tbl})
-    wandb.finish()
