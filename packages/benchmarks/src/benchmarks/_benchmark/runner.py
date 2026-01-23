@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from llm_inference import BaseGenerator
+from llm_inference.base import BaseGenerator
 from tqdm import tqdm
 
 from .config import RunOptions

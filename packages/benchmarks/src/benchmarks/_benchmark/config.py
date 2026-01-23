@@ -7,9 +7,7 @@ from .interfaces import Evaluator, ResultsBuilder
 
 @dataclass
 class RunOptions:
-    batch_size: int = 1
-
-    # REQUIRED: all prediction files must live under this directory
+    batch_size: int
     prediction_dir: Path
 
     # optional eval

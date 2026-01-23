@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Protocol
 
-from llm_inference import BaseGenerator
+from llm_inference.base import BaseGenerator
 
-from .data import Results
+from .result import Results
 
 
 @dataclass(frozen=True)

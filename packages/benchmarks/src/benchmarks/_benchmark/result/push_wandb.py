@@ -36,6 +36,6 @@ def push_results_to_wandb(*, results: Results, wandb_run: Any) -> None:
         cols = iter_all_columns(rows)
         tbl = wandb.Table(columns=cols)
         for r in rows:
-            tbl.add_data(*[_to_wandb_cell(r.get(c)) for c in cols])
+            tbl.add_data(*[_to_wandb_cell(r.get(c)) for c in cols])  # pyright: ignore[reportUnknownMemberType]
 
         wandb.log({f"tables/{table.name}": tbl})
