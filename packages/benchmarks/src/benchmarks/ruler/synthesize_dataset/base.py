@@ -4,7 +4,9 @@ from logging import Logger
 from typing import Any, Generic, Sequence, Type, TypeVar
 
 import numpy as np
-from transformers import AutoTokenizer
+from transformers import (  # pyright: ignore[reportMissingImports]
+    AutoTokenizer,  # pyright: ignore[reportUnknownVariableType]
+)
 
 from .config import BaseSynthesisConfig
 from .data_model import BaseDatasetSchema, Content
