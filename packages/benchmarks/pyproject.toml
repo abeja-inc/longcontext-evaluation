@@ -15,6 +15,11 @@ dependencies = [
     "tqdm>=4.67.1",
 ]
 
+[project.optional-dependencies]
+wandb = [
+    "wandb>=0.24.0",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
