@@ -6,9 +6,9 @@ from typing import Any, Generic, Sequence, Type, TypeVar
 import numpy as np
 from transformers import AutoTokenizer
 
-from .....utils import get_custom_logger
 from .config import BaseSynthesisConfig
 from .data_model import BaseDatasetSchema, Content
+
 
 ConfigType = TypeVar("ConfigType", bound=BaseSynthesisConfig)
 SchemaType = TypeVar("SchemaType", bound=BaseDatasetSchema)
@@ -25,14 +25,14 @@ class BaseDatasetGenerator(ABC, Generic[SchemaType, ConfigType]):
         """データセットの各行に対応するPydanticスキーマクラス。"""
         raise NotImplementedError
 
-    def __init__(self, config: ConfigType, logger: Logger | None = None) -> None:
+    def __init__(self, config: ConfigType, logger: Logger) -> None:
         random.seed(config.random_seed)
         np.random.seed(config.random_seed)
         self.config: ConfigType = config
         self.tokenizer = AutoTokenizer.from_pretrained(
             config.hf_tokenizer_path, trust_remote_code=True
         )
-        self.logger: Logger = logger if logger else get_custom_logger()
+        self.logger: Logger = logger
 
     def _prompt_tokens(
         self, user_prompt: str, answer_prefix: str, with_chat_template: bool = True

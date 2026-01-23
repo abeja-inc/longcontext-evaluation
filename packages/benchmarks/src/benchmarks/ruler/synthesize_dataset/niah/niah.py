@@ -13,6 +13,7 @@ from ..base import BaseDatasetGenerator
 from ..config import NIAHSynthesisConfig
 from ..data_model import Content, NIAHDatasetSchema
 
+
 nltk.download("punkt")
 nltk.download("punkt_tab")
 
@@ -29,9 +30,7 @@ class NIAHDatasetGenerator(
     def SCHEMA_CLASS(self) -> type[NIAHDatasetSchema]:
         return NIAHDatasetSchema
 
-    def __init__(
-        self, config: NIAHSynthesisConfig, logger: Logger | None = None
-    ) -> None:
+    def __init__(self, config: NIAHSynthesisConfig, logger: Logger) -> None:
         super().__init__(config, logger)
 
         # Haystackと単語リストを初期化時に読み込む

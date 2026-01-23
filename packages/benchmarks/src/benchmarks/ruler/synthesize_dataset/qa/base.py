@@ -24,7 +24,7 @@ class BaseQADatasetGenerator(
     def SCHEMA_CLASS(self) -> Type[QADatasetSchema]:
         return QADatasetSchema
 
-    def __init__(self, config: QASynthesisConfig, logger: Logger | None = None) -> None:
+    def __init__(self, config: QASynthesisConfig, logger: Logger) -> None:
         super().__init__(config, logger)
         self._load_and_process_qa_data()
 
