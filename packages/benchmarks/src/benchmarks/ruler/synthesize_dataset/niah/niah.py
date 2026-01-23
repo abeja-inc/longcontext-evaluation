@@ -7,15 +7,11 @@ from typing import Any
 
 import nltk
 import wonderwords
-from nltk.tokenize import sent_tokenize
+from nltk.tokenize import sent_tokenize  # pyright: ignore[reportUnknownVariableType]
 
 from ..base import BaseDatasetGenerator
 from ..config import NIAHSynthesisConfig
 from ..data_model import Content, NIAHDatasetSchema
-
-
-nltk.download("punkt")
-nltk.download("punkt_tab")
 
 
 class NIAHDatasetGenerator(
@@ -32,19 +28,18 @@ class NIAHDatasetGenerator(
 
     def __init__(self, config: NIAHSynthesisConfig, logger: Logger) -> None:
         super().__init__(config, logger)
+        self.haystack_source: list[str] = []
+        self.words: list[str] = []
 
+    def _prepare(self, **kwargs: Any) -> None:
+        nltk.download("punkt")  # pyright: ignore[reportUnknownMemberType]
+        nltk.download("punkt_tab")  # pyright: ignore[reportUnknownMemberType]
         # Haystackと単語リストを初期化時に読み込む
         self._initialize_haystack()
         self._initialize_words()
 
-        # config の num_needle_k が num_needle_q より小さい場合、合わせる
-        self.config.num_needle_k = max(
-            self.config.num_needle_k, self.config.num_needle_q
-        )
-
     def _initialize_haystack(self) -> None:
         """Loads and prepares the haystack content based on the config."""
-        self.haystack_source: list[str]
         if self.config.type_haystack == "essay":
             with self.config.paulgraham_essay_path.open(encoding="utf-8") as f:
                 essay_text = json.load(f)["text"]
@@ -63,8 +58,8 @@ class NIAHDatasetGenerator(
     def _initialize_words(self) -> None:
         """Initializes the word list for generating random word-based needles."""
         try:
-            nouns = wonderwords.random_word._get_words_from_text_file("nounlist.txt")
-            adjs = wonderwords.random_word._get_words_from_text_file(
+            nouns = wonderwords.random_word._get_words_from_text_file("nounlist.txt")  # pyright: ignore[reportPrivateUsage]
+            adjs = wonderwords.random_word._get_words_from_text_file(  # pyright: ignore[reportPrivateUsage]
                 "adjectivelist.txt"
             )
 
@@ -98,7 +93,7 @@ class NIAHDatasetGenerator(
             raise NotImplementedError(f'Value type "{value_type}" is not implemented.')
 
     def _gen_one_sample(
-        self, sample_index: int, num_units: int, **kwargs
+        self, sample_index: int, num_units: int, **kwargs: Any
     ) -> tuple[Content, dict[str, Any]]:
         """
         Generates a single sample for the NIAH task.
@@ -111,7 +106,7 @@ class NIAHDatasetGenerator(
             key = self._generate_random_value(self.config.type_needle_k)
             keys.append(key)
 
-            value_list = []
+            value_list: list[str] = []
             for _ in range(self.config.num_needle_v):
                 value = self._generate_random_value(self.config.type_needle_v)
                 value_list.append(value)

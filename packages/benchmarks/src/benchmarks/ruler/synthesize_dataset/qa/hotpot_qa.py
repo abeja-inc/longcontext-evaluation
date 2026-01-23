@@ -1,9 +1,11 @@
+from typing import Any
+
 from ..data_model import ProcessedQAData, QAPair
 from .base import BaseQADatasetGenerator
 
 
 class HotpotQAGenerator(BaseQADatasetGenerator):
-    def _process_data(self, raw_data: list) -> ProcessedQAData:
+    def _process_data(self, raw_data: list[dict[str, Any]]) -> ProcessedQAData:
         """
         Processes raw data from a HotpotQA-formatted file.
 
@@ -21,7 +23,7 @@ class HotpotQAGenerator(BaseQADatasetGenerator):
         contexts = [
             f"{title}\n{''.join(passage)}"
             for sample in raw_data
-            for title, passage in sample["context"]
+            for title, passage in sample["context"]  # pyright: ignore[reportArgumentType]
         ]
         contexts = sorted(list(set(contexts)))
 

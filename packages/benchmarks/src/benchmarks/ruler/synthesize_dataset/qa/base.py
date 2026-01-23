@@ -26,6 +26,10 @@ class BaseQADatasetGenerator(
 
     def __init__(self, config: QASynthesisConfig, logger: Logger) -> None:
         super().__init__(config, logger)
+        self.contexts: list[str] = []
+        self.qas: list[QAPair] = []
+
+    def _prepare(self, **kwargs: Any) -> None:
         self._load_and_process_qa_data()
 
     def _load_and_process_qa_data(self) -> None:

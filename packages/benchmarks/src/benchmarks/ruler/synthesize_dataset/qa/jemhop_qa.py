@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..data_model import ProcessedQAData, QAPair
 from .base import BaseQADatasetGenerator
 
@@ -8,7 +10,7 @@ class JEMHopQAGenerator(BaseQADatasetGenerator):
             [f"{der['0']}の{der['1']}は{der['2']}である。" for der in derivations]
         )
 
-    def _process_data(self, raw_data: dict) -> ProcessedQAData:
+    def _process_data(self, raw_data: list[dict[str, Any]]) -> ProcessedQAData:
         """
          JEMHopQA (Japanese Explainable MultiHop Question-Answering)
 

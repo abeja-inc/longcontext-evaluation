@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class BaseSynthesisConfig(BaseModel):
@@ -68,6 +68,12 @@ class NIAHSynthesisConfig(BaseSynthesisConfig):
     needle_format: str = (
         "One of the special magic {type_needle_v} for {key} is: {value}."
     )
+
+    @model_validator(mode="after")
+    def _ensure_query_keys_within_total(self) -> "NIAHSynthesisConfig":
+        if self.num_needle_k < self.num_needle_q:
+            self.num_needle_k = self.num_needle_q
+        return self
 
 
 class QASynthesisConfig(BaseSynthesisConfig):

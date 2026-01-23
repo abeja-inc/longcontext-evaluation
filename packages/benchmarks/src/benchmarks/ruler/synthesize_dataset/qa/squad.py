@@ -1,9 +1,11 @@
+from typing import Any
+
 from ..data_model import ProcessedQAData, QAPair
 from .base import BaseQADatasetGenerator
 
 
 class SQuADGenerator(BaseQADatasetGenerator):
-    def _process_data(self, raw_data: dict) -> ProcessedQAData:
+    def _process_data(self, raw_data: dict[str, Any]) -> ProcessedQAData:
         """
         SQuAD (Stanford Question Answering Dataset) 2.0
 

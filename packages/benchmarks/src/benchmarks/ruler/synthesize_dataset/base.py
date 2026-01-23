@@ -29,10 +29,21 @@ class BaseDatasetGenerator(ABC, Generic[SchemaType, ConfigType]):
         random.seed(config.random_seed)
         np.random.seed(config.random_seed)
         self.config: ConfigType = config
-        self.tokenizer = AutoTokenizer.from_pretrained(
+        self.tokenizer = AutoTokenizer.from_pretrained(  # pyright: ignore[reportUnknownMemberType]
             config.hf_tokenizer_path, trust_remote_code=True
         )
         self.logger: Logger = logger
+        self._prepared = False
+
+    def prepare(self, **kwargs: Any) -> None:
+        if self._prepared:
+            return
+        self._prepare(**kwargs)
+        self._prepared = True
+
+    def _prepare(self, **kwargs: Any) -> None:
+        """Hook for subclasses to load or precompute data before generation."""
+        return
 
     def _prompt_tokens(
         self, user_prompt: str, answer_prefix: str, with_chat_template: bool = True
@@ -55,8 +66,8 @@ class BaseDatasetGenerator(ABC, Generic[SchemaType, ConfigType]):
         """
 
         if with_chat_template:
-            prompt: str = (
-                self.tokenizer.apply_chat_template(
+            prompt: str = (  # pyright: ignore[reportUnknownVariableType]
+                self.tokenizer.apply_chat_template(  # pyright: ignore[reportUnknownMemberType]
                     [{"role": "user", "content": user_prompt}],
                     tokenize=False,
                     add_generation_prompt=True,
@@ -66,8 +77,8 @@ class BaseDatasetGenerator(ABC, Generic[SchemaType, ConfigType]):
             )
         else:
             prompt = user_prompt + answer_prefix
-        ids = self.tokenizer.encode(prompt)
-        return len(ids)
+        ids = self.tokenizer.encode(prompt)  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        return len(ids)  # pyright: ignore[reportUnknownArgumentType]
 
     def _within_context_limit(
         self, prompt_tokens: int, max_context_length: int
@@ -89,7 +100,9 @@ class BaseDatasetGenerator(ABC, Generic[SchemaType, ConfigType]):
         """
         return prompt_tokens + self.config.max_new_tokens <= max_context_length
 
-    def _sample_total_tokens(self, num_units: int, **kwargs) -> tuple[int, Content]:
+    def _sample_total_tokens(
+        self, num_units: int, **kwargs: Any
+    ) -> tuple[int, Content]:
         """仮のサンプルを1つ生成し、そのプロンプトのトークン長を計測します。"""
         content, _ = self._gen_one_sample(sample_index=0, num_units=num_units, **kwargs)
         return self._prompt_tokens(
@@ -98,7 +111,7 @@ class BaseDatasetGenerator(ABC, Generic[SchemaType, ConfigType]):
 
     @abstractmethod
     def _gen_one_sample(
-        self, sample_index: int, num_units: int, **kwargs
+        self, sample_index: int, num_units: int, **kwargs: Any
     ) -> tuple[Content, dict[str, Any]]:
         """
         [要実装] サンプルを1つ生成します。
@@ -116,7 +129,7 @@ class BaseDatasetGenerator(ABC, Generic[SchemaType, ConfigType]):
         """
         raise NotImplementedError
 
-    def _optimal_units(self, max_context_length: int, **kwargs) -> int:
+    def _optimal_units(self, max_context_length: int, **kwargs: Any) -> int:
         """指定されたコンテキストウィンドウ内で許可される最大の `num_units` を見つけます。"""
         if max_context_length <= self.config.max_new_tokens:
             return 1
@@ -142,7 +155,9 @@ class BaseDatasetGenerator(ABC, Generic[SchemaType, ConfigType]):
                 high = mid - 1
         return best
 
-    def _generate_samples(self, max_context_length: int, **kwargs) -> list[SchemaType]:
+    def _generate_samples(
+        self, max_context_length: int, **kwargs: Any
+    ) -> list[SchemaType]:
         """指定されたコンテキストサイズでサンプルのバッチを生成し、検証します。"""
         max_units = self._optimal_units(max_context_length=max_context_length, **kwargs)
 
@@ -194,7 +209,7 @@ class BaseDatasetGenerator(ABC, Generic[SchemaType, ConfigType]):
                         "target_depth_percent": target_depth,
                         **extra_fields,
                     }
-                    results.append(self.SCHEMA_CLASS(**schema_data))
+                    results.append(self.SCHEMA_CLASS.model_validate(schema_data))
                     break
 
         if len(results) < self.config.num_samples:
@@ -215,12 +230,13 @@ class BaseDatasetGenerator(ABC, Generic[SchemaType, ConfigType]):
                 fp.write(rec.model_dump_json() + "\n")
         self.logger.info("データセットを %s に保存しました。", path)
 
-    def run(self, **kwargs) -> None:
+    def run(self, **kwargs: Any) -> None:
         self.logger.info(
             "タスク %s/%s のデータセット生成を開始します。",
             self.config.task,
             self.config.subset,
         )
+        self.prepare(**kwargs)
         all_samples: list[SchemaType] = []
         for ctx_len in sorted(self.config.context_lengths):
             self.logger.info(

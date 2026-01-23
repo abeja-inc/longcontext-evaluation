@@ -1,9 +1,11 @@
+from typing import Any
+
 from ..data_model import ProcessedQAData, QAPair
 from .base import BaseQADatasetGenerator
 
 
 class JSQuADGenerator(BaseQADatasetGenerator):
-    def _process_data(self, raw_data: dict) -> ProcessedQAData:
+    def _process_data(self, raw_data: list[dict[str, Any]]) -> ProcessedQAData:
         """
         JSQuAD (Japanese Stanford Question Answering Dataset)
 
