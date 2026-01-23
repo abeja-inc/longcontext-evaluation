@@ -17,10 +17,8 @@ def _to_wandb_cell(v: Any) -> Any:
         return str(v)
 
 
-def push_results_to_wandb(*, results: Results, wandb_run: Any) -> None:
+def push_results_to_wandb(*, results: Results, wandb_run: Run) -> None:
     run = wandb_run
-    if not isinstance(run, Run):
-        raise ValueError("wandb_run is not an instance of wandb.sdk.wandb_run.Run")
 
     # summary
     if results.summary:

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Literal
+
+from wandb.sdk.wandb_run import Run
 
 from .interfaces import Evaluator, ResultsBuilder
 
@@ -20,4 +22,4 @@ class RunOptions:
     results_format: Literal["jsonl", "csv"] = "jsonl"
 
     # optional wandb
-    wandb_run: Any | None = None
+    wandb_run: Run | None = None
