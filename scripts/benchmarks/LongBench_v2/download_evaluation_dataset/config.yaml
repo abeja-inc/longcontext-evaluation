@@ -1,4 +1,4 @@
-download_datasource: false
+download_datasource: true
 count_tokens: true
 tokenizer_path: models/Qwen3-0.6B
 prompt_template_path: scripts/benchmarks/LongBench_v2/prompts/0shot.txt

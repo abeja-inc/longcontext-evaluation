@@ -1,0 +1,58 @@
+dataset_root: datasets/benchmarks/ruler
+essay_file: raw/english/niah/PaulGrahamEssays.json
+
+base_config:
+    task: niah
+    hf_tokenizer_path: Qwen/Qwen3-0.6B
+    max_new_tokens: 32
+    context_lengths: [1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000]
+    num_samples: 200
+    random_seed: 42
+    retry_limit: 10
+    retry_step_size: 2
+    min_units: 2
+    initial_units: 8
+    task_prompt_template: >
+        Some special magic {type_needle_v} are hidden within the following text. Make sure to memorize it.
+        I will quiz you about the {type_needle_v} afterwards.
+        {context}
+        What are all the special magic {type_needle_v} for {query} mentioned in the provided text?
+        The special magic {type_needle_v} for {query} mentioned in the provided text are
+    type_haystack: essay
+    type_needle_k: words
+    type_needle_v: numbers
+    num_needle_q: 1
+    remove_newline_tab: true
+
+subset_configs:
+    - name: niah_single_2
+      config_override:
+          type_haystack: essay
+          type_needle_k: words
+          type_needle_v: numbers
+          num_needle_k: 1
+          num_needle_v: 1
+
+    - name: niah_multikey_1
+      config_override:
+          type_haystack: essay
+          type_needle_k: words
+          type_needle_v: numbers
+          num_needle_k: 4
+          num_needle_v: 1
+
+    - name: niah_multikey_2
+      config_override:
+          type_haystack: needle
+          type_needle_k: words
+          type_needle_v: numbers
+          num_needle_k: 1
+          num_needle_v: 1
+
+    - name: niah_multikey_3
+      config_override:
+          type_haystack: needle
+          type_needle_k: uuids
+          type_needle_v: uuids
+          num_needle_k: 1
+          num_needle_v: 1

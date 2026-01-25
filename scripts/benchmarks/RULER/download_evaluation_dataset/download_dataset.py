@@ -44,6 +44,9 @@ def main(
     logegr = build_logger()
 
     if download_datasource:
+        essay_downloader = EssayDownloader(logger=logegr)
+        essay_downloader.download(config=essay_config)
+
         for config in hf_dataset_configs:
             downloader = HuggingFaceDatasetDownloader(logger=logegr)
             downloader.download_as_jsonl(config=config)
@@ -51,9 +54,6 @@ def main(
         for config in url_dataset_configs:
             downloader = URLDownloader(logger=logegr)
             downloader.download(config=config)
-
-    essay_downloader = EssayDownloader(logger=logegr)
-    essay_downloader.download(config=essay_config)
 
 
 if __name__ == "__main__":
