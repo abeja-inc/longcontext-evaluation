@@ -32,7 +32,7 @@ class Grader:
         return sum(grades) / len(grades)
 
 
-class MrcrScorer(BaseRecordScorer):
+class MrcrScorer(BaseRecordScorer[list[Score]]):
     name = "mrcr"
 
     def __init__(self, grader: Grader | None = None):

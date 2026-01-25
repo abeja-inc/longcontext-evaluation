@@ -41,7 +41,7 @@ class AllStringMatcher(BaseStringMatcher):
         )
 
 
-class RulerScorer(BaseRecordScorer):
+class RulerScorer(BaseRecordScorer[list[Score]]):
     name = "ruler"
 
     def __init__(self, metric: str):

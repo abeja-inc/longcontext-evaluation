@@ -31,7 +31,7 @@ def get_value(d: dict, *keys: str, default=None):
     return default
 
 
-class LongBenchScorer(BaseRecordScorer):
+class LongBenchScorer(BaseRecordScorer[tuple[dict, list[dict]]]):
     name = "longbench_v2"
 
     def __init__(self, *, compensate_missing: bool = False):
