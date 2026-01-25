@@ -1,12 +1,11 @@
 import json
-from collections import defaultdict
 from logging import Logger
 from pathlib import Path
 
 from ....utils import get_custom_logger
 from .config import EvaluationConfig
 from .data_model import EvaluationResult, Score, SubsetResult, TaskResult
-from .metrics import Grader
+from ..scoring import MrcrScorer
 
 
 class EvaluationPipeline:
@@ -54,35 +53,5 @@ class EvaluationPipeline:
         with pred_filepath.open("r", encoding="utf-8") as f:
             data = [json.loads(line) for line in f]
 
-        preds: list[str] = [data.get("prediction", "") for data in data]
-        refs: list[list[str]] = [data.get("answer", []) for data in data]
-        random_strings: list[str] = [
-            data.get("random_string_to_prepend", "") for data in data
-        ]
-        context_lengths: list[int] = [
-            data.get("target_context_length", -1) for data in data
-        ]
-
-        # トークン長でグルーピングする場合
-        # grouped = defaultdict(list)
-        # for pred, ref, random_string, ctx_len in zip(preds, refs, random_strings, context_lengths, strict=False):
-        #     grouped[ctx_len].append((pred, ref, random_string))
-
-        # grader = Grader()
-        # score_by_context: list[Score] = []
-        # for ctx_len, pairs in grouped.items():
-        #     grouped_preds, grouped_refs, grouped_random_strings = zip(*pairs, strict=False)
-        #     score = grader.grade(grouped_preds, grouped_refs, grouped_random_strings)
-        #     score_by_context.append(Score(score=score, context_length=ctx_len))
-
-        # return scores_by_context
-
-        grader = Grader()
-        scores = []
-        for index, (pred, ref, random_string, ctx_len) in enumerate(
-            zip(preds, refs, random_strings, context_lengths, strict=False)
-        ):
-            score = grader.compute(pred, ref, random_string)
-            scores.append(Score(index=index, score=score, context_length=ctx_len))
-
-        return scores
+        scorer = MrcrScorer()
+        return scorer.score_records(data)
