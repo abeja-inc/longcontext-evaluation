@@ -1,12 +1,11 @@
 import json
-from collections import defaultdict
 from logging import Logger
 from pathlib import Path
 
 from ....utils import get_custom_logger
 from .config import EvaluationConfig
 from .data_model import EvaluationResult, Score, SubsetResult, TaskResult
-from .metrics import Grader
+from ..scoring import MrcrScorer
 
 
 class EvaluationPipeline:
@@ -77,12 +76,10 @@ class EvaluationPipeline:
 
         # return scores_by_context
 
-        grader = Grader()
-        scores = []
-        for index, (pred, ref, random_string, ctx_len) in enumerate(
-            zip(preds, refs, random_strings, context_lengths, strict=False)
-        ):
-            score = grader.compute(pred, ref, random_string)
-            scores.append(Score(index=index, score=score, context_length=ctx_len))
-
-        return scores
+        scorer = MrcrScorer()
+        return scorer.score(
+            preds=preds,
+            refs=refs,
+            random_strings=random_strings,
+            context_lengths=context_lengths,
+        )
