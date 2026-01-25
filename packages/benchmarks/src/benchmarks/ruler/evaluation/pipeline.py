@@ -1,12 +1,11 @@
 import json
-from collections import defaultdict
 from logging import Logger
 from pathlib import Path
 
 from ....utils import get_custom_logger
 from .config import EvaluationConfig
 from .data_model import EvaluationResult, Score, SubsetResult, TaskResult
-from .metrics import AllStringMatcher, PartStringMatcher
+from ..scoring import RulerScorer
 
 
 class EvaluationPipeline:
@@ -51,23 +50,5 @@ class EvaluationPipeline:
         refs: list[list[str]] = [data.get("answer", []) for data in data]
         context_lengths: list[int] = [data.get("target_context_length", -1) for data in data]
 
-        if metric == "part":
-            matcher = PartStringMatcher()
-        elif metric == "all":
-            matcher = AllStringMatcher()
-        else:
-            raise ValueError(f"Unsupported metric: '{metric}' for task. Use 'part' or 'all'.")
-
-        # context_length ごとにグルーピング
-        grouped = defaultdict(list)
-        for pred, ref, ctx_len in zip(preds, refs, context_lengths, strict=False):
-            grouped[ctx_len].append((pred, ref))
-
-        # 各 context_length に対してスコアを計算
-        score_by_context: list[Score] = []
-        for ctx_len, pairs in grouped.items():
-            grouped_preds, grouped_refs = zip(*pairs, strict=False)
-            score = matcher.compute(preds=list(grouped_preds), refs=list(grouped_refs))
-            score_by_context.append(Score(score=score, context_length=ctx_len))
-
-        return score_by_context
+        scorer = RulerScorer(metric=metric)
+        return scorer.score(preds=preds, refs=refs, context_lengths=context_lengths)

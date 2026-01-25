@@ -1,9 +1,6 @@
 from pydantic import BaseModel
 
-
-class Score(BaseModel):
-    score: float
-    context_length: int
+from ..data_model import Score
 
 
 class SubsetResult(BaseModel):
