@@ -1,0 +1,13 @@
+tasks:
+    - task: mrcr
+      metric: all
+      filenames:
+          - 2needle.parquet
+          - 4needle.parquet
+          - 8needle.parquet
+    - task: mrcr_jpn
+      metric: all
+      filenames:
+          - 2needle.parquet
+          - 4needle.parquet
+          - 8needle.parquet

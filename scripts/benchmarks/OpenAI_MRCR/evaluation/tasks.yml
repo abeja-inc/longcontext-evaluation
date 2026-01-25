@@ -1,0 +1,9 @@
+tasks:
+    mrcr:
+        - 2needle.parquet
+        - 4needle.parquet
+        - 8needle.parquet
+    mrcr_jpn:
+        - 2needle.parquet
+        - 4needle.parquet
+        - 8needle.parquet

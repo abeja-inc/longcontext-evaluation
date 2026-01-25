@@ -1,0 +1,11 @@
+tasks:
+    niah:
+        - niah_single_2.jsonl
+        - niah_multikey_1.jsonl
+        - niah_multikey_2.jsonl
+        - niah_multikey_3.jsonl
+    qa:
+        - squad.jsonl
+        - hotpotqa.jsonl
+        - jsquad.jsonl
+        - jemhopqa.jsonl
