@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 import wandb
-from project_module.benchmark.longbench_v2.scoring import evaluate_records
+from project_module.benchmark.longbench_v2.scoring import LongBenchScorer
 
 # ---------- IO / UTILS ----------
 def expand(p: str | Path) -> Path:
@@ -75,11 +75,11 @@ def main():
     summary_rows: list[dict] = []
     metrics_rows: list[dict] = []
 
+    scorer = LongBenchScorer(compensate_missing=args.compensate_missing)
+
     for filepath in files:
         recs = read_records(filepath)
-        metrics, rows = evaluate_records(
-            recs, compensate_missing=args.compensate_missing
-        )
+        metrics, rows = scorer.score_records(recs)
         prompt_type = filepath.parent.name
         subset_name = filepath.stem
 

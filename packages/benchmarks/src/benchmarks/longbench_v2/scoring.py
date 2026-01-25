@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from .._base_benchmark.scoring import BaseRecordScorer
+
 ANSWER_PATTERNS = [
     re.compile(r"The correct answer is \(([A-D])\)"),
     re.compile(r"The correct answer is ([A-D])"),
@@ -27,6 +29,16 @@ def get_value(d: dict, *keys: str, default=None):
         if key in d:
             return d[key]
     return default
+
+
+class LongBenchScorer(BaseRecordScorer):
+    name = "longbench_v2"
+
+    def __init__(self, *, compensate_missing: bool = False):
+        self._compensate_missing = compensate_missing
+
+    def score_records(self, records: list[dict[str, Any]]) -> tuple[dict, list[dict]]:
+        return evaluate_records(records, compensate_missing=self._compensate_missing)
 
 
 def evaluate_records(

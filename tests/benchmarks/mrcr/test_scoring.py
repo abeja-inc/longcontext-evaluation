@@ -28,11 +28,21 @@ class TestGrader(unittest.TestCase):
 class TestMrcrScorer(unittest.TestCase):
     def test_score_builds_indexed_scores(self):
         scorer = MrcrScorer()
-        scores = scorer.score(
-            preds=["prefixfoo", "prefixbar"],
-            refs=[["prefixfoo"], ["prefixbar"]],
-            random_strings=["prefix", "prefix"],
-            context_lengths=[128, 256],
+        scores = scorer.score_records(
+            [
+                {
+                    "prediction": "prefixfoo",
+                    "answer": ["prefixfoo"],
+                    "random_string_to_prepend": "prefix",
+                    "target_context_length": 128,
+                },
+                {
+                    "prediction": "prefixbar",
+                    "answer": ["prefixbar"],
+                    "random_string_to_prepend": "prefix",
+                    "target_context_length": 256,
+                },
+            ]
         )
         self.assertEqual([s.index for s in scores], [0, 1])
         self.assertEqual([s.context_length for s in scores], [128, 256])

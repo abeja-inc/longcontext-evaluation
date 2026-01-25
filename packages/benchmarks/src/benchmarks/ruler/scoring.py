@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from typing import Any
 
+from .._base_benchmark.scoring import BaseRecordScorer
 from .data_model import Score
 
 
@@ -39,7 +41,9 @@ class AllStringMatcher(BaseStringMatcher):
         )
 
 
-class RulerScorer:
+class RulerScorer(BaseRecordScorer):
+    name = "ruler"
+
     def __init__(self, metric: str):
         if metric == "part":
             self._matcher: BaseStringMatcher = PartStringMatcher()
@@ -47,6 +51,14 @@ class RulerScorer:
             self._matcher = AllStringMatcher()
         else:
             raise ValueError(f"Unsupported metric: '{metric}' for task. Use 'part' or 'all'.")
+
+    def score_records(self, records: list[dict[str, Any]]) -> list[Score]:
+        preds: list[str] = [record.get("prediction", "") for record in records]
+        refs: list[list[str]] = [record.get("answer", []) for record in records]
+        context_lengths: list[int] = [
+            record.get("target_context_length", -1) for record in records
+        ]
+        return self.score(preds=preds, refs=refs, context_lengths=context_lengths)
 
     def score(
         self, *, preds: list[str], refs: list[list[str]], context_lengths: list[int]

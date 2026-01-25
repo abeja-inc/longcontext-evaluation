@@ -46,9 +46,5 @@ class EvaluationPipeline:
         with pred_filepath.open("r", encoding="utf-8") as f:
             data = [json.loads(line) for line in f]
 
-        preds: list[str] = [data.get("prediction", "") for data in data]
-        refs: list[list[str]] = [data.get("answer", []) for data in data]
-        context_lengths: list[int] = [data.get("target_context_length", -1) for data in data]
-
         scorer = RulerScorer(metric=metric)
-        return scorer.score(preds=preds, refs=refs, context_lengths=context_lengths)
+        return scorer.score_records(data)

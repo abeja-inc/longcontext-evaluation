@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.append(str(ROOT / "packages/benchmarks/src"))
 
-from benchmarks.longbench_v2.scoring import evaluate_records, extract_answer  # noqa: E402
+from benchmarks.longbench_v2.scoring import LongBenchScorer, extract_answer  # noqa: E402
 
 
 class TestExtractAnswer(unittest.TestCase):
@@ -41,7 +41,8 @@ class TestEvaluateRecords(unittest.TestCase):
                 "id": "s2",
             },
         ]
-        metrics, rows = evaluate_records(records)
+        scorer = LongBenchScorer()
+        metrics, rows = scorer.score_records(records)
         self.assertEqual(metrics["overall_n"], 2)
         self.assertEqual(metrics["overall_acc"], 50.0)
         self.assertEqual(metrics["easy_acc"], 100.0)

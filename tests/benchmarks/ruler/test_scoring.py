@@ -23,10 +23,11 @@ class TestStringMatchers(unittest.TestCase):
 class TestRulerScorer(unittest.TestCase):
     def test_score_groups_by_context_length(self):
         scorer = RulerScorer(metric="part")
-        scores = scorer.score(
-            preds=["foo", "bar"],
-            refs=[["foo"], ["bar"]],
-            context_lengths=[4096, 8192],
+        scores = scorer.score_records(
+            [
+                {"prediction": "foo", "answer": ["foo"], "target_context_length": 4096},
+                {"prediction": "bar", "answer": ["bar"], "target_context_length": 8192},
+            ]
         )
         self.assertEqual({s.context_length for s in scores}, {4096, 8192})
         self.assertTrue(all(s.score == 100.0 for s in scores))

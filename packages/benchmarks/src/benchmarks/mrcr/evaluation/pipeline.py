@@ -53,33 +53,5 @@ class EvaluationPipeline:
         with pred_filepath.open("r", encoding="utf-8") as f:
             data = [json.loads(line) for line in f]
 
-        preds: list[str] = [data.get("prediction", "") for data in data]
-        refs: list[list[str]] = [data.get("answer", []) for data in data]
-        random_strings: list[str] = [
-            data.get("random_string_to_prepend", "") for data in data
-        ]
-        context_lengths: list[int] = [
-            data.get("target_context_length", -1) for data in data
-        ]
-
-        # トークン長でグルーピングする場合
-        # grouped = defaultdict(list)
-        # for pred, ref, random_string, ctx_len in zip(preds, refs, random_strings, context_lengths, strict=False):
-        #     grouped[ctx_len].append((pred, ref, random_string))
-
-        # grader = Grader()
-        # score_by_context: list[Score] = []
-        # for ctx_len, pairs in grouped.items():
-        #     grouped_preds, grouped_refs, grouped_random_strings = zip(*pairs, strict=False)
-        #     score = grader.grade(grouped_preds, grouped_refs, grouped_random_strings)
-        #     score_by_context.append(Score(score=score, context_length=ctx_len))
-
-        # return scores_by_context
-
         scorer = MrcrScorer()
-        return scorer.score(
-            preds=preds,
-            refs=refs,
-            random_strings=random_strings,
-            context_lengths=context_lengths,
-        )
+        return scorer.score_records(data)

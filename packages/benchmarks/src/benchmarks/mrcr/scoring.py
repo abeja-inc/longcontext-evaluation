@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
+from typing import Any
 
+from .._base_benchmark.scoring import BaseRecordScorer
 from .data_model import Score
 
 
@@ -30,9 +32,27 @@ class Grader:
         return sum(grades) / len(grades)
 
 
-class MrcrScorer:
+class MrcrScorer(BaseRecordScorer):
+    name = "mrcr"
+
     def __init__(self, grader: Grader | None = None):
         self._grader = grader or Grader()
+
+    def score_records(self, records: list[dict[str, Any]]) -> list[Score]:
+        preds: list[str] = [record.get("prediction", "") for record in records]
+        refs: list[list[str]] = [record.get("answer", []) for record in records]
+        random_strings: list[str] = [
+            record.get("random_string_to_prepend", "") for record in records
+        ]
+        context_lengths: list[int] = [
+            record.get("target_context_length", -1) for record in records
+        ]
+        return self.score(
+            preds=preds,
+            refs=refs,
+            random_strings=random_strings,
+            context_lengths=context_lengths,
+        )
 
     def score(
         self,
