@@ -1,0 +1,83 @@
+dataset_root: datasets/benchmarks/ruler
+
+base_config:
+    task: qa
+    hf_tokenizer_path: Qwen/Qwen3-0.6B
+    max_new_tokens: 128
+    context_lengths: [4000, 8000, 16000, 32000, 64000, 128000]
+    num_samples: 200
+    random_seed: 42
+    retry_limit: 10
+    retry_step_size: 2
+    min_units: 1
+    initial_units: 8
+    remove_newline_tab: true
+
+subset_configs:
+    - name: squad
+      source_dataset_file: raw/english/qa/squad.json
+      config_override:
+          qa_dataset_name: squad
+          task_prompt_template: |
+              Answer the question based on the given documents. Only give me the answer and do not output any other words.
+
+              The following are given documents.
+
+              {context}
+
+              Answer the question based on the given documents. Only give me the answer and do not output any other words.
+
+              Question: {query}
+          answer_prefix_template: "Answer:"
+          document_prompt: "Document {i}:\n{document}"
+
+    - name: hotpotqa
+      source_dataset_file: raw/english/qa/hotpotqa.json
+      config_override:
+          qa_dataset_name: hotpotqa
+          task_prompt_template: |
+              Answer the question based on the given documents. Only give me the answer and do not output any other words.
+
+              The following are given documents.
+
+              {context}
+
+              Answer the question based on the given documents. Only give me the answer and do not output any other words.
+
+              Question: {query}
+          answer_prefix_template: "Answer:"
+          document_prompt: "Document {i}:\n{document}"
+
+    - name: jsquad
+      source_dataset_file: raw/japanese/qa/jsquad.jsonl
+      config_override:
+          qa_dataset_name: jsquad
+          task_prompt_template: |
+              与えられた文書に基づいて、質問に答えてください。回答のみを出力し、余計な言葉は一切含めないでください。
+
+              以下が文書です。
+
+              {context}
+
+              与えられた文書に基づいて、質問に答えてください。回答のみを出力し、余計な言葉は一切含めないでください。
+
+              質問: {query}
+          answer_prefix_template: "回答:"
+          document_prompt: "文書 {i}:\n{document}"
+
+    - name: jemhopqa
+      source_dataset_file: raw/japanese/qa/jemhopqa.jsonl
+      config_override:
+          qa_dataset_name: jemhopqa
+          task_prompt_template: |
+              与えられた文書に基づいて、質問に答えてください。回答のみを出力し、余計な言葉は一切含めないでください。
+
+              以下が文書です。
+
+              {context}
+
+              与えられた文書に基づいて、質問に答えてください。回答のみを出力し、余計な言葉は一切含めないでください。
+
+              質問: {query}
+          answer_prefix_template: "Answer:"
+          document_prompt: "文書 {i}:\n{document}"
