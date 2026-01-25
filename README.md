@@ -55,3 +55,14 @@ python3 scripts/benchmarks/OpenAI_MRCR/download_evaluation_dataset/download_data
 python3 scripts/benchmarks/RULER/download_evaluation_dataset/download_dataset.py \
     --config scripts/benchmarks/RULER/download_evaluation_dataset/config.yaml
 ```
+
+ダウンロードしたデータセットをもとにロングコンテキスト評価データを合成
+```sh
+## Needle in a haystack
+python3 scripts/benchmarks/RULER/synthesize_evaluation_dataset/niah/make_dataset.py \
+    --config scripts/benchmarks/RULER/synthesize_evaluation_dataset/niah/config.yaml
+    
+## QA
+python3 scripts/benchmarks/RULER/synthesize_evaluation_dataset/qa/make_dataset.py \
+    --config scripts/benchmarks/RULER/synthesize_evaluation_dataset/qa/config.yaml
+```
