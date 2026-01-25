@@ -1,8 +1,14 @@
-download_datasource: false
+download_datasource: true
 hf_dataset_configs:
      jsquad:
         output_filepath: datasets/benchmarks/ruler/raw/japanese/qa/jsquad.jsonl
         huggingface_dataset_name: sbintuitions/JSQuAD
+        split: validation
+        
+     jemhopqa:
+        output_filepath: datasets/benchmarks/ruler/raw/japanese/qa/jemhopqa.jsonl
+        huggingface_dataset_name: sbintuitions/JEMHopQA
+        name: v1.2-extended-answers
         split: validation
 
 url_dataset_configs:
