@@ -71,7 +71,9 @@ def run_ruler(
 
     tokenizer = AutoTokenizer.from_pretrained(str(model_root / model_name))
     jobs: list[RulerPredictJob] = []
-    task_names = filter_names(tasks_map.keys(), include=include_tasks, exclude=exclude_tasks)
+    task_names = filter_names(
+        tasks_map.keys(), include=include_tasks, exclude=exclude_tasks
+    )
     for task_name in task_names:
         dataset_filenames = tasks_map.get(task_name, [])
         filtered_filenames = filter_names(

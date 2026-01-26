@@ -68,7 +68,9 @@ def run_mrcr(
     exclude_subsets = parse_csv_list(cfg.get("exclude_subsets"))
 
     jobs: list[MRCRPredictJob] = []
-    task_names = filter_names(tasks_map.keys(), include=include_tasks, exclude=exclude_tasks)
+    task_names = filter_names(
+        tasks_map.keys(), include=include_tasks, exclude=exclude_tasks
+    )
     for task_name in task_names:
         dataset_filenames = tasks_map.get(task_name, [])
         filtered_filenames = filter_names(

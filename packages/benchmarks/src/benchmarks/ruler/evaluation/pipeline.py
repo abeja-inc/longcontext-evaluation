@@ -25,13 +25,21 @@ class EvaluationPipeline:
             self.logger.info("Evaluating task '%s'...", task_setting.task)
             subset_results: list[SubsetResult] = []
             for pred_filename in task_setting.filenames:
-                pred_filepath = config.prediction_dirpath / task_setting.task / pred_filename
+                pred_filepath = (
+                    config.prediction_dirpath / task_setting.task / pred_filename
+                )
                 if not pred_filepath.is_file():
-                    self.logger.warning("Prediction file '%s' not found.", pred_filepath)
+                    self.logger.warning(
+                        "Prediction file '%s' not found.", pred_filepath
+                    )
                     continue
 
-                score = self._evaluate(pred_filepath=pred_filepath, metric=task_setting.metric)
-                subset_results.append(SubsetResult(subset_name=pred_filepath.stem, score=score))
+                score = self._evaluate(
+                    pred_filepath=pred_filepath, metric=task_setting.metric
+                )
+                subset_results.append(
+                    SubsetResult(subset_name=pred_filepath.stem, score=score)
+                )
             results.append(
                 TaskResult(
                     task=task_setting.task,

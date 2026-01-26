@@ -15,9 +15,7 @@ class MRCREvaluator(Evaluator):
     def __init__(self, tasks: list[TaskSetting]) -> None:
         self._tasks = tasks
 
-    def run(
-        self, *, prediction_dir: Path, output_path: Path
-    ) -> dict[str, Any] | None:
+    def run(self, *, prediction_dir: Path, output_path: Path) -> dict[str, Any] | None:
         config = EvaluationConfig(prediction_dirpath=prediction_dir, tasks=self._tasks)
         pipeline = EvaluationPipeline(output_filepath=output_path)
         pipeline.run(config)
