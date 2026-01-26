@@ -86,9 +86,10 @@ class MRCRPredictJob(PredictJob):
 
         responses = []
         if filtered_conversations:
-            responses = generator.chat(
+            responses = _call_chat(
+                generator=generator,
                 conversations=filtered_conversations,
-                sampling_params=generate_kwargs.get("sampling_params"),
+                generate_kwargs=generate_kwargs,
                 buffer_tokens=buffer_tokens,
                 chat_template_kwargs=chat_template_kwargs,
             )
@@ -120,3 +121,30 @@ class MRCRPredictJob(PredictJob):
                 }
             )
         return records
+
+
+def _call_chat(
+    *,
+    generator: BaseGenerator,
+    conversations: list[Conversation],
+    generate_kwargs: dict[str, Any],
+    buffer_tokens: int,
+    chat_template_kwargs: dict[str, Any],
+):
+    if generate_kwargs.get("sampling_params") is not None:
+        return generator.chat(
+            conversations=conversations,
+            sampling_params=generate_kwargs.get("sampling_params"),
+            buffer_tokens=buffer_tokens,
+            chat_template_kwargs=chat_template_kwargs,
+        )
+
+    long_input_filter_kwargs = generate_kwargs.get("long_input_filter_kwargs") or {
+        "buffer_tokens": buffer_tokens
+    }
+    chat_kwargs = generate_kwargs.get("chat_kwargs", {})
+    return generator.chat(
+        conversations=conversations,
+        long_input_filter_kwargs=long_input_filter_kwargs,
+        **chat_kwargs,
+    )

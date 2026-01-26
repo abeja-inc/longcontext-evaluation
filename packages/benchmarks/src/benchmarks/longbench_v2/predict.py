@@ -185,7 +185,11 @@ class LongBenchPredictJob(PredictJob):
             )
             answer_templates.append(answer_template)
 
-        responses = generator.chat(conversations=conversations, **generate_kwargs)
+        responses = _call_chat(
+            generator=generator,
+            conversations=conversations,
+            generate_kwargs=generate_kwargs,
+        )
 
         if self.cot:
             followup_conversations: list[Conversation] = []
@@ -211,8 +215,10 @@ class LongBenchPredictJob(PredictJob):
                         ]
                     )
                 )
-            responses = generator.chat(
-                conversations=followup_conversations, **generate_kwargs
+            responses = _call_chat(
+                generator=generator,
+                conversations=followup_conversations,
+                generate_kwargs=generate_kwargs,
             )
 
         records: list[dict[str, Any]] = []
@@ -293,3 +299,24 @@ def build_jobs_for_dataset_dir(
             )
         )
     return jobs
+
+
+def _call_chat(
+    *,
+    generator: BaseGenerator,
+    conversations: list[Conversation],
+    generate_kwargs: dict[str, Any],
+):
+    if generate_kwargs.get("sampling_params") is not None:
+        return generator.chat(conversations=conversations, **generate_kwargs)
+
+    buffer_tokens = int(generate_kwargs.get("buffer_tokens", 10))
+    long_input_filter_kwargs = generate_kwargs.get("long_input_filter_kwargs") or {
+        "buffer_tokens": buffer_tokens
+    }
+    chat_kwargs = generate_kwargs.get("chat_kwargs", {})
+    return generator.chat(
+        conversations=conversations,
+        long_input_filter_kwargs=long_input_filter_kwargs,
+        **chat_kwargs,
+    )

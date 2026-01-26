@@ -2,7 +2,30 @@ model:
   root: ~/models
   name: example-model
 
-vllm_config: ./vllm_offline_config.yml
+generator:
+  type: vllm_offline
+  vllm_config: ./vllm_offline_config.yml
+  # For OpenAI API:
+  # type: openai
+  # api_key: ${OPENAI_API_KEY}
+  # base_url: null
+  # model_name: gpt-4o-2024-11-20
+  # max_context_length: 8192
+  # max_output_tokens: 256
+  # buffer_tokens: 10
+  # chat_kwargs: {}
+  # completion_kwargs: {}
+  # For vLLM OpenAI-compatible server:
+  # type: vllm_openai_compatible
+  # api_key: ${API_KEY}
+  # base_url: ${BASE_URL}
+  # model_name: qwen3
+  # model_path: ~/models/qwen3
+  # max_context_length: 8192
+  # max_output_tokens: 256
+  # buffer_tokens: 10
+  # chat_kwargs: {}
+  # completion_kwargs: {}
 output_dir: ~/longcontext-llm-benchmark-eval/experimentation/outputs
 dataset_dir: ~/datasets
 batchsize: 1

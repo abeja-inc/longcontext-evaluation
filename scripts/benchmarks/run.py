@@ -5,7 +5,10 @@ from typing import Any, Callable
 
 import wandb
 import yaml
+from openai import OpenAI
 from llm_inference.vllm_offline_inference import VLLMOfflineGenerator
+from llm_inference.vllm_openai_api_compatible import VLLMOpenAICompatibleGenerator
+from llm_inference.openai_api import OpenAIGenerator
 from vllm import SamplingParams
 
 from benchmarks.longbench_v2.runner import run_longbench_v2
@@ -42,66 +45,128 @@ def expand_path(path: str | Path) -> Path:
 
 
 def build_generator(
-    *, model_path: Path, vllm_config_path: Path, logger: logging.Logger
-) -> tuple[VLLMOfflineGenerator, dict[str, Any], int, int]:
-    with vllm_config_path.open("r", encoding="utf-8") as f:
-        vllm_config = yaml.safe_load(f)
+    *, config: dict[str, Any], model_root: Path, model_name: str, logger: logging.Logger
+) -> tuple[Any, dict[str, Any], int, int]:
+    gen_cfg = config.get("generator", {})
+    gen_type = gen_cfg.get("type", "vllm_offline")
 
-    serve_cfg: dict[str, Any] = vllm_config.get("serve", {})
-    generation_cfg: dict[str, Any] = vllm_config.get("generation", {})
+    if gen_type == "vllm_offline":
+        vllm_config_path = expand_path(gen_cfg.get("vllm_config", "./vllm_offline_config.yml"))
+        with vllm_config_path.open("r", encoding="utf-8") as f:
+            vllm_config = yaml.safe_load(f)
 
-    extra_args = serve_cfg.get("extra_args", {})
-    max_model_len = extra_args.get("max_model_len", serve_cfg.get("max_model_len", 4096))
-    max_new_tokens = generation_cfg.get(
-        "max_new_tokens",
-        generation_cfg.get("max_output_tokens", generation_cfg.get("max_tokens", 512)),
-    )
+        serve_cfg: dict[str, Any] = vllm_config.get("serve", {})
+        generation_cfg: dict[str, Any] = vllm_config.get("generation", {})
 
-    reasoning_parser = serve_cfg.get("reasoning_parser")
-    generator_kwargs = {
-        k: v
-        for k, v in serve_cfg.items()
-        if k
-        not in {
-            "extra_args",
-            "model_name_or_path",
-            "max_model_len",
-            "reasoning_parser",
-        }
-    }
+        extra_args = serve_cfg.get("extra_args", {})
+        max_model_len = extra_args.get(
+            "max_model_len", serve_cfg.get("max_model_len", 4096)
+        )
+        max_new_tokens = generation_cfg.get(
+            "max_new_tokens",
+            generation_cfg.get("max_output_tokens", generation_cfg.get("max_tokens", 512)),
+        )
 
-    generator = VLLMOfflineGenerator(
-        model_name=str(model_path),
-        max_context_length=max_model_len,
-        max_output_tokens=max_new_tokens,
-        logger=logger,
-        reasoning_parser=reasoning_parser,
-        **generator_kwargs,
-        **extra_args,
-    )
-
-    sampling_params = SamplingParams(
-        **{
+        reasoning_parser = serve_cfg.get("reasoning_parser")
+        generator_kwargs = {
             k: v
-            for k, v in generation_cfg.items()
+            for k, v in serve_cfg.items()
             if k
             not in {
-                "max_new_tokens",
-                "max_output_tokens",
-                "max_tokens",
-                "chat_template_kwargs",
-                "buffer_tokens",
+                "extra_args",
+                "model_name_or_path",
+                "max_model_len",
+                "reasoning_parser",
             }
         }
-    )
 
-    generate_kwargs = {
-        "sampling_params": sampling_params,
-        "buffer_tokens": generation_cfg.get("buffer_tokens", 10),
-        "chat_template_kwargs": generation_cfg.get("chat_template_kwargs", {}),
-    }
+        generator = VLLMOfflineGenerator(
+            model_name=str(model_root / model_name),
+            max_context_length=max_model_len,
+            max_output_tokens=max_new_tokens,
+            logger=logger,
+            reasoning_parser=reasoning_parser,
+            **generator_kwargs,
+            **extra_args,
+        )
 
-    return generator, generate_kwargs, max_model_len, max_new_tokens
+        sampling_params = SamplingParams(
+            **{
+                k: v
+                for k, v in generation_cfg.items()
+                if k
+                not in {
+                    "max_new_tokens",
+                    "max_output_tokens",
+                    "max_tokens",
+                    "chat_template_kwargs",
+                    "buffer_tokens",
+                }
+            }
+        )
+
+        generate_kwargs = {
+            "sampling_params": sampling_params,
+            "buffer_tokens": generation_cfg.get("buffer_tokens", 10),
+            "chat_template_kwargs": generation_cfg.get("chat_template_kwargs", {}),
+        }
+
+        return generator, generate_kwargs, max_model_len, max_new_tokens
+
+    if gen_type == "openai":
+        api_key = gen_cfg.get("api_key")
+        base_url = gen_cfg.get("base_url")
+        client = OpenAI(api_key=api_key, base_url=base_url)
+        model_name = gen_cfg.get("model_name")
+        if not model_name:
+            raise ValueError("generator.model_name is required for openai generator.")
+        max_model_len = int(gen_cfg.get("max_context_length", 8192))
+        max_new_tokens = int(gen_cfg.get("max_output_tokens", 512))
+        generator = OpenAIGenerator(
+            client=client,
+            model_name=model_name,
+            max_context_length=max_model_len,
+            max_output_tokens=max_new_tokens,
+            logger=logger,
+        )
+        generate_kwargs = {
+            "buffer_tokens": int(gen_cfg.get("buffer_tokens", 10)),
+            "chat_kwargs": gen_cfg.get("chat_kwargs", {}),
+            "completion_kwargs": gen_cfg.get("completion_kwargs", {}),
+        }
+        return generator, generate_kwargs, max_model_len, max_new_tokens
+
+    if gen_type == "vllm_openai_compatible":
+        api_key = gen_cfg.get("api_key")
+        base_url = gen_cfg.get("base_url")
+        client = OpenAI(api_key=api_key, base_url=base_url)
+        model_name = gen_cfg.get("model_name")
+        model_path = gen_cfg.get("model_path")
+        if not model_name or not model_path:
+            raise ValueError(
+                "generator.model_name and generator.model_path are required for vllm_openai_compatible."
+            )
+        from transformers import AutoTokenizer
+
+        tokenizer = AutoTokenizer.from_pretrained(str(expand_path(model_path)))
+        max_model_len = int(gen_cfg.get("max_context_length", 8192))
+        max_new_tokens = int(gen_cfg.get("max_output_tokens", 512))
+        generator = VLLMOpenAICompatibleGenerator(
+            client=client,
+            tokenizer=tokenizer,
+            model_name=model_name,
+            max_context_length=max_model_len,
+            max_output_tokens=max_new_tokens,
+            logger=logger,
+        )
+        generate_kwargs = {
+            "buffer_tokens": int(gen_cfg.get("buffer_tokens", 10)),
+            "chat_kwargs": gen_cfg.get("chat_kwargs", {}),
+            "completion_kwargs": gen_cfg.get("completion_kwargs", {}),
+        }
+        return generator, generate_kwargs, max_model_len, max_new_tokens
+
+    raise ValueError(f"Unsupported generator.type: {gen_type}")
 
 
 def build_wandb_factory(model_name: str) -> Callable[[dict[str, Any], str], Any]:
@@ -134,14 +199,13 @@ def main() -> None:
     if not model_name:
         raise ValueError("model.name is required in config.")
 
-    vllm_config = expand_path(config.get("vllm_config", "./vllm_offline_config.yml"))
     output_dir = expand_path(config.get("output_dir", "./outputs"))
     dataset_dir = expand_path(config.get("dataset_dir", "./datasets"))
     batchsize = int(config.get("batchsize", 1))
-
     generator, generate_kwargs, max_model_len, max_new_tokens = build_generator(
-        model_path=model_root / model_name,
-        vllm_config_path=vllm_config,
+        config=config,
+        model_root=model_root,
+        model_name=model_name,
         logger=logger,
     )
 

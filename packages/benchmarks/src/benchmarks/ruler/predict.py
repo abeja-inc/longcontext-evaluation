@@ -78,9 +78,10 @@ class RulerPredictJob(PredictJob):
             for prompt, sample in zip(prompts, batch.samples, strict=True)
         ]
 
-        responses = generator.completion(
+        responses = _call_completion(
+            generator=generator,
             prompts=[Prompt(prompt=p) for p in prompts],
-            sampling_params=generate_kwargs.get("sampling_params"),
+            generate_kwargs=generate_kwargs,
             buffer_tokens=buffer_tokens,
         )
 
@@ -102,3 +103,28 @@ class RulerPredictJob(PredictJob):
                 }
             )
         return records
+
+
+def _call_completion(
+    *,
+    generator: BaseGenerator,
+    prompts: list[Prompt],
+    generate_kwargs: dict[str, Any],
+    buffer_tokens: int,
+):
+    if generate_kwargs.get("sampling_params") is not None:
+        return generator.completion(
+            prompts=prompts,
+            sampling_params=generate_kwargs.get("sampling_params"),
+            buffer_tokens=buffer_tokens,
+        )
+
+    long_input_filter_kwargs = generate_kwargs.get("long_input_filter_kwargs") or {
+        "buffer_tokens": buffer_tokens
+    }
+    completion_kwargs = generate_kwargs.get("completion_kwargs", {})
+    return generator.completion(
+        prompts=prompts,
+        long_input_filter_kwargs=long_input_filter_kwargs,
+        **completion_kwargs,
+    )
