@@ -77,10 +77,17 @@ def build_generator(
         generation_cfg.get("max_output_tokens", generation_cfg.get("max_tokens", 512)),
     )
 
+    reasoning_parser = serve_cfg.get("reasoning_parser")
     generator_kwargs = {
         k: v
         for k, v in serve_cfg.items()
-        if k not in {"extra_args", "model_name_or_path", "max_model_len"}
+        if k
+        not in {
+            "extra_args",
+            "model_name_or_path",
+            "max_model_len",
+            "reasoning_parser",
+        }
     }
 
     generator = VLLMOfflineGenerator(
@@ -88,6 +95,7 @@ def build_generator(
         max_context_length=max_model_len,
         max_output_tokens=max_new_tokens,
         logger=logger,
+        reasoning_parser=reasoning_parser,
         **generator_kwargs,
         **extra_args,
     )
