@@ -1,18 +1,16 @@
 import argparse
-import json
 import logging
-import re
-import yaml
 from pathlib import Path
-from typing import Literal
-import pandas as pd
-from transformers import AutoTokenizer
-from tqdm import tqdm
+from typing import Any
 
-from project_module.inference.config import GenerationConfig, OfflineServeConfig
-from project_module.inference.io_data import Conversation, Message, Response
-from project_module.inference.text_generator import OfflineTextGenerator
-from project_module.utils import get_custom_logger
+import yaml
+from llm_inference.vllm_offline_inference import VLLMOfflineGenerator
+from vllm import SamplingParams
+
+from benchmarks._base_benchmark.config import RunOptions
+from benchmarks._base_benchmark.runner import BenchmarkRunner
+from benchmarks.mrcr.predict import MRCRPredictJob
+from benchmarks.utils import filter_names, get_custom_logger, parse_csv_list
 
 
 def parse_args() -> argparse.Namespace:
@@ -36,107 +34,140 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--tasks", type=Path, default=Path("./tasks.yml"), help="Path to tasks file")
     p.add_argument("--batchsize", type=int, default=1, help="Batch size for inference")
+    p.add_argument(
+        "--only-tasks",
+        type=str,
+        default=None,
+        help="Comma-separated task name patterns to include",
+    )
+    p.add_argument(
+        "--exclude-tasks",
+        type=str,
+        default=None,
+        help="Comma-separated task name patterns to exclude",
+    )
+    p.add_argument(
+        "--only-subsets",
+        type=str,
+        default=None,
+        help="Comma-separated subset filename patterns to include",
+    )
+    p.add_argument(
+        "--exclude-subsets",
+        type=str,
+        default=None,
+        help="Comma-separated subset filename patterns to exclude",
+    )
     return p.parse_args()
 
-def get_n_tokens(tokenizer: AutoTokenizer, messages: list[Message], generation_config: GenerationConfig) -> int:
-    token_ids = tokenizer.apply_chat_template(
-        messages,
-        add_generation_prompt=True,
-        chat_template_kwargs=generation_config.chat_template_kwargs,
+
+def build_generator(
+    *, model_path: Path, vllm_config_path: Path, logger: logging.Logger
+) -> tuple[VLLMOfflineGenerator, dict[str, Any]]:
+    with vllm_config_path.open("r", encoding="utf-8") as f:
+        vllm_config = yaml.safe_load(f)
+
+    serve_cfg: dict[str, Any] = vllm_config.get("serve", {})
+    generation_cfg: dict[str, Any] = vllm_config.get("generation", {})
+
+    extra_args = serve_cfg.get("extra_args", {})
+    max_model_len = extra_args.get("max_model_len", serve_cfg.get("max_model_len", 4096))
+    max_new_tokens = generation_cfg.get(
+        "max_new_tokens",
+        generation_cfg.get("max_output_tokens", generation_cfg.get("max_tokens", 512)),
     )
-    return len(token_ids)
-    # return (sum([len(tokenizer.encode(message.content)) for message in messages]))
+
+    generator_kwargs = {
+        k: v
+        for k, v in serve_cfg.items()
+        if k not in {"extra_args", "model_name_or_path", "max_model_len"}
+    }
+
+    generator = VLLMOfflineGenerator(
+        model_name=str(model_path),
+        max_context_length=max_model_len,
+        max_output_tokens=max_new_tokens,
+        logger=logger,
+        **generator_kwargs,
+        **extra_args,
+    )
+
+    sampling_params = SamplingParams(
+        **{
+            k: v
+            for k, v in generation_cfg.items()
+            if k
+            not in {
+                "max_new_tokens",
+                "max_output_tokens",
+                "max_tokens",
+                "chat_template_kwargs",
+                "buffer_tokens",
+            }
+        }
+    )
+
+    generate_kwargs = {
+        "sampling_params": sampling_params,
+        "buffer_tokens": generation_cfg.get("buffer_tokens", 10),
+        "chat_template_kwargs": generation_cfg.get("chat_template_kwargs", {}),
+    }
+
+    return generator, generate_kwargs
+
 
 def main(args: argparse.Namespace, logger: logging.Logger) -> None:
     model_path: Path = args.model_root.expanduser() / args.model_name
     dataset_dirpath: Path = args.dataset_dir.expanduser()
     output_dirpath: Path = args.output_dir.expanduser() / args.model_name
 
-    with open(args.tasks, "r", encoding="utf-8") as f:
+    with args.tasks.open("r", encoding="utf-8") as f:
         raw = yaml.safe_load(f)
-        tasks: dict[Literal["mrcr"], list[str]] = raw["tasks"]
-    
-    with open(args.vllm_config, "r", encoding="utf-8") as f:
-        vllm_config = yaml.safe_load(f)
-    serve_cfg = OfflineServeConfig(model_name_or_path=str(model_path), **vllm_config["serve"])
-    gen_cfg = GenerationConfig(**vllm_config["generation"])
+        tasks: dict[str, list[str]] = raw["tasks"]
 
-    generator = OfflineTextGenerator(serve_config=serve_cfg, logger=logger)
-    tokenizer = generator.llm.get_tokenizer()
+    generator, generate_kwargs = build_generator(
+        model_path=model_path, vllm_config_path=args.vllm_config, logger=logger
+    )
 
-    batch_size = args.batchsize
+    include_tasks = parse_csv_list(args.only_tasks)
+    exclude_tasks = parse_csv_list(args.exclude_tasks)
+    include_subsets = parse_csv_list(args.only_subsets)
+    exclude_subsets = parse_csv_list(args.exclude_subsets)
 
-    for task_name in tasks:
-        for dataset_filename in tasks[task_name]:
+    jobs: list[MRCRPredictJob] = []
+    task_names = filter_names(tasks.keys(), include=include_tasks, exclude=exclude_tasks)
+    for task_name in task_names:
+        dataset_filenames = tasks.get(task_name, [])
+        filtered_filenames = filter_names(
+            dataset_filenames,
+            include=include_subsets,
+            exclude=exclude_subsets,
+            allow_stem=True,
+        )
+        for dataset_filename in filtered_filenames:
             pred_filepath = output_dirpath / task_name / dataset_filename
-            pred_filepath.parent.mkdir(parents=True, exist_ok=True)
-            pred_filepath.touch(exist_ok=False)
-
             dataset_filepath = dataset_dirpath / task_name / dataset_filename
-            data = pd.read_parquet(dataset_filepath)
+            jobs.append(
+                MRCRPredictJob(
+                    name=f"{task_name}/{dataset_filename}",
+                    dataset_path=dataset_filepath,
+                    pred_path=pred_filepath,
+                )
+            )
 
-            processed_ids = set()
-            if pred_filepath.exists():
-                with pred_filepath.open("r", encoding="utf-8") as f:
-                    for line in f:
-                        if line.strip():
-                            try:
-                                record = json.loads(line)
-                                processed_ids.add(record["id"])
-                            except json.JSONDecodeError:
-                                logger.warning(f"Skipping invalid JSON in {pred_filepath}")
-            data = data.drop(processed_ids, errors="ignore")
-            logger.info(f"Skip {len(processed_ids)} already processed samples. Remaining: {len(data)}")
+    if not jobs:
+        logger.warning("No tasks found in %s", args.tasks)
+        return
 
-            total = len(data)
-            for start in tqdm(
-                range(0, total, batch_size),
-                desc=f"Processing {task_name}/{dataset_filename}",
-                total=int(total / batch_size),
-            ):
-                batch = data[start : start + batch_size]
-                conversations: list[Conversation] = []
-                conversations_to_generate: list[Conversation] = []
-                target_context_lengths: list[int] = []
-                # インプットデータの整形
-                for _, sample in batch.iterrows():
-                    conversation = Conversation(messages=[
-                        Message(role=message["role"], content=message["content"])
-                        for message in json.loads(sample["prompt"])
-                    ])
-                    n_tokens = get_n_tokens(tokenizer, conversation.messages, gen_cfg)
-                    # コンテキスト長がmax_model_lenを超える場合は生成対象から除外
-                    if n_tokens < serve_cfg.extra_args["max_model_len"]:
-                        conversations_to_generate.append(conversation)
-                    conversations.append(conversation)
-                    target_context_lengths.append(n_tokens)
+    runner = BenchmarkRunner(
+        generator=generator, generate_kwargs=generate_kwargs, logger=logger
+    )
+    runner.run(
+        jobs=jobs,
+        model_name=args.model_name,
+        opts=RunOptions(batch_size=args.batchsize, prediction_dir=output_dirpath),
+    )
 
-                # 推論
-                if len(conversations_to_generate) == 0:
-                    responses: list[Response] = []
-                else:
-                    responses: list[Response] = generator.generate(generation_config=gen_cfg, conversations=conversations_to_generate)
-
-                # コンテキスト長がmax_model_lenを超える場合は生成結果を空文字列にする
-                for idx in [i for i, v in enumerate(target_context_lengths) if v >= serve_cfg.extra_args["max_model_len"]]:
-                    responses.insert(idx,
-                        Response(prompt=conversations[idx], outputs=[""])
-                    )
-
-                with pred_filepath.open("a", encoding="utf-8") as f:
-                    for (idx, sample), target_context_length, resp in zip(batch.iterrows(), target_context_lengths, responses, strict=True):
-                        json.dump(
-                            {
-                                "id": idx,
-                                "target_context_length": target_context_length,
-                                "random_string_to_prepend": sample["random_string_to_prepend"],
-                                "answer": sample["answer"],
-                                "prediction": resp.outputs[0],
-                            },
-                            f,
-                            ensure_ascii=False,
-                        )
-                        f.write("\n")
 
 if __name__ == "__main__":
     args = parse_args()

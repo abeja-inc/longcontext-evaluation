@@ -1,16 +1,18 @@
 import argparse
-import json
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 import yaml
-from project_module.inference.config import GenerationConfig, OfflineServeConfig
-from project_module.inference.io_data import Conversation, Response
-from project_module.inference.text_generator import OfflineTextGenerator
-from project_module.utils import get_custom_logger
-from tqdm import tqdm
+from llm_inference.vllm_offline_inference import VLLMOfflineGenerator
 from transformers import AutoTokenizer
+from vllm import SamplingParams
+
+from benchmarks._base_benchmark.config import RunOptions
+from benchmarks._base_benchmark.runner import BenchmarkRunner
+from benchmarks.longbench_v2.predict import build_jobs_for_dataset_dir, load_prompt_templates
+from benchmarks.utils import get_custom_logger, parse_csv_list
 
 
 def expand_path(path: str | Path) -> Path:
@@ -53,100 +55,74 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--cot", action="store_true", help="Use chain-of-thought prompting")
     p.add_argument("--no-context", action="store_true", help="Do not use context")
     p.add_argument("--batchsize", type=int, default=1, help="Batch size for inference")
+    p.add_argument(
+        "--only-datasets",
+        type=str,
+        default=None,
+        help="Comma-separated dataset name patterns to include",
+    )
+    p.add_argument(
+        "--exclude-datasets",
+        type=str,
+        default=None,
+        help="Comma-separated dataset name patterns to exclude",
+    )
     return p.parse_args()
 
 
-def load_prompts(tasks_yml: Path) -> dict[str, str]:
-    with open(tasks_yml, "r", encoding="utf-8") as f:
-        raw = yaml.safe_load(f)
-    prompt_dir = expand_path(raw["prompt"]["dirpath"])
-    mapping: dict[str, str] = raw["prompt"]["prompts"]
+def build_generator(
+    *, model_path: Path, vllm_config_path: Path, logger: logging.Logger
+) -> tuple[VLLMOfflineGenerator, dict[str, Any], int, int]:
+    with vllm_config_path.open("r", encoding="utf-8") as f:
+        vllm_config = yaml.safe_load(f)
 
-    prompts: dict[str, str] = {}
-    for prompt_key, prompt_file_name in mapping.items():
-        prompt_file = prompt_dir / prompt_file_name
-        prompts[prompt_key] = prompt_file.read_text(encoding="utf-8")
+    serve_cfg: dict[str, Any] = vllm_config.get("serve", {})
+    generation_cfg: dict[str, Any] = vllm_config.get("generation", {})
 
-    return prompts
-
-
-def build_prompt_from_template(
-    prompt_templates: dict[str, str],
-    sample: dict,
-    rag_topn: int = 0,
-    cot: bool = False,
-    no_context: bool = False,
-) -> tuple[str, str]:
-    # DOC
-    if rag_topn > 0 and "retrieved_context" in sample:
-        template = prompt_templates["0shot_rag"]
-        chunks = sorted(sample["retrieved_context"], key=lambda x: x.get("c_idx", 0))[
-            :rag_topn
-        ]
-        doc = "\n\n".join(
-            [
-                f"Retrieved chunk {i + 1}: {c.get('content', '')}"
-                for i, c in enumerate(chunks)
-            ]
-        )
-    else:
-        doc = sample["context"]
-        if no_context:
-            template = prompt_templates["0shot_no_context"]
-        elif cot:
-            template = prompt_templates["0shot_cot"]
-        else:
-            template = prompt_templates["0shot"]
-
-    # Question & choices
-    q = sample["question"]
-    c_a = sample["choice_A"]
-    c_b = sample["choice_B"]
-    c_c = sample["choice_C"]
-    c_d = sample["choice_D"]
-
-    # Build prompt
-    filled = (
-        template.replace("$DOC$", doc.strip())
-        .replace("$Q$", q.strip())
-        .replace("$C_A$", c_a.strip())
-        .replace("$C_B$", c_b.strip())
-        .replace("$C_C$", c_c.strip())
-        .replace("$C_D$", c_d.strip())
+    extra_args = serve_cfg.get("extra_args", {})
+    max_model_len = extra_args.get("max_model_len", serve_cfg.get("max_model_len", 4096))
+    max_new_tokens = generation_cfg.get(
+        "max_new_tokens",
+        generation_cfg.get("max_output_tokens", generation_cfg.get("max_tokens", 512)),
     )
 
-    # extract answer template
-    if cot:
-        answer_template = prompt_templates["0shot_cot_ans"]
-        answer_template = (
-            answer_template.replace("$DOC$", doc.strip())
-            .replace("$Q$", q.strip())
-            .replace("$C_A$", c_a.strip())
-            .replace("$C_B$", c_b.strip())
-            .replace("$C_C$", c_c.strip())
-            .replace("$C_D$", c_d.strip())
-        )
-    else:
-        answer_template = ""
-    return filled, answer_template
+    generator_kwargs = {
+        k: v
+        for k, v in serve_cfg.items()
+        if k not in {"extra_args", "model_name_or_path", "max_model_len"}
+    }
 
+    generator = VLLMOfflineGenerator(
+        model_name=str(model_path),
+        max_context_length=max_model_len,
+        max_output_tokens=max_new_tokens,
+        logger=logger,
+        **generator_kwargs,
+        **extra_args,
+    )
 
-def truncate(
-    content: str,
-    tokenizer: AutoTokenizer,
-    max_model_len: int,
-    max_new_token: int,
-    buffer: int = 30,
-) -> str:
-    max_len = max_model_len - max_new_token - buffer
+    sampling_params = SamplingParams(
+        **{
+            k: v
+            for k, v in generation_cfg.items()
+            if k
+            not in {
+                "max_new_tokens",
+                "max_output_tokens",
+                "max_tokens",
+                "chat_template_kwargs",
+                "buffer_tokens",
+            }
+        }
+    )
 
-    input_ids = tokenizer.encode(content)
-    if len(input_ids) > max_len:
-        input_ids = input_ids[: max_len // 2] + input_ids[-max_len // 2 :]
-        truncated_content = tokenizer.decode(input_ids, skip_special_tokens=True)
-        return truncated_content
-    else:
-        return content
+    generate_kwargs = {
+        "sampling_params": sampling_params,
+        "buffer_tokens": generation_cfg.get("buffer_tokens", 10),
+        "chat_template_kwargs": generation_cfg.get("chat_template_kwargs", {}),
+    }
+
+    return generator, generate_kwargs, max_model_len, max_new_tokens
 
 
 def main(args: argparse.Namespace, logger: logging.Logger) -> None:
@@ -154,135 +130,39 @@ def main(args: argparse.Namespace, logger: logging.Logger) -> None:
     dataset_dirpath: Path = expand_path(args.dataset_dir)
     output_dirpath: Path = expand_path(args.output_dir) / args.model_name
 
-    prompt_templates = load_prompts(args.tasks)
-
-    with open(args.vllm_config, "r", encoding="utf-8") as f:
-        vllm_config = yaml.safe_load(f)
-    serve_cfg = OfflineServeConfig(
-        model_name_or_path=str(model_path), **vllm_config["serve"]
+    generator, generate_kwargs, max_model_len, max_new_tokens = build_generator(
+        model_path=model_path, vllm_config_path=args.vllm_config, logger=logger
     )
-    gen_cfg = GenerationConfig(**vllm_config["generation"])
 
-    generator = OfflineTextGenerator(serve_config=serve_cfg, logger=logger)
-
+    prompt_templates = load_prompt_templates(args.tasks)
     tokenizer = AutoTokenizer.from_pretrained(str(model_path))
-    max_model_len = vllm_config["serve"]["extra_args"]["max_model_len"]
-    max_new_token = vllm_config["generation"]["max_new_tokens"]
 
-    batch_size = args.batchsize
+    jobs = build_jobs_for_dataset_dir(
+        dataset_dir=dataset_dirpath,
+        prediction_dir=output_dirpath,
+        prompt_templates=prompt_templates,
+        tokenizer=tokenizer,
+        max_model_len=max_model_len,
+        max_new_tokens=max_new_tokens,
+        rag_topn=args.rag_topn,
+        cot=args.cot,
+        no_context=args.no_context,
+        include_datasets=parse_csv_list(args.only_datasets),
+        exclude_datasets=parse_csv_list(args.exclude_datasets),
+    )
 
-    if args.rag_topn > 0:
-        subdir_name = "0shot_rag"
-    elif args.cot:
-        subdir_name = "0shot_cot"
-    elif args.no_context:
-        subdir_name = "0shot_no_context"
-    else:
-        subdir_name = "0shot"
+    if not jobs:
+        logger.warning("No datasets found under %s", dataset_dirpath)
+        return
 
-    for dataset_filepath in dataset_dirpath.rglob("*_with_token_count.jsonl"):
-        pred_filepath = output_dirpath / subdir_name / f"{dataset_filepath.stem}.jsonl"
-        pred_filepath.parent.mkdir(parents=True, exist_ok=True)
-
-        # データセットをロード
-        with dataset_filepath.open("r") as f:
-            data = [json.loads(line) for line in f]
-
-        # 処理済みのサンプルがある場合はスキップ
-        processed_ids = set()
-        if pred_filepath.exists():
-            with pred_filepath.open("r", encoding="utf-8") as f:
-                for line in f:
-                    if line.strip():
-                        try:
-                            record = json.loads(line)
-                            processed_ids.add(record["id"])
-                        except json.JSONDecodeError:
-                            logger.warning(f"Skipping invalid JSON in {pred_filepath}")
-        else:
-            pred_filepath.touch()
-
-        data = [sample for sample in data if sample["sample_id"] not in processed_ids]
-        logger.info(
-            f"Skip {len(processed_ids)} already processed samples. Remaining: {len(data)}"
-        )
-
-        # 推論
-        total = len(data)
-        for start in tqdm(
-            range(0, total, batch_size),
-            desc=f"Processing {dataset_filepath.name}",
-            total=int(total / batch_size),
-        ):
-            batch = data[start : start + batch_size]
-            conversations: list[Conversation] = []
-            for sample in batch:
-                user_prompt, answer_template = build_prompt_from_template(
-                    prompt_templates=prompt_templates,
-                    sample=sample,
-                    rag_topn=args.rag_topn,
-                    cot=args.cot,
-                    no_context=args.no_context,
-                )
-                truncated_user_prompt = truncate(
-                    content=user_prompt,
-                    tokenizer=tokenizer,
-                    max_model_len=max_model_len,
-                    max_new_token=max_new_token,
-                )
-                conversations.append(
-                    Conversation(
-                        messages=[{"role": "user", "content": truncated_user_prompt}]
-                    )
-                )
-            responses: list[Response] = generator.generate(
-                generation_config=gen_cfg, conversations=conversations
-            )
-
-            if args.cot:
-                conversations: list[Conversation] = []
-                for resp in responses:
-                    conversations.append(
-                        Conversation(
-                            messages=[
-                                {
-                                    "role": "assistant",
-                                    "content": answer_template.replace(
-                                        "$COT$",
-                                        truncate(
-                                            content=resp.outputs[0].strip(),
-                                            tokenizer=tokenizer,
-                                            max_model_len=max_model_len,
-                                            max_new_token=max_new_token,
-                                        ),
-                                    ),
-                                }
-                            ]
-                        )
-                    )
-                responses: list[Response] = generator.generate(
-                    generation_config=gen_cfg, conversations=conversations
-                )
-
-            # 出力を保存
-            with pred_filepath.open("a", encoding="utf-8") as f:
-                for sample, resp, conv in zip(
-                    batch, responses, conversations, strict=True
-                ):
-                    json.dump(
-                        {
-                            "id": sample["sample_id"],
-                            "difficulty": sample["difficulty"],
-                            "length": sample["length"],
-                            "token_count": sample["tokens"],
-                            "answer": sample["answer"],
-                            "input_prompt": conv.messages[-1].content,
-                            "prediction": resp.outputs[0],
-                        },
-                        f,
-                        ensure_ascii=False,
-                    )
-                    f.write("\n")
+    runner = BenchmarkRunner(
+        generator=generator, generate_kwargs=generate_kwargs, logger=logger
+    )
+    runner.run(
+        jobs=jobs,
+        model_name=args.model_name,
+        opts=RunOptions(batch_size=args.batchsize, prediction_dir=output_dirpath),
+    )
 
 
 if __name__ == "__main__":
