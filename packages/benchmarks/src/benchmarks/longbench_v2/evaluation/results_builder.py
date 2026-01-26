@@ -9,7 +9,7 @@ from ..._scoring.scoring_tables import (
     score_by_context_length_rows,
     summary_from_scores,
 )
-from .scoring import LongBenchScorer
+from .scorer import build_scores
 
 
 class LongBenchResultsBuilder(ResultsBuilder):
@@ -17,7 +17,6 @@ class LongBenchResultsBuilder(ResultsBuilder):
 
     def __init__(self, *, compensate_missing: bool = False) -> None:
         self._compensate_missing = compensate_missing
-        self._scorer = LongBenchScorer(compensate_missing=compensate_missing)
 
     def build_results(
         self,
@@ -28,30 +27,23 @@ class LongBenchResultsBuilder(ResultsBuilder):
     ) -> Results:
         files = sorted(prediction_dir.rglob("*.jsonl"))
 
-        scores: list[Score] = []
+        scores = _flatten_scores(summary_json) if summary_json else []
         output_rows: list[dict[str, Any]] = []
 
         for filepath in files:
             records = read_jsonl(filepath)
-            metrics, rows = self._scorer.score_records(records)
             prompt_type = filepath.parent.name
             subset_name = filepath.stem
-            for index, (record, row) in enumerate(zip(records, rows, strict=False)):
+            file_scores, rows = build_scores(
+                records,
+                prompt_type=prompt_type,
+                subset_name=subset_name,
+                compensate_missing=self._compensate_missing,
+            )
+            if not summary_json:
+                scores.extend(file_scores)
+            for record, row in zip(records, rows, strict=False):
                 context_length = row.get("token_count")
-                scores.append(
-                    Score(
-                        benchmark=self.name,
-                        language=record.get("language", "unknown"),
-                        task=prompt_type,
-                        subset=subset_name,
-                        index=row.get("sample_id", index),
-                        score=row.get("acc", 0.0),
-                        context_length=context_length
-                        if context_length is not None
-                        else -1,
-                        tags=record.get("tags"),
-                    )
-                )
                 output_rows.append(
                     {
                         "Model": model_name,
@@ -86,3 +78,12 @@ class LongBenchResultsBuilder(ResultsBuilder):
                 "compensate_missing": self._compensate_missing,
             },
         )
+
+
+def _flatten_scores(summary: dict[str, Any]) -> list[Score]:
+    scores: list[Score] = []
+    for task_obj in summary.get("results", []):
+        for subset in task_obj.get("subsets", []):
+            for score in subset.get("score", []):
+                scores.append(Score.model_validate(score))
+    return scores

@@ -113,4 +113,32 @@ def evaluate_records(
     return metrics, rows
 
 
-__all__ = ["LongBenchScorer", "extract_answer"]
+def build_scores(
+    records: list[dict[str, Any]],
+    *,
+    prompt_type: str,
+    subset_name: str,
+    compensate_missing: bool = False,
+) -> tuple[list[Score], list[dict[str, Any]]]:
+    _metrics, rows = evaluate_records(
+        records, compensate_missing=compensate_missing
+    )
+    scores: list[Score] = []
+    for index, (record, row) in enumerate(zip(records, rows, strict=False)):
+        context_length = row.get("token_count")
+        scores.append(
+            Score(
+                benchmark=LongBenchScorer.name,
+                language=record.get("language", "unknown"),
+                task=prompt_type,
+                subset=subset_name,
+                index=row.get("sample_id", index),
+                score=row.get("acc", 0.0),
+                context_length=context_length if context_length is not None else -1,
+                tags=record.get("tags"),
+            )
+        )
+    return scores, rows
+
+
+__all__ = ["LongBenchScorer", "build_scores", "extract_answer"]

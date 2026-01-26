@@ -9,8 +9,9 @@ from .._base_benchmark.config import RunOptions
 from .._base_benchmark.result import push_results_to_wandb
 from .._base_benchmark.runner import BenchmarkRunner
 from ..utils import parse_csv_list
-from .evaluation.results import LongBenchResultsBuilder
-from .prediction.predict import (
+from .evaluation.evaluator import LongBenchEvaluator
+from .evaluation.results_builder import LongBenchResultsBuilder
+from .prediction.predictor import (
     build_jobs_for_dataset_dir,
     load_prompt_templates,
     load_prompt_templates_from_config,
@@ -75,11 +76,19 @@ def run_longbench_v2(
     if not cfg.get("run_eval", True):
         return
 
+    evaluator = LongBenchEvaluator(
+        compensate_missing=cfg.get("compensate_missing", False)
+    )
+    output_filepath = prediction_dir / "summary.json"
+    summary_json = evaluator.run(
+        prediction_dir=prediction_dir, output_path=output_filepath
+    )
+
     results_builder = LongBenchResultsBuilder(
         compensate_missing=cfg.get("compensate_missing", False)
     )
     results = results_builder.build_results(
-        model_name=model_name, prediction_dir=prediction_dir, summary_json=None
+        model_name=model_name, prediction_dir=prediction_dir, summary_json=summary_json
     )
 
     run = wandb_run_factory(cfg.get("wandb", {}), "LongBench-v2")

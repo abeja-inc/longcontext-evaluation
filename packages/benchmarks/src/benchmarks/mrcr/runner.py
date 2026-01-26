@@ -9,10 +9,10 @@ from .._base_benchmark.config import RunOptions
 from .._base_benchmark.result import push_results_to_wandb
 from .._base_benchmark.runner import BenchmarkRunner
 from ..utils import filter_names, parse_csv_list
-from .evaluation.config import TaskSetting
+from .evaluation.evaluator import TaskSetting
 from .evaluation.evaluator import MRCREvaluator
-from .evaluation.results import MRCRResultsBuilder
-from .prediction.predict import MRCRPredictJob
+from .evaluation.results_builder import MRCRResultsBuilder
+from .prediction.predictor import MRCRPredictJob
 
 
 def _load_task_settings(
