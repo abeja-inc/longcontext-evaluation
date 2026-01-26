@@ -1,7 +1,3 @@
-from pydantic import BaseModel
+from ..data_model import Score
 
-
-class Score(BaseModel):
-    index: int | str | None = None
-    score: float
-    context_length: int
+__all__ = ["Score"]
