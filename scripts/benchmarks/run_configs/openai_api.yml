@@ -1,3 +1,5 @@
+base_config: ./base.yml
+
 model:
   root: ~/models
   name: unused
@@ -12,45 +14,3 @@ generator:
   buffer_tokens: 10
   chat_kwargs: {}
   completion_kwargs: {}
-
-output_dir: ~/longcontext-llm-benchmark-eval/experimentation/outputs
-dataset_dir: ~/datasets
-batchsize: 1
-
-benchmarks:
-  longbench_v2:
-    enabled: true
-    tasks_path: ./scripts/benchmarks/LongBench_v2/config/tasks.yml
-    run_pred: true
-    run_eval: true
-    rag_topn: 0
-    cot: false
-    no_context: false
-    only_datasets: null
-    exclude_datasets: null
-    compensate_missing: false
-    wandb: {}
-
-  mrcr:
-    enabled: true
-    tasks_path: ./scripts/benchmarks/OpenAI_MRCR/config/tasks.yml
-    eval_config: ./scripts/benchmarks/OpenAI_MRCR/config/eval_config.yml
-    run_pred: true
-    run_eval: true
-    only_tasks: null
-    exclude_tasks: null
-    only_subsets: null
-    exclude_subsets: null
-    wandb: {}
-
-  ruler:
-    enabled: true
-    tasks_path: ./scripts/benchmarks/RULER/config/tasks.yml
-    eval_config: ./scripts/benchmarks/RULER/config/eval_config.yml
-    run_pred: true
-    run_eval: true
-    only_tasks: null
-    exclude_tasks: null
-    only_subsets: null
-    exclude_subsets: null
-    wandb: {}

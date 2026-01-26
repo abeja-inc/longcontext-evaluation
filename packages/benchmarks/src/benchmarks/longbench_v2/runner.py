@@ -11,7 +11,11 @@ from .._base_benchmark.config import RunOptions
 from .._base_benchmark.result import push_results_to_wandb
 from .._base_benchmark.runner import BenchmarkRunner
 from ..utils import parse_csv_list
-from .prediction.predict import build_jobs_for_dataset_dir, load_prompt_templates
+from .prediction.predict import (
+    build_jobs_for_dataset_dir,
+    load_prompt_templates,
+    load_prompt_templates_from_config,
+)
 from .evaluation.results import LongBenchResultsBuilder
 
 
@@ -33,7 +37,17 @@ def run_longbench_v2(
     if not cfg.get("enabled", True):
         return
 
-    prompt_templates = load_prompt_templates(Path(cfg["tasks_path"]).expanduser())
+    config_dir = Path(cfg.get("_config_dir", "."))
+    tasks_config = cfg.get("tasks")
+    if tasks_config:
+        prompt_templates = load_prompt_templates_from_config(
+            tasks_config, base_dir=config_dir
+        )
+    else:
+        tasks_path = Path(cfg["tasks_path"]).expanduser()
+        if not tasks_path.is_absolute():
+            tasks_path = config_dir / tasks_path
+        prompt_templates = load_prompt_templates(tasks_path)
     tokenizer = AutoTokenizer.from_pretrained(str(model_root / model_name))
 
     jobs = build_jobs_for_dataset_dir(

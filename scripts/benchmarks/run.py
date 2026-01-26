@@ -44,6 +44,16 @@ def expand_path(path: str | Path) -> Path:
     return Path(path).expanduser().resolve()
 
 
+def merge_dicts(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(base)
+    for key, value in override.items():
+        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+            merged[key] = merge_dicts(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
 def build_generator(
     *, config: dict[str, Any], model_root: Path, model_name: str, logger: logging.Logger
 ) -> tuple[Any, dict[str, Any], int, int]:
@@ -197,6 +207,16 @@ def main() -> None:
     with config_path.open("r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
+    base_config_path = config.get("base_config")
+    if base_config_path:
+        base_config_path = Path(base_config_path)
+        if not base_config_path.is_absolute():
+            base_config_path = config_path.parent / base_config_path
+        base_config_path = expand_path(base_config_path)
+        with base_config_path.open("r", encoding="utf-8") as f:
+            base_config = yaml.safe_load(f)
+        config = merge_dicts(base_config, config)
+
     model_cfg = config.get("model", {})
     model_root = expand_path(model_cfg.get("root", "./models"))
     model_name = model_cfg.get("name")
@@ -226,7 +246,8 @@ def main() -> None:
     prediction_dir = output_dir / model_name
 
     for benchmark_name in benchmark_names:
-        bench_cfg = benchmarks_cfg.get(benchmark_name, {})
+        bench_cfg = dict(benchmarks_cfg.get(benchmark_name, {}))
+        bench_cfg["_config_dir"] = config_path.parent
         if benchmark_name == "longbench_v2":
             run_longbench_v2(
                 cfg=bench_cfg,

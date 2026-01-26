@@ -1,8 +1,0 @@
-prompt:
-    dirpath: ../prompts
-    prompts:
-        0shot: 0shot.txt
-        0shot_cot: 0shot_cot.txt
-        0shot_cot_ans: 0shot_cot_ans.txt
-        0shot_no_context: 0shot_no_context.txt
-        0shot_rag: 0shot_rag.txt
