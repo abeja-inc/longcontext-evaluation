@@ -45,9 +45,7 @@ class MRCRPredictJob(PredictJob):
         if processed_ids:
             data = data.drop(processed_ids, errors="ignore")
 
-        records = [
-            {"id": idx, **row.to_dict()} for idx, row in data.iterrows()
-        ]
+        records = [{"id": idx, **row.to_dict()} for idx, row in data.iterrows()]
 
         for start in range(0, len(records), batch_size):
             yield Batch(samples=records[start : start + batch_size])

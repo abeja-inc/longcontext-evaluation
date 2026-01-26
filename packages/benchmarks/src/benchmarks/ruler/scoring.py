@@ -31,14 +31,16 @@ class BaseStringMatcher(ABC):
 
 class PartStringMatcher(BaseStringMatcher):
     def _score(self, pred: str, ref_list: list[str]) -> float:
-        return max(1.0 if match_pattern(pred=pred, ref=ref) else 0.0 for ref in ref_list)
+        return max(
+            1.0 if match_pattern(pred=pred, ref=ref) else 0.0 for ref in ref_list
+        )
 
 
 class AllStringMatcher(BaseStringMatcher):
     def _score(self, pred: str, ref_list: list[str]) -> float:
-        return sum(1.0 if match_pattern(pred=pred, ref=ref) else 0.0 for ref in ref_list) / len(
-            ref_list
-        )
+        return sum(
+            1.0 if match_pattern(pred=pred, ref=ref) else 0.0 for ref in ref_list
+        ) / len(ref_list)
 
 
 class RulerScorer(BaseRecordScorer[list[Score]]):
@@ -50,7 +52,9 @@ class RulerScorer(BaseRecordScorer[list[Score]]):
         elif metric == "all":
             self._matcher = AllStringMatcher()
         else:
-            raise ValueError(f"Unsupported metric: '{metric}' for task. Use 'part' or 'all'.")
+            raise ValueError(
+                f"Unsupported metric: '{metric}' for task. Use 'part' or 'all'."
+            )
 
     def score_records(self, records: list[dict[str, Any]]) -> list[Score]:
         preds: list[str] = [record.get("prediction", "") for record in records]
@@ -70,7 +74,9 @@ class RulerScorer(BaseRecordScorer[list[Score]]):
         score_by_context: list[Score] = []
         for ctx_len, pairs in grouped.items():
             grouped_preds, grouped_refs = zip(*pairs, strict=False)
-            score = self._matcher.compute(preds=list(grouped_preds), refs=list(grouped_refs))
+            score = self._matcher.compute(
+                preds=list(grouped_preds), refs=list(grouped_refs)
+            )
             score_by_context.append(Score(score=score, context_length=ctx_len))
 
         return score_by_context

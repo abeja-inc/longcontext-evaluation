@@ -4,7 +4,9 @@ from pathlib import Path
 from typing import Iterable, Sequence
 
 
-def get_custom_logger(name: str = "benchmarks", level: int = logging.INFO) -> logging.Logger:
+def get_custom_logger(
+    name: str = "benchmarks", level: int = logging.INFO
+) -> logging.Logger:
     logger = logging.getLogger(name)
     if not logger.handlers:
         handler = logging.StreamHandler()
@@ -35,7 +37,9 @@ def _matches_patterns(name: str, patterns: Sequence[str], *, allow_stem: bool) -
     candidates = [name]
     if allow_stem:
         candidates.append(Path(name).stem)
-    return any(fnmatch(candidate, pattern) for pattern in patterns for candidate in candidates)
+    return any(
+        fnmatch(candidate, pattern) for pattern in patterns for candidate in candidates
+    )
 
 
 def filter_names(

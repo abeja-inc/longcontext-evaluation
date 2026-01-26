@@ -193,7 +193,9 @@ class LongBenchPredictJob(PredictJob):
 
         if self.cot:
             followup_conversations: list[Conversation] = []
-            for response, answer_template in zip(responses, answer_templates, strict=True):
+            for response, answer_template in zip(
+                responses, answer_templates, strict=True
+            ):
                 output = ""
                 if response.outputs:
                     output = response.outputs[0].content
@@ -281,9 +283,7 @@ def build_jobs_for_dataset_dir(
     for dataset_filepath in dataset_paths:
         if has_filter and dataset_filepath.name not in filtered_names:
             continue
-        pred_filepath = (
-            prediction_dir / subdir_name / f"{dataset_filepath.stem}.jsonl"
-        )
+        pred_filepath = prediction_dir / subdir_name / f"{dataset_filepath.stem}.jsonl"
         jobs.append(
             LongBenchPredictJob(
                 name=f"{subdir_name}/{dataset_filepath.stem}",
