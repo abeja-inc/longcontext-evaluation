@@ -11,8 +11,8 @@ from .._base_benchmark.config import RunOptions
 from .._base_benchmark.result import push_results_to_wandb
 from .._base_benchmark.runner import BenchmarkRunner
 from ..utils import parse_csv_list
-from .predict import build_jobs_for_dataset_dir, load_prompt_templates
-from .results import LongBenchResultsBuilder
+from .prediction.predict import build_jobs_for_dataset_dir, load_prompt_templates
+from .evaluation.results import LongBenchResultsBuilder
 
 
 def run_longbench_v2(

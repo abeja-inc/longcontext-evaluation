@@ -3,8 +3,8 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 from typing import Any
 
-from .._base_benchmark.scoring import BaseRecordScorer
-from .data_model import Score
+from ..._base_benchmark.scoring import BaseRecordScorer
+from ..data_model import Score
 
 
 class Grader:

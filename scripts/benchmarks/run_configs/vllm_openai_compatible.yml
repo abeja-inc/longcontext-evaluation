@@ -21,7 +21,7 @@ batchsize: 1
 benchmarks:
   longbench_v2:
     enabled: true
-    tasks_path: ./LongBench_v2/evaluation/tasks.yml
+    tasks_path: ./scripts/benchmarks/LongBench_v2/config/tasks.yml
     run_pred: true
     run_eval: true
     rag_topn: 0
@@ -34,8 +34,8 @@ benchmarks:
 
   mrcr:
     enabled: true
-    tasks_path: ./OpenAI_MRCR/evaluation/tasks.yml
-    eval_config: ./OpenAI_MRCR/evaluation/eval_config.yml
+    tasks_path: ./scripts/benchmarks/OpenAI_MRCR/config/tasks.yml
+    eval_config: ./scripts/benchmarks/OpenAI_MRCR/config/eval_config.yml
     run_pred: true
     run_eval: true
     only_tasks: null
@@ -46,8 +46,8 @@ benchmarks:
 
   ruler:
     enabled: true
-    tasks_path: ./RULER/evaluation/tasks.yml
-    eval_config: ./RULER/evaluation/eval_config.yml
+    tasks_path: ./scripts/benchmarks/RULER/config/tasks.yml
+    eval_config: ./scripts/benchmarks/RULER/config/eval_config.yml
     run_pred: true
     run_eval: true
     only_tasks: null

@@ -4,12 +4,12 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from .._base_benchmark.interfaces import ResultsBuilder
-from .._base_benchmark.result import Results, Table
+from ..._base_benchmark.interfaces import ResultsBuilder
+from ..._base_benchmark.result import Results, Table
 
 
-class RulerResultsBuilder(ResultsBuilder):
-    name = "ruler"
+class MRCRResultsBuilder(ResultsBuilder):
+    name = "mrcr"
 
     def build_results(
         self,

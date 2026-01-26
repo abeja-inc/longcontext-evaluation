@@ -10,9 +10,9 @@ from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Message
 from transformers import AutoTokenizer
 
-from .._base_benchmark.core import read_jsonl
-from .._base_benchmark.interfaces import Batch, PredictJob
-from ..utils import filter_names
+from ..._base_benchmark.core import read_jsonl
+from ..._base_benchmark.interfaces import Batch, PredictJob
+from ...utils import filter_names
 
 
 @dataclass(frozen=True)
@@ -25,6 +25,8 @@ def load_prompt_templates(tasks_yml: Path) -> LongBenchPromptTemplates:
         raw = yaml.safe_load(f)
 
     prompt_dir = Path(raw["prompt"]["dirpath"]).expanduser()
+    if not prompt_dir.is_absolute():
+        prompt_dir = (tasks_yml.parent / prompt_dir).resolve()
     mapping: dict[str, str] = raw["prompt"]["prompts"]
 
     templates: dict[str, str] = {}

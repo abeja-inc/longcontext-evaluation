@@ -4,13 +4,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .._base_benchmark.interfaces import Evaluator
-from .evaluation import EvaluationConfig, EvaluationPipeline
-from .evaluation.config import TaskSetting
+from ..._base_benchmark.interfaces import Evaluator
+from . import EvaluationConfig, EvaluationPipeline
+from .config import TaskSetting
 
 
-class RulerEvaluator(Evaluator):
-    name = "ruler"
+class MRCREvaluator(Evaluator):
+    name = "mrcr"
 
     def __init__(self, tasks: list[TaskSetting]) -> None:
         self._tasks = tasks
