@@ -6,6 +6,13 @@ from typing import Any
 from ..._base_benchmark.core import read_jsonl
 from ..._base_benchmark.interfaces import ResultsBuilder
 from ..._base_benchmark.result import Results, Table
+from ..._base_benchmark.result.scoring_tables import (
+    leaderboard_rows,
+    score_by_context_length_rows,
+    score_rows,
+    summary_from_scores,
+)
+from ...data_model import Score
 from .scoring import LongBenchScorer
 
 
@@ -25,48 +32,53 @@ class LongBenchResultsBuilder(ResultsBuilder):
     ) -> Results:
         files = sorted(prediction_dir.rglob("*.jsonl"))
 
-        metrics_rows: list[dict[str, Any]] = []
-        prediction_tables: list[Table] = []
+        scores: list[Score] = []
+        output_rows: list[dict[str, Any]] = []
 
         for filepath in files:
             records = read_jsonl(filepath)
             metrics, rows = self._scorer.score_records(records)
             prompt_type = filepath.parent.name
             subset_name = filepath.stem
-
-            metrics_rows.append(
-                {
-                    "Model": model_name,
-                    "Prompt Type": prompt_type,
-                    "Subset": subset_name,
-                    **metrics,
-                }
-            )
-
-            if rows:
-                subset_rows = [
+            for index, (record, row) in enumerate(zip(records, rows, strict=False)):
+                context_length = row.get("token_count")
+                scores.append(
+                    Score(
+                        benchmark=self.name,
+                        language=record.get("language", "unknown"),
+                        task=prompt_type,
+                        subset=subset_name,
+                        index=row.get("sample_id", index),
+                        score=row.get("acc", 0.0),
+                        context_length=context_length if context_length is not None else -1,
+                        tags=record.get("tags"),
+                    )
+                )
+                output_rows.append(
                     {
                         "Model": model_name,
                         "Prompt Type": prompt_type,
                         "Subset": subset_name,
-                        **r,
+                        **row,
                     }
-                    for r in rows
-                ]
-                prediction_tables.append(
-                    Table(
-                        name=f"predictions/{prompt_type}/{subset_name}",
-                        rows=subset_rows,
-                    )
                 )
 
-        mean_metrics = _mean_metrics(model_name=model_name, rows=metrics_rows)
-        summary = _summary_from_mean(mean_metrics)
+        score_table_rows = score_rows(scores, model_name=model_name)
+        leaderboard = leaderboard_rows(scores, model_name=model_name)
+        by_context = score_by_context_length_rows(scores, model_name=model_name)
+        summary = summary_from_scores(scores)
 
         tables: list[Table] = [
-            Table(name="metrics", rows=metrics_rows),
-            Table(name="metrics_mean", rows=[mean_metrics] if mean_metrics else []),
-            *prediction_tables,
+            Table(name="table/longbench_v2_output_table", rows=output_rows),
+            Table(
+                name="table/longbench_v2_score_by_sample_table",
+                rows=score_table_rows,
+            ),
+            Table(name="metrics/longbench_v2_leaderboard", rows=leaderboard),
+            Table(
+                name="metrics/longbench_v2_score_by_context_length",
+                rows=by_context,
+            ),
         ]
 
         return Results(
@@ -78,58 +90,3 @@ class LongBenchResultsBuilder(ResultsBuilder):
                 "compensate_missing": self._compensate_missing,
             },
         )
-
-
-def _mean_metrics(model_name: str, rows: list[dict[str, Any]]) -> dict[str, Any]:
-    if not rows:
-        return {}
-
-    percent_keys = [
-        "overall_acc",
-        "easy_acc",
-        "hard_acc",
-        "short_acc",
-        "medium_acc",
-        "long_acc",
-    ]
-
-    mean_metrics: dict[str, Any] = {
-        "Model": model_name,
-        "Prompt Type": "ALL",
-        "Subset": "ALL",
-    }
-
-    mean_metrics["overall_n"] = sum(r.get("overall_n", 0) for r in rows)
-    mean_metrics["easy_n"] = sum(r.get("easy_n", 0) for r in rows)
-    mean_metrics["hard_n"] = sum(r.get("hard_n", 0) for r in rows)
-    mean_metrics["short_n"] = sum(r.get("short_n", 0) for r in rows)
-    mean_metrics["medium_n"] = sum(r.get("medium_n", 0) for r in rows)
-    mean_metrics["long_n"] = sum(r.get("long_n", 0) for r in rows)
-
-    for key in percent_keys:
-        vals = [r.get(key, 0.0) for r in rows if r.get("overall_n", 0) > 0]
-        mean_metrics[key] = round(sum(vals) / len(vals), 2) if vals else 0.0
-
-    return mean_metrics
-
-
-def _summary_from_mean(mean_metrics: dict[str, Any]) -> dict[str, Any]:
-    if not mean_metrics:
-        return {}
-
-    summary: dict[str, Any] = {
-        "model/mean_overall_acc": mean_metrics.get("overall_acc", 0.0),
-        "mean/overall_n": mean_metrics.get("overall_n", 0),
-    }
-
-    for key in [
-        "overall_acc",
-        "easy_acc",
-        "hard_acc",
-        "short_acc",
-        "medium_acc",
-        "long_acc",
-    ]:
-        summary[f"mean/{key}"] = mean_metrics.get(key, 0.0)
-
-    return summary
