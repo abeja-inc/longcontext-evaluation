@@ -10,9 +10,9 @@ from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Message
 from transformers import AutoTokenizer
 
-from .._base_benchmark.core import read_jsonl
-from .._base_benchmark.interfaces import Batch, PredictJob
-from ..utils import filter_names
+from ..._base_benchmark.core import read_jsonl
+from ..._base_benchmark.interfaces import Batch, PredictJob
+from ...utils import filter_names
 
 
 @dataclass(frozen=True)
@@ -20,12 +20,27 @@ class LongBenchPromptTemplates:
     templates: dict[str, str]
 
 
+def _resolve_prompt_dir(prompt_dir: Path, *, base_dir: Path) -> Path:
+    resolved = prompt_dir.expanduser()
+    if not resolved.is_absolute():
+        resolved = (base_dir / resolved).resolve()
+    return resolved
+
+
 def load_prompt_templates(tasks_yml: Path) -> LongBenchPromptTemplates:
     with tasks_yml.open("r", encoding="utf-8") as f:
         raw = yaml.safe_load(f)
 
-    prompt_dir = Path(raw["prompt"]["dirpath"]).expanduser()
-    mapping: dict[str, str] = raw["prompt"]["prompts"]
+    return load_prompt_templates_from_config(raw, base_dir=tasks_yml.parent)
+
+
+def load_prompt_templates_from_config(
+    config: dict[str, Any], *, base_dir: Path
+) -> LongBenchPromptTemplates:
+    prompt_dir = _resolve_prompt_dir(
+        Path(config["prompt"]["dirpath"]), base_dir=base_dir
+    )
+    mapping: dict[str, str] = config["prompt"]["prompts"]
 
     templates: dict[str, str] = {}
     for prompt_key, prompt_file_name in mapping.items():

@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Any
 
-from .._base_benchmark.scoring import BaseRecordScorer
-from .data_model import Score
+from ..._base_benchmark.scoring import BaseRecordScorer
+from ..data_model import Score
 
 
 def match_pattern(pred: str, ref: str) -> bool:

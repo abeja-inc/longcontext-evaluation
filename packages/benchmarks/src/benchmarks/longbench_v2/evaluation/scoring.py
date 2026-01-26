@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from .._base_benchmark.scoring import BaseRecordScorer
+from ..._base_benchmark.scoring import BaseRecordScorer
 
 ANSWER_PATTERNS = [
     re.compile(r"The correct answer is \(([A-D])\)"),

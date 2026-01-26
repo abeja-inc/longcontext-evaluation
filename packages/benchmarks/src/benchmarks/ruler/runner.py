@@ -13,9 +13,9 @@ from .._base_benchmark.result import push_results_to_wandb
 from .._base_benchmark.runner import BenchmarkRunner
 from ..utils import filter_names, parse_csv_list
 from .evaluation.config import TaskSetting
-from .evaluator import RulerEvaluator
-from .predict import RulerPredictJob
-from .results import RulerResultsBuilder
+from .evaluation.evaluator import RulerEvaluator
+from .prediction.predict import RulerPredictJob
+from .evaluation.results import RulerResultsBuilder
 
 
 def _load_task_settings(
@@ -60,9 +60,16 @@ def run_ruler(
     if not cfg.get("enabled", True):
         return
 
-    tasks_path = Path(cfg["tasks_path"]).expanduser()
-    with tasks_path.open("r", encoding="utf-8") as f:
-        tasks_map: dict[str, list[str]] = yaml.safe_load(f)["tasks"]
+    config_dir = Path(cfg.get("_config_dir", "."))
+    tasks_config = cfg.get("tasks")
+    if isinstance(tasks_config, dict):
+        tasks_map: dict[str, list[str]] = tasks_config["tasks"]
+    else:
+        tasks_path = Path(cfg["tasks_path"]).expanduser()
+        if not tasks_path.is_absolute():
+            tasks_path = config_dir / tasks_path
+        with tasks_path.open("r", encoding="utf-8") as f:
+            tasks_map = yaml.safe_load(f)["tasks"]
 
     include_tasks = parse_csv_list(cfg.get("only_tasks"))
     exclude_tasks = parse_csv_list(cfg.get("exclude_tasks"))
@@ -107,9 +114,17 @@ def run_ruler(
     if not cfg.get("run_eval", True):
         return
 
-    eval_config_path = Path(cfg["eval_config"]).expanduser()
-    with eval_config_path.open("r", encoding="utf-8") as f:
-        eval_config = yaml.safe_load(f)
+    eval_config = cfg.get("eval_config")
+    if isinstance(eval_config, dict):
+        eval_config = eval_config
+    else:
+        eval_config_path = Path(
+            cfg.get("eval_config_path") or cfg.get("eval_config")
+        ).expanduser()
+        if not eval_config_path.is_absolute():
+            eval_config_path = config_dir / eval_config_path
+        with eval_config_path.open("r", encoding="utf-8") as f:
+            eval_config = yaml.safe_load(f)
 
     tasks = _load_task_settings(
         eval_config.get("tasks", []),

@@ -1,3 +1,5 @@
+base_config: ./base.yml
+
 model:
   root: ~/models
   name: example-model
@@ -12,45 +14,3 @@ generator:
       max_new_tokens: 256
       chat_template_kwargs:
         enable_thinking: false
-
-output_dir: ~/longcontext-llm-benchmark-eval/experimentation/outputs
-dataset_dir: ~/datasets
-batchsize: 1
-
-benchmarks:
-  longbench_v2:
-    enabled: true
-    tasks_path: ./LongBench_v2/evaluation/tasks.yml
-    run_pred: true
-    run_eval: true
-    rag_topn: 0
-    cot: false
-    no_context: false
-    only_datasets: null
-    exclude_datasets: null
-    compensate_missing: false
-    wandb: {}
-
-  mrcr:
-    enabled: true
-    tasks_path: ./OpenAI_MRCR/evaluation/tasks.yml
-    eval_config: ./OpenAI_MRCR/evaluation/eval_config.yml
-    run_pred: true
-    run_eval: true
-    only_tasks: null
-    exclude_tasks: null
-    only_subsets: null
-    exclude_subsets: null
-    wandb: {}
-
-  ruler:
-    enabled: true
-    tasks_path: ./RULER/evaluation/tasks.yml
-    eval_config: ./RULER/evaluation/eval_config.yml
-    run_pred: true
-    run_eval: true
-    only_tasks: null
-    exclude_tasks: null
-    only_subsets: null
-    exclude_subsets: null
-    wandb: {}

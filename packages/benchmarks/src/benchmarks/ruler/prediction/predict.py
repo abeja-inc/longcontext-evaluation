@@ -9,7 +9,7 @@ from llm_inference.base import BaseGenerator
 from llm_inference.data import OutputContent, Prompt
 from transformers import PreTrainedTokenizerBase
 
-from .._base_benchmark.interfaces import Batch, PredictJob
+from ..._base_benchmark.interfaces import Batch, PredictJob
 
 
 @dataclass
