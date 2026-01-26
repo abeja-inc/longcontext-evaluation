@@ -66,3 +66,27 @@ python3 scripts/benchmarks/RULER/synthesize_evaluation_dataset/niah/make_dataset
 python3 scripts/benchmarks/RULER/synthesize_evaluation_dataset/qa/make_dataset.py \
     --config scripts/benchmarks/RULER/synthesize_evaluation_dataset/qa/config.yaml
 ```
+
+## Benchmark Execution
+統一実行スクリプトでベンチマーク評価を実行します。
+
+### vLLM Offline Inference
+```sh
+python3 scripts/benchmarks/run.py \
+    --config scripts/benchmarks/run_configs/vllm_offline.yml
+```
+
+### OpenAI API
+```sh
+export OPENAI_API_KEY=your_key
+python3 scripts/benchmarks/run.py \
+    --config scripts/benchmarks/run_configs/openai_api.yml
+```
+
+### vLLM OpenAI-compatible Server
+```sh
+export API_KEY=your_key
+export BASE_URL=http://localhost:8000/v1
+python3 scripts/benchmarks/run.py \
+    --config scripts/benchmarks/run_configs/vllm_openai_compatible.yml
+```

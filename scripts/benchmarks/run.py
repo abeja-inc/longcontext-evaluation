@@ -51,9 +51,13 @@ def build_generator(
     gen_type = gen_cfg.get("type", "vllm_offline")
 
     if gen_type == "vllm_offline":
-        vllm_config_path = expand_path(gen_cfg.get("vllm_config", "./vllm_offline_config.yml"))
-        with vllm_config_path.open("r", encoding="utf-8") as f:
-            vllm_config = yaml.safe_load(f)
+        vllm_config_raw = gen_cfg.get("vllm_config", {})
+        if isinstance(vllm_config_raw, dict):
+            vllm_config = vllm_config_raw
+        else:
+            vllm_config_path = expand_path(vllm_config_raw or "./vllm_offline_config.yml")
+            with vllm_config_path.open("r", encoding="utf-8") as f:
+                vllm_config = yaml.safe_load(f)
 
         serve_cfg: dict[str, Any] = vllm_config.get("serve", {})
         generation_cfg: dict[str, Any] = vllm_config.get("generation", {})
