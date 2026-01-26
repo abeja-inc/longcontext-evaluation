@@ -3,9 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .._base_benchmark.core import read_jsonl
-from .._base_benchmark.interfaces import ResultsBuilder
-from .._base_benchmark.result import Results, Table
+from ..._base_benchmark.core import read_jsonl
+from ..._base_benchmark.interfaces import ResultsBuilder
+from ..._base_benchmark.result import Results, Table
 from .scoring import LongBenchScorer
 
 

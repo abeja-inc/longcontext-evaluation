@@ -5,7 +5,7 @@ from pathlib import Path
 from ....utils import get_custom_logger
 from .config import EvaluationConfig
 from .data_model import EvaluationResult, Score, SubsetResult, TaskResult
-from ..scoring import RulerScorer
+from .scoring import RulerScorer
 
 
 class EvaluationPipeline:
