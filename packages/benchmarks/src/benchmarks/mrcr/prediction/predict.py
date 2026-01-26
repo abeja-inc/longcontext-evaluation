@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -106,8 +104,12 @@ class MRCRPredictJob(PredictJob):
                 reconstructed.append(OutputContent(content=content))
 
         records: list[dict[str, Any]] = []
-        for sample, token_count, output in zip(
-            batch.samples, target_context_lengths, reconstructed, strict=True
+        for sample, token_count, output, conversation in zip(
+            batch.samples,
+            target_context_lengths,
+            reconstructed,
+            conversations,
+            strict=True,
         ):
             records.append(
                 {
@@ -116,6 +118,11 @@ class MRCRPredictJob(PredictJob):
                     "random_string_to_prepend": sample.get("random_string_to_prepend"),
                     "answer": sample.get("answer"),
                     "prediction": output.content,
+                    "input_prompt": conversation.prompt,
+                    "output_content": output.content,
+                    "reasoning_content": output.reasoning_content,
+                    "tags": sample.get("tags"),
+                    "language": sample.get("language"),
                 }
             )
         return records

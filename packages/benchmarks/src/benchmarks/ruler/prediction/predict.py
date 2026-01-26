@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -93,13 +91,20 @@ class RulerPredictJob(PredictJob):
                 outputs.append(OutputContent(content=""))
 
         records: list[dict[str, Any]] = []
-        for sample, output in zip(batch.samples, outputs, strict=True):
+        for sample, output, prompt in zip(
+            batch.samples, outputs, prompts, strict=True
+        ):
             records.append(
                 {
                     "id": sample.get("sample_id"),
                     "target_context_length": sample.get("target_context_length"),
                     "answer": sample.get("content", {}).get("outputs"),
                     "prediction": output.content,
+                    "input_prompt": prompt,
+                    "output_content": output.content,
+                    "reasoning_content": output.reasoning_content,
+                    "tags": sample.get("tags"),
+                    "language": sample.get("language"),
                 }
             )
         return records

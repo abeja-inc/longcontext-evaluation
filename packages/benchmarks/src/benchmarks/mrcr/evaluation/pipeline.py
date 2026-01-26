@@ -34,7 +34,10 @@ class EvaluationPipeline:
                     continue
 
                 score = self._evaluate(
-                    pred_filepath=pred_filepath, metric=task_setting.metric
+                    pred_filepath=pred_filepath,
+                    metric=task_setting.metric,
+                    task=task_setting.task,
+                    subset=pred_filepath.stem,
                 )
                 subset_results.append(
                     SubsetResult(subset_name=pred_filepath.stem, score=score)
@@ -49,9 +52,16 @@ class EvaluationPipeline:
         self.output_filepath.write_text(eval_result.model_dump_json(indent=4))
         self.logger.info("Evaluation completed.")
 
-    def _evaluate(self, pred_filepath: Path, metric: str | None = None) -> list[Score]:
+    def _evaluate(
+        self,
+        pred_filepath: Path,
+        *,
+        metric: str | None = None,
+        task: str,
+        subset: str,
+    ) -> list[Score]:
         with pred_filepath.open("r", encoding="utf-8") as f:
             data = [json.loads(line) for line in f]
 
         scorer = MrcrScorer()
-        return scorer.score_records(data)
+        return scorer.score_records(data, task=task, subset=subset)
