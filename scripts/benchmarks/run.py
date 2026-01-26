@@ -5,16 +5,15 @@ from typing import Any, Callable
 
 import wandb
 import yaml
-from openai import OpenAI
-from llm_inference.vllm_offline_inference import VLLMOfflineGenerator
-from llm_inference.vllm_openai_api_compatible import VLLMOpenAICompatibleGenerator
-from llm_inference.openai_api import OpenAIGenerator
-from vllm import SamplingParams
-
 from benchmarks.longbench_v2.runner import run_longbench_v2
 from benchmarks.mrcr.runner import run_mrcr
 from benchmarks.ruler.runner import run_ruler
 from benchmarks.utils import filter_names, get_custom_logger, parse_csv_list
+from llm_inference.openai_api import OpenAIGenerator
+from llm_inference.vllm_offline_inference import VLLMOfflineGenerator
+from llm_inference.vllm_openai_api_compatible import VLLMOpenAICompatibleGenerator
+from openai import OpenAI
+from vllm import SamplingParams
 
 
 def parse_args() -> argparse.Namespace:
@@ -65,7 +64,9 @@ def build_generator(
         if isinstance(vllm_config_raw, dict):
             vllm_config = vllm_config_raw
         else:
-            vllm_config_path = expand_path(vllm_config_raw or "./vllm_offline_config.yml")
+            vllm_config_path = expand_path(
+                vllm_config_raw or "./vllm_offline_config.yml"
+            )
             with vllm_config_path.open("r", encoding="utf-8") as f:
                 vllm_config = yaml.safe_load(f)
 
@@ -78,7 +79,9 @@ def build_generator(
         )
         max_new_tokens = generation_cfg.get(
             "max_new_tokens",
-            generation_cfg.get("max_output_tokens", generation_cfg.get("max_tokens", 512)),
+            generation_cfg.get(
+                "max_output_tokens", generation_cfg.get("max_tokens", 512)
+            ),
         )
 
         reasoning_parser = serve_cfg.get("reasoning_parser")
