@@ -19,8 +19,6 @@ benchmarks:
     rag_topn: 0
     cot: false
     no_context: false
-    only_datasets: null
-    exclude_datasets: null
     compensate_missing: false
     wandb: {}
 
@@ -52,10 +50,6 @@ benchmarks:
             - 8needle.parquet
     run_pred: true
     run_eval: true
-    only_tasks: null
-    exclude_tasks: null
-    only_subsets: null
-    exclude_subsets: null
     wandb: {}
 
   ruler:
@@ -91,8 +85,4 @@ benchmarks:
             - jemhopqa.jsonl
     run_pred: true
     run_eval: true
-    only_tasks: null
-    exclude_tasks: null
-    only_subsets: null
-    exclude_subsets: null
     wandb: {}
