@@ -5,10 +5,10 @@ from typing import Any
 from llm_inference.base import BaseGenerator
 from tqdm import tqdm
 
+from ._scoring import push_results_to_wandb, save_results
 from .config import RunOptions
-from .core import append_jsonl
 from .interfaces import PredictJob
-from .result import push_results_to_wandb, save_results
+from .utils import append_jsonl
 
 
 class BenchmarkRunner:

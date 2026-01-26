@@ -1,7 +1,8 @@
 from collections import defaultdict
 from typing import Any, Iterable
 
-from ...data_model import Score
+from .data import Score
+
 
 CONTEXT_LENGTH_BINS: list[tuple[int, str]] = [
     (4096, "~4k"),
@@ -23,17 +24,16 @@ def context_length_bin(context_length: int | None) -> str:
 
 
 def score_rows(scores: Iterable[Score], *, model_name: str) -> list[dict[str, Any]]:
-    return [
-        {"Model": model_name, **score.model_dump()}
-        for score in scores
-    ]
+    return [{"Model": model_name, **score.model_dump()} for score in scores]
 
 
 def _mean_score(values: list[float]) -> float:
     return round(sum(values) / len(values), 4) if values else 0.0
 
 
-def leaderboard_rows(scores: Iterable[Score], *, model_name: str) -> list[dict[str, Any]]:
+def leaderboard_rows(
+    scores: Iterable[Score], *, model_name: str
+) -> list[dict[str, Any]]:
     scores = list(scores)
     rows: list[dict[str, Any]] = []
 

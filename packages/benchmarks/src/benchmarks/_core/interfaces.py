@@ -4,7 +4,7 @@ from typing import Any, Iterable, Protocol
 
 from llm_inference.base import BaseGenerator
 
-from .result import Results
+from ._scoring import Results
 
 
 @dataclass(frozen=True)

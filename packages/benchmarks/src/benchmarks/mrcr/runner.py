@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 from pathlib import Path
 from typing import Any, Callable
@@ -13,8 +11,8 @@ from .._base_benchmark.runner import BenchmarkRunner
 from ..utils import filter_names, parse_csv_list
 from .evaluation.config import TaskSetting
 from .evaluation.evaluator import MRCREvaluator
-from .prediction.predict import MRCRPredictJob
 from .evaluation.results import MRCRResultsBuilder
+from .prediction.predict import MRCRPredictJob
 
 
 def _load_task_settings(
