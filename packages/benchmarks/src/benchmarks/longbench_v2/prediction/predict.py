@@ -242,9 +242,11 @@ class LongBenchPredictJob(PredictJob):
         for sample, response, conversation in zip(
             batch.samples, responses, conversations, strict=True
         ):
-            prediction = ""
+            output_content = ""
+            reasoning_content = None
             if response.outputs:
-                prediction = response.outputs[0].content
+                output_content = response.outputs[0].content
+                reasoning_content = response.outputs[0].reasoning_content
             records.append(
                 {
                     "id": sample.get("sample_id"),
@@ -253,7 +255,11 @@ class LongBenchPredictJob(PredictJob):
                     "token_count": sample.get("tokens"),
                     "answer": sample.get("answer"),
                     "input_prompt": conversation.messages[-1].content,
-                    "prediction": prediction,
+                    "prediction": output_content,
+                    "output_content": output_content,
+                    "reasoning_content": reasoning_content,
+                    "tags": sample.get("tags"),
+                    "language": sample.get("language"),
                 }
             )
         return records

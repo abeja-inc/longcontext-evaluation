@@ -9,7 +9,6 @@ from ..._base_benchmark.result import Results, Table
 from ..._base_benchmark.result.scoring_tables import (
     leaderboard_rows,
     score_by_context_length_rows,
-    score_rows,
     summary_from_scores,
 )
 from ...data_model import Score
@@ -27,17 +26,15 @@ class RulerResultsBuilder(ResultsBuilder):
     ) -> Results:
         summary_json = summary_json or {}
         scores = _flatten_scores(summary=summary_json)
-        score_table_rows = score_rows(scores, model_name=model_name)
         leaderboard = leaderboard_rows(scores, model_name=model_name)
         by_context = score_by_context_length_rows(scores, model_name=model_name)
         output_rows = _build_output_rows(
-            model_name=model_name, prediction_dir=prediction_dir
+            model_name=model_name, prediction_dir=prediction_dir, scores=scores
         )
         summary = summary_from_scores(scores)
 
         tables = [
             Table(name="table/ruler_output_table", rows=output_rows),
-            Table(name="table/ruler_score_by_sample_table", rows=score_table_rows),
             Table(name="metrics/ruler_leaderboard", rows=leaderboard),
             Table(name="metrics/ruler_score_by_context_length", rows=by_context),
         ]
@@ -61,20 +58,29 @@ def _flatten_scores(summary: dict[str, Any]) -> list[Score]:
 
 
 def _build_output_rows(
-    *, model_name: str, prediction_dir: Path
+    *,
+    model_name: str,
+    prediction_dir: Path,
+    scores: list[Score],
 ) -> list[dict[str, Any]]:
+    score_map = {
+        (score.task, score.subset, score.index): score for score in scores
+    }
     rows: list[dict[str, Any]] = []
     for filepath in sorted(prediction_dir.rglob("*.jsonl")):
         task = filepath.parent.name
         subset = filepath.stem
         records = read_jsonl(filepath)
         for index, record in enumerate(records):
+            score = score_map.get((task, subset, index))
             rows.append(
                 {
                     "Model": model_name,
                     "Task": task,
                     "Subset": subset,
                     "index": index,
+                    "score": score.score if score else None,
+                    "context_length": score.context_length if score else None,
                     **record,
                 }
             )

@@ -9,7 +9,6 @@ from ..._base_benchmark.result import Results, Table
 from ..._base_benchmark.result.scoring_tables import (
     leaderboard_rows,
     score_by_context_length_rows,
-    score_rows,
     summary_from_scores,
 )
 from ...data_model import Score
@@ -59,21 +58,19 @@ class LongBenchResultsBuilder(ResultsBuilder):
                         "Model": model_name,
                         "Prompt Type": prompt_type,
                         "Subset": subset_name,
+                        "score": row.get("acc", 0.0),
+                        "context_length": context_length,
                         **row,
+                        **record,
                     }
                 )
 
-        score_table_rows = score_rows(scores, model_name=model_name)
         leaderboard = leaderboard_rows(scores, model_name=model_name)
         by_context = score_by_context_length_rows(scores, model_name=model_name)
         summary = summary_from_scores(scores)
 
         tables: list[Table] = [
             Table(name="table/longbench_v2_output_table", rows=output_rows),
-            Table(
-                name="table/longbench_v2_score_by_sample_table",
-                rows=score_table_rows,
-            ),
             Table(name="metrics/longbench_v2_leaderboard", rows=leaderboard),
             Table(
                 name="metrics/longbench_v2_score_by_context_length",
