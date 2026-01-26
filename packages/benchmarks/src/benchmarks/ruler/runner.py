@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 from pathlib import Path
 from typing import Any, Callable
@@ -14,8 +12,8 @@ from .._base_benchmark.runner import BenchmarkRunner
 from ..utils import filter_names, parse_csv_list
 from .evaluation.config import TaskSetting
 from .evaluation.evaluator import RulerEvaluator
-from .prediction.predict import RulerPredictJob
 from .evaluation.results import RulerResultsBuilder
+from .prediction.predict import RulerPredictJob
 
 
 def _load_task_settings(

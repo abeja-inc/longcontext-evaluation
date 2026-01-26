@@ -1,15 +1,14 @@
 from pathlib import Path
 from typing import Any
 
-from ..._base_benchmark.core import read_jsonl
-from ..._base_benchmark.interfaces import ResultsBuilder
-from ..._base_benchmark.result import Results, Table
-from ..._base_benchmark.result.scoring_tables import (
+from ..._core.interfaces import ResultsBuilder
+from ..._core.utils import read_jsonl
+from ..._scoring import Results, Score, Table
+from ..._scoring.scoring_tables import (
     leaderboard_rows,
     score_by_context_length_rows,
     summary_from_scores,
 )
-from ...data_model import Score
 
 
 class RulerResultsBuilder(ResultsBuilder):
@@ -61,9 +60,7 @@ def _build_output_rows(
     prediction_dir: Path,
     scores: list[Score],
 ) -> list[dict[str, Any]]:
-    score_map = {
-        (score.task, score.subset, score.index): score for score in scores
-    }
+    score_map = {(score.task, score.subset, score.index): score for score in scores}
     rows: list[dict[str, Any]] = []
     for filepath in sorted(prediction_dir.rglob("*.jsonl")):
         task = filepath.parent.name

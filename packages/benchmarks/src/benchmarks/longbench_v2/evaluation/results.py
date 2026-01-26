@@ -1,15 +1,14 @@
 from pathlib import Path
 from typing import Any
 
-from ..._base_benchmark.core import read_jsonl
-from ..._base_benchmark.interfaces import ResultsBuilder
-from ..._base_benchmark.result import Results, Table
-from ..._base_benchmark.result.scoring_tables import (
+from ..._core.interfaces import ResultsBuilder
+from ..._core.utils import read_jsonl
+from ..._scoring import Results, Score, Table
+from ..._scoring.scoring_tables import (
     leaderboard_rows,
     score_by_context_length_rows,
     summary_from_scores,
 )
-from ...data_model import Score
 from .scoring import LongBenchScorer
 
 
@@ -47,7 +46,9 @@ class LongBenchResultsBuilder(ResultsBuilder):
                         subset=subset_name,
                         index=row.get("sample_id", index),
                         score=row.get("acc", 0.0),
-                        context_length=context_length if context_length is not None else -1,
+                        context_length=context_length
+                        if context_length is not None
+                        else -1,
                         tags=record.get("tags"),
                     )
                 )

@@ -1,5 +1,5 @@
-from .config import WandbConfig
-from .data import Results, Table
+from .base import BaseRecordScorer
+from .data import Results, Score, Table
 from .save_local import save_results
 
 

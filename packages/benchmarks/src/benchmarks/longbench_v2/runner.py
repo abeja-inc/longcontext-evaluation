@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 from pathlib import Path
 from typing import Any, Callable
@@ -11,12 +9,12 @@ from .._base_benchmark.config import RunOptions
 from .._base_benchmark.result import push_results_to_wandb
 from .._base_benchmark.runner import BenchmarkRunner
 from ..utils import parse_csv_list
+from .evaluation.results import LongBenchResultsBuilder
 from .prediction.predict import (
     build_jobs_for_dataset_dir,
     load_prompt_templates,
     load_prompt_templates_from_config,
 )
-from .evaluation.results import LongBenchResultsBuilder
 
 
 def run_longbench_v2(
