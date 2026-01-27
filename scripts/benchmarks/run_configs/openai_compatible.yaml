@@ -1,0 +1,11 @@
+base_config: base.yaml
+
+generator:
+  type: openai_compatible
+  api_key: ${API_KEY}
+  base_url: ${BASE_URL}
+  model_name: ${MODEL_NAME}
+  max_context_length: 8192
+  max_output_tokens: 256
+  buffer_tokens: 10
+  response_kwargs: {}

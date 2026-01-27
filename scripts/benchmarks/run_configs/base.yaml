@@ -1,0 +1,96 @@
+output_dir: outputs/benchmarks
+dataset_dir: datasets/benchmarks
+batchsize: 1
+
+wandb:
+    entity: xxx
+    project: xxx
+    id: xxx
+    name: xxx
+
+benchmarks:
+  longbench_v2:
+    tasks:
+        longbench_v2:
+            all:
+                language: english
+                dataset: english/longbench_v2_with_token_count.jsonl
+                metric: all
+                rag_topn: 0
+                cot: false
+                no_context: false
+                compensate_missing: false
+                prompt:
+                    dirpath: scripts/benchmarks/LongBench_v2/prompts
+                    prompts:
+                        0shot: 0shot.txt
+                        0shot_cot: 0shot_cot.txt
+                        0shot_cot_ans: 0shot_cot_ans.txt
+                        0shot_no_context: 0shot_no_context.txt
+                        0shot_rag: 0shot_rag.txt
+
+  openai_mrcr:
+    tasks:
+        mrcr_eng:
+            2needle:
+                language: english
+                dataset: english/2needle.parquet
+                metric: all
+            4needle:
+                language: english
+                dataset: english/4needle.parquet
+                metric: all
+            8needle:
+                language: english
+                dataset: english/8needle.parquet
+                metric: all
+        mrcr_jpn:
+            2needle:
+                language: japanese
+                dataset: japanese/2needle.parquet
+                metric: all
+            4needle:
+                language: japanese
+                dataset: japanese/4needle.parquet
+                metric: all
+            8needle:
+                language: japanese
+                dataset: japanese/8needle.parquet
+                metric: all
+
+  ruler:
+    tasks:
+        niah:
+            niah_single_2:
+                language: english
+                dataset: niah/niah_single_2.jsonl
+                metric: all
+            niah_multikey_1:
+                language: english
+                dataset: niah/niah_multikey_1.jsonl
+                metric: all
+            niah_multikey_2:
+                language: english
+                dataset: niah/niah_multikey_2.jsonl
+                metric: all
+            niah_multikey_3:
+                language: english
+                dataset: niah/niah_multikey_3.jsonl
+                metric: all
+        qa:
+            squad:
+                language: english
+                dataset: qa/squad.jsonl
+                metric: part
+            hotpotqa:
+                language: english
+                dataset: qa/hotpotqa.jsonl
+                metric: part
+            jsquad:
+                language: japanese
+                dataset: qa/jsquad.jsonl
+                metric: part
+            jemhopqa:
+                language: japanese
+                dataset: qa/jemhopqa.jsonl
+                metric: part

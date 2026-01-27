@@ -1,11 +1,7 @@
-base_config: ./base.yml
-
-model:
-  root: ~/models
-  name: example-model
+base_config: base.yaml
 
 generator:
-  type: vllm_offline
+  type: vllm_offline_inference
   vllm_config:
     serve:
       extra_args:
