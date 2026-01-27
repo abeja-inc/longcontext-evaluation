@@ -33,7 +33,7 @@ def main() -> None:
                 "factor": 32.0,
                 "original_max_position_embeddings": 4096,
                 "rope_type": "yarn",
-                "truncate": False
+                "truncate": False,
             }
         },
         "quantization": None,

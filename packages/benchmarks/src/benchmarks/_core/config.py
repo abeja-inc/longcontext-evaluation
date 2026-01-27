@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import Literal, Any
+from typing import Any, Literal
 
 from pydantic import BaseModel
+
 
 class SubtaskConfig(BaseModel):
     name: str
@@ -11,9 +12,11 @@ class SubtaskConfig(BaseModel):
     metric: str
     settings: dict[str, Any] | None = None
 
+
 class TaskConfig(BaseModel):
     name: str
     subtasks: list[SubtaskConfig]
+
 
 class BenchmarkConfig(BaseModel):
     name: str

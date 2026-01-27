@@ -6,7 +6,11 @@ from typing import Any
 
 import yaml
 from transformers import AutoTokenizer
-from benchmarks.dataset_downloader import HuggingFaceDatasetDownloader, HuggingFaceDatasetConfig
+from benchmarks.dataset_downloader import (
+    HuggingFaceDatasetDownloader,
+    HuggingFaceDatasetConfig,
+)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -18,6 +22,7 @@ def parse_args() -> argparse.Namespace:
     )
     return parser.parse_args()
 
+
 def build_logger() -> logging.Logger:
     logger = logging.getLogger("download")
     logger.setLevel(logging.INFO)
@@ -28,6 +33,7 @@ def build_logger() -> logging.Logger:
         h.setFormatter(fmt)
         logger.addHandler(h)
     return logger
+
 
 def main(
     download_datasource: bool,
@@ -72,6 +78,7 @@ def main(
                         data["sample_id"] = i
                         with open(output_filepath, "a") as out_f:
                             out_f.write(json.dumps(data) + "\n")
+
 
 if __name__ == "__main__":
     args = parse_args()
