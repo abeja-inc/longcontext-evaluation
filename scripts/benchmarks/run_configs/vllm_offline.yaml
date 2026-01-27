@@ -1,4 +1,4 @@
-base_config: base.yaml
+base_config: scripts/benchmarks/run_configs/base.yaml
 
 generator:
   type: vllm_offline_inference

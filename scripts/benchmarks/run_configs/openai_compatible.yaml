@@ -1,4 +1,4 @@
-base_config: base.yaml
+base_config: scripts/benchmarks/run_configs/base.yaml
 
 generator:
   type: openai_compatible
