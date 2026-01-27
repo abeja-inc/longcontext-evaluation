@@ -8,8 +8,8 @@ from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Message
 from transformers import AutoTokenizer
 
-from ..._base_benchmark.core import read_jsonl
-from ..._base_benchmark.interfaces import Batch, PredictJob
+from ..._core.interfaces import Batch, PredictJob
+from ..._core.utils import read_jsonl
 from ...utils import filter_names
 
 

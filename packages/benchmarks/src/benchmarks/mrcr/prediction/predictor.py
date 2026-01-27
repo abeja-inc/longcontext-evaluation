@@ -7,7 +7,7 @@ import pandas as pd
 from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Message, OutputContent
 
-from ..._base_benchmark.interfaces import Batch, PredictJob
+from ..._core.interfaces import Batch, PredictJob
 
 
 @dataclass

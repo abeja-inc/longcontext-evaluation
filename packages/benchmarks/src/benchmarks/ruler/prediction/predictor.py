@@ -7,7 +7,7 @@ from llm_inference.base import BaseGenerator
 from llm_inference.data import OutputContent, Prompt
 from transformers import PreTrainedTokenizerBase
 
-from ..._base_benchmark.interfaces import Batch, PredictJob
+from ..._core.interfaces import Batch, PredictJob
 
 
 @dataclass
@@ -91,9 +91,7 @@ class RulerPredictJob(PredictJob):
                 outputs.append(OutputContent(content=""))
 
         records: list[dict[str, Any]] = []
-        for sample, output, prompt in zip(
-            batch.samples, outputs, prompts, strict=True
-        ):
+        for sample, output, prompt in zip(batch.samples, outputs, prompts, strict=True):
             records.append(
                 {
                     "id": sample.get("sample_id"),

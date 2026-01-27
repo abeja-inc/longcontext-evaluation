@@ -6,9 +6,9 @@ import yaml
 from llm_inference.base import BaseGenerator
 from transformers import AutoTokenizer
 
-from .._base_benchmark.config import RunOptions
-from .._base_benchmark.result import push_results_to_wandb
-from .._base_benchmark.runner import BenchmarkRunner
+from .._core.config import RunOptions
+from .._core.runner import BenchmarkRunner
+from .._scoring.push_wandb import push_results_to_wandb
 from ..utils import filter_names, parse_csv_list
 from .evaluation.evaluator import RulerEvaluator, TaskSetting
 from .evaluation.results_builder import RulerResultsBuilder
