@@ -1,4 +1,5 @@
 import argparse
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -7,6 +8,25 @@ import yaml
 from benchmark import BenchmarkConfig, SubtaskConfig, TaskConfig, run_benchmarks
 from llm_inference import get_generator
 from openai import OpenAI
+
+
+def get_logger(name: str, level: int = logging.INFO) -> logging.Logger:
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+
+    # 二重に handler が付くのを防ぐ
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setLevel(level)
+
+        formatter = logging.Formatter(
+            "[%(asctime)s] [%(levelname)s] %(name)s: %(message)s"
+        )
+        handler.setFormatter(formatter)
+
+        logger.addHandler(handler)
+
+    return logger
 
 
 def parse_args() -> argparse.Namespace:
@@ -77,6 +97,8 @@ def merge_dicts(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
 
 
 def main() -> None:
+    logger = get_logger(name="run-benchmarks", level=logging.INFO)
+
     # Parse command-line arguments
     args = parse_args()
 
@@ -106,10 +128,12 @@ def main() -> None:
     if "client" in generator_config:
         client = OpenAI(**generator_config["client"])
         generator = get_generator(
-            type=generator_type, client=client, **generator_config
+            type=generator_type, client=client, logger=logger, **generator_config
         )
     else:
-        generator = get_generator(type=generator_type, **generator_config)
+        generator = get_generator(
+            type=generator_type, logger=logger, **generator_config
+        )
 
     # Run evaluation
     run_benchmarks(
@@ -117,6 +141,7 @@ def main() -> None:
         generation_kwargs=config["generation_kwargs"],
         batchsize=batchsize,
         benchmark_configs=benchmark_configs,
+        logger=logger,
     )
 
 

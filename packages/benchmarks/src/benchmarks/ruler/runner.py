@@ -9,22 +9,14 @@ from transformers import AutoTokenizer
 from .._core.config import RunOptions
 from .._core.runner import BenchmarkRunner
 from .._scoring.push_wandb import push_results_to_wandb
-from ..utils import filter_names, parse_csv_list
-from .evaluation.evaluator import RulerEvaluator, TaskSetting
+from .evaluation.config import TaskSetting
+from .evaluation.evaluator import RulerEvaluator
 from .evaluation.results_builder import RulerResultsBuilder
 from .prediction.predictor import RulerPredictJob
 
 
-def _load_task_settings(
-    raw_tasks: list[dict[str, Any]],
-    *,
-    only_tasks: list[str],
-    exclude_tasks: list[str],
-    only_subsets: list[str],
-    exclude_subsets: list[str],
-) -> list[TaskSetting]:
-    tasks: list[TaskSetting] = []
-    parsed_tasks = [
+def _load_task_settings(task_configs: list[dict[str, Any]]) -> list[TaskSetting]:
+    return [
         TaskSetting(
             task=task["task"],
             metric=task["metric"],
@@ -32,26 +24,6 @@ def _load_task_settings(
         )
         for task in raw_tasks
     ]
-    task_names = filter_names(
-        [task.task for task in parsed_tasks], include=only_tasks, exclude=exclude_tasks
-    )
-    for task in parsed_tasks:
-        if task.task not in task_names:
-            continue
-        filtered_filenames = filter_names(
-            task.filenames,
-            include=only_subsets,
-            exclude=exclude_subsets,
-            allow_stem=True,
-        )
-        tasks.append(
-            TaskSetting(
-                task=task.task,
-                metric=task.metric,
-                filenames=filtered_filenames,
-            )
-        )
-    return tasks
 
 
 def run_ruler(
@@ -59,8 +31,7 @@ def run_ruler(
     cfg: dict[str, Any],
     generator: BaseGenerator,
     generate_kwargs: dict[str, Any],
-    model_name: str,
-    model_root: Path,
+    tokenizer: AutoTokenizer,
     dataset_dir: Path,
     prediction_dir: Path,
     batchsize: int,
@@ -81,16 +52,9 @@ def run_ruler(
         with tasks_path.open("r", encoding="utf-8") as f:
             tasks_map = yaml.safe_load(f)["tasks"]
 
-    include_tasks = parse_csv_list(cfg.get("only_tasks"))
-    exclude_tasks = parse_csv_list(cfg.get("exclude_tasks"))
-    include_subsets = parse_csv_list(cfg.get("only_subsets"))
-    exclude_subsets = parse_csv_list(cfg.get("exclude_subsets"))
-
     tokenizer = AutoTokenizer.from_pretrained(str(model_root / model_name))
     jobs: list[RulerPredictJob] = []
-    task_names = filter_names(
-        tasks_map.keys(), include=include_tasks, exclude=exclude_tasks
-    )
+
     for task_name in task_names:
         dataset_filenames = tasks_map.get(task_name, [])
         filtered_filenames = filter_names(
@@ -138,10 +102,6 @@ def run_ruler(
 
     tasks = _load_task_settings(
         eval_config.get("tasks", []),
-        only_tasks=include_tasks,
-        exclude_tasks=exclude_tasks,
-        only_subsets=include_subsets,
-        exclude_subsets=exclude_subsets,
     )
 
     evaluator = RulerEvaluator(tasks=tasks)

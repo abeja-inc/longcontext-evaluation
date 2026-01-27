@@ -16,11 +16,11 @@ class BenchmarkRunner:
         self,
         *,
         generator: BaseGenerator,
-        generate_kwargs: dict[str, Any],
+        generation_kwargs: dict[str, Any],
         logger: logging.Logger,
     ) -> None:
         self.generator = generator
-        self.generate_kwargs = generate_kwargs
+        self.generation_kwargs = generation_kwargs
         self.logger = logger
 
     def run(self, *, jobs: list[PredictJob], model_name: str, opts: RunOptions) -> None:

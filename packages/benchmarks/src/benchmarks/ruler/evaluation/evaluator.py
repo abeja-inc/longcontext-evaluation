@@ -1,18 +1,11 @@
 import json
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from ..._core.interfaces import Evaluator
 from ..._core.utils import read_jsonl
+from .config import TaskSetting
 from .scorer import RulerScorer
-
-
-@dataclass(frozen=True)
-class TaskSetting:
-    task: str
-    metric: str
-    filenames: list[str]
 
 
 class RulerEvaluator(Evaluator):
