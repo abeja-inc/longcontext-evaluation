@@ -1,1 +1,3 @@
-from .predict import MRCRPredictJob
+from .predictor import MRCRPredictJob
+
+__all__ = ["MRCRPredictJob"]

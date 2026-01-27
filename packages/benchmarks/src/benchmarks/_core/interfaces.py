@@ -35,7 +35,7 @@ class PredictJob(Protocol):
 class Evaluator(Protocol):
     """
     予測ファイル群（pred_dir）から summary.json などを作る。
-    MRCR/RULER の EvaluationPipeline を薄く包む用途。
+    ベンチごとの評価ロジックを薄く包む用途。
     """
 
     name: str
@@ -48,8 +48,8 @@ class Evaluator(Protocol):
 class ResultsBuilder(Protocol):
     """
     ベンチ側が提供する「Results への変換器」。
-    - LongBench: prediction_dir の jsonl を読んで採点・集計して Results を作る
-    - MRCR/RULER: evaluator が作った summary_json を flatten して Results を作る、など
+    - prediction_dir の jsonl を読んで採点・集計して Results を作る
+    - evaluator が作った summary_json を flatten して Results を作る、など
     """
 
     name: str

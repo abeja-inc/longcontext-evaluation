@@ -1,1 +1,3 @@
-from .predict import RulerPredictJob
+from .predictor import RulerPredictJob
+
+__all__ = ["RulerPredictJob"]

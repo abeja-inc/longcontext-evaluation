@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.append(str(ROOT / "packages/benchmarks/src"))
 
-from benchmarks.mrcr.scoring import Grader, MrcrScorer  # noqa: E402
+from benchmarks.mrcr.evaluation.scorer import Grader, MrcrScorer  # noqa: E402
 
 
 class TestGrader(unittest.TestCase):

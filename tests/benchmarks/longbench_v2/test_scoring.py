@@ -5,7 +5,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.append(str(ROOT / "packages/benchmarks/src"))
 
-from benchmarks.longbench_v2.scoring import LongBenchScorer, extract_answer  # noqa: E402
+from benchmarks.longbench_v2.evaluation.scorer import (  # noqa: E402
+    LongBenchScorer,
+    extract_answer,
+)
 
 
 class TestExtractAnswer(unittest.TestCase):
