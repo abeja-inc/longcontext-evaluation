@@ -10,10 +10,9 @@ from .._base_benchmark.config import RunOptions
 from .._base_benchmark.result import push_results_to_wandb
 from .._base_benchmark.runner import BenchmarkRunner
 from ..utils import filter_names, parse_csv_list
-from .evaluation.config import TaskSetting
-from .evaluation.evaluator import RulerEvaluator
-from .evaluation.results import RulerResultsBuilder
-from .prediction.predict import RulerPredictJob
+from .evaluation.evaluator import RulerEvaluator, TaskSetting
+from .evaluation.results_builder import RulerResultsBuilder
+from .prediction.predictor import RulerPredictJob
 
 
 def _load_task_settings(
@@ -25,7 +24,14 @@ def _load_task_settings(
     exclude_subsets: list[str],
 ) -> list[TaskSetting]:
     tasks: list[TaskSetting] = []
-    parsed_tasks = [TaskSetting(**task) for task in raw_tasks]
+    parsed_tasks = [
+        TaskSetting(
+            task=task["task"],
+            metric=task["metric"],
+            filenames=list(task["filenames"]),
+        )
+        for task in raw_tasks
+    ]
     task_names = filter_names(
         [task.task for task in parsed_tasks], include=only_tasks, exclude=exclude_tasks
     )
@@ -38,7 +44,13 @@ def _load_task_settings(
             exclude=exclude_subsets,
             allow_stem=True,
         )
-        tasks.append(task.model_copy(update={"filenames": filtered_filenames}))
+        tasks.append(
+            TaskSetting(
+                task=task.task,
+                metric=task.metric,
+                filenames=filtered_filenames,
+            )
+        )
     return tasks
 
 

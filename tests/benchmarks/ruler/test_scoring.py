@@ -5,7 +5,11 @@ import sys
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.append(str(ROOT / "packages/benchmarks/src"))
 
-from benchmarks.ruler.scoring import AllStringMatcher, PartStringMatcher, RulerScorer  # noqa: E402
+from benchmarks.ruler.evaluation.scorer import (  # noqa: E402
+    AllStringMatcher,
+    PartStringMatcher,
+    RulerScorer,
+)
 
 
 class TestStringMatchers(unittest.TestCase):

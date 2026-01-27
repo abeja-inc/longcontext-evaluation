@@ -9,7 +9,7 @@ from ..._scoring.scoring_tables import (
     score_by_context_length_rows,
     summary_from_scores,
 )
-from .scoring import LongBenchScorer
+from .scorer import LongBenchScorer
 
 
 class LongBenchResultsBuilder(ResultsBuilder):
