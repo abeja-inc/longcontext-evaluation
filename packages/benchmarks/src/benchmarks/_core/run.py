@@ -3,6 +3,8 @@ from typing import Any
 
 from llm_inference.base import BaseGenerator
 
+from .config import BenchmarkConfig
+
 
 def run_benchmarks(
     benchmark_configs: list[BenchmarkConfig],
