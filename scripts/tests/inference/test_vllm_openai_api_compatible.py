@@ -2,7 +2,7 @@ import logging
 import os
 
 from llm_inference.data import Conversation, Prompt
-from llm_inference.vllm_openai_api_compatible import VLLMOpenAICompatibleGenerator
+from llm_inference.openai_api_compatible import OpenAICompatibleGenerator
 from openai import OpenAI
 from transformers import AutoTokenizer
 
@@ -46,7 +46,7 @@ def main() -> None:
 
     client = OpenAI(api_key=api_key, base_url=base_url)
 
-    gen = VLLMOpenAICompatibleGenerator(
+    gen = OpenAICompatibleGenerator(
         client=client,
         tokenizer=tokenizer,
         model_name=model,
@@ -117,7 +117,7 @@ def main() -> None:
     # -------------------------
     logger.info("=== (C) chat ===")
 
-    gen_small_ctx = VLLMOpenAICompatibleGenerator(
+    gen_small_ctx = OpenAICompatibleGenerator(
         client=client,
         tokenizer=tokenizer,
         model_name=model,
