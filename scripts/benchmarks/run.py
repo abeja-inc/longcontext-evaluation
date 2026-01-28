@@ -109,6 +109,9 @@ def main() -> None:
     wandb_config = config.get("wandb")
     if wandb_config:
         wandb.init(**wandb_config)
+        log_wandb = True
+    else:
+        log_wandb = False
 
     # Initialize dataset and output paths
     dataset_root = Path(config["dataset_root"])
@@ -142,7 +145,13 @@ def main() -> None:
         batchsize=batchsize,
         benchmark_configs=benchmark_configs,
         logger=logger,
+        save_local=True,
+        log_wandb=log_wandb,
     )
+
+    # Finish wandb
+    if log_wandb:
+        wandb.finish()
 
 
 if __name__ == "__main__":

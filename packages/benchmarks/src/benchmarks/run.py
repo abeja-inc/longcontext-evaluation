@@ -3,22 +3,31 @@ from typing import Any
 
 from llm_inference.base import BaseGenerator
 
+from ._core import get_runner
 from .config import BenchmarkConfig
 
 
 def run_benchmarks(
-    benchmark_configs: list[BenchmarkConfig],
     generator: BaseGenerator,
     generation_kwargs: dict[str, Any],
+    batchsize: int,
+    benchmark_configs: list[BenchmarkConfig],
     logger: Logger,
+    save_local: bool = True,
+    log_wandb: bool = False,
 ) -> None:
     logger.info("Running benchmarks...")
     for config in benchmark_configs:
         logger.info(f"Running benchmark: {config.name}")
-        benchmark_runner = get_runner(config.name)
+        benchmark_runner = get_runner(
+            name=config.name,
+            logger=logger,
+        )
         benchmark_runner.run(
-            config=config,
             generator=generator,
             generation_kwargs=generation_kwargs,
-            logger=logger,
+            batchsize=batchsize,
+            config=config,
+            save_local=save_local,
+            log_wandb=log_wandb,
         )

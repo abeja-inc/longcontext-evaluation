@@ -1,2 +1,7 @@
-from .config import BenchmarkConfig, SubtaskConfig, TaskConfig
-from .run import run_benchmarks
+from logging import Logger
+
+from .runner import BaseBenchmarkRunner
+
+
+def get_runner(name: str, logger: Logger) -> BaseBenchmarkRunner:
+    pass
