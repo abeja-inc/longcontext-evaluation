@@ -11,7 +11,7 @@ wandb:
     name: xxx
 
 benchmarks:
-  longbench_v2:
+    longbench_v2:
         longbench_v2_eng:
             all:
                 language: english
@@ -32,7 +32,7 @@ benchmarks:
                             zero_shot_no_context: 0shot_no_context.txt
                             zero_shot_rag: 0shot_rag.txt
 
-  openai_mrcr:
+    openai_mrcr:
         mrcr_eng:
             2needle:
                 language: english
@@ -72,7 +72,7 @@ benchmarks:
                 settings:
                     truncate: true
 
-  ruler:
+    ruler:
         niah:
             niah_single_2:
                 language: english
