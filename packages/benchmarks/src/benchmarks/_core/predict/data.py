@@ -1,4 +1,5 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import TypeVar
 
 
 @dataclass(frozen=True)
@@ -10,4 +11,6 @@ class Output:
 
     index: int | str | None = None
     output_reasoning: str | None = None
-    extra: dict[str, object] = field(default_factory=dict)
+
+
+OutputType = TypeVar("OutputType", bound=Output)

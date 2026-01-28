@@ -13,7 +13,6 @@ def run_benchmarks(
     batchsize: int,
     benchmark_configs: list[BenchmarkConfig],
     logger: Logger,
-    save_local: bool = True,
     log_wandb: bool = False,
 ) -> None:
     logger.info("Running benchmarks...")
@@ -28,6 +27,5 @@ def run_benchmarks(
             generation_kwargs=generation_kwargs,
             batchsize=batchsize,
             config=config,
-            save_local=save_local,
             log_wandb=log_wandb,
         )

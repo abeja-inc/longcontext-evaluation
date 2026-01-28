@@ -2,7 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Iterable
 
-from .table import GroupBy, MeanScoreTableRow, OutputsTableRow
+from .table import GroupBy, MeanScoreTableRow, OutputsTableRow, OutputsTableRowType
 
 
 @dataclass(frozen=True)
@@ -32,7 +32,7 @@ def _get_group_value(row: OutputsTableRow, group_by: GroupBy) -> str:
 
 
 def mean_score_by_group_and_context_bin(
-    rows: Iterable[OutputsTableRow],
+    rows: Iterable[OutputsTableRowType],
     *,
     group_by: GroupBy,
     context_bins: list[Bin],
@@ -41,14 +41,14 @@ def mean_score_by_group_and_context_bin(
     sums: dict[tuple[str, str], float] = defaultdict(float)
     counts: dict[tuple[str, str], int] = defaultdict(int)
 
-    for r in rows:
-        group_val = _get_group_value(row=r, group_by=group_by)
+    for row in rows:
+        group_val = _get_group_value(row=row, group_by=group_by)
         ctx_bin = context_bin_label(
-            context_length=r.context_length, bins=context_bins, over_label=over_label
+            context_length=row.context_length, bins=context_bins, over_label=over_label
         )
 
-        key = (r.model_name, f"{group_val} | {ctx_bin}")
-        sums[key] += float(r.score)
+        key = (row.model_name, f"{group_val} | {ctx_bin}")
+        sums[key] += float(row.score)
         counts[key] += 1
 
     return [

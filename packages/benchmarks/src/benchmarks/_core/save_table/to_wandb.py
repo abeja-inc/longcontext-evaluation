@@ -1,10 +1,10 @@
 import json
+from dataclasses import asdict
 from typing import Any
 
 import wandb
 
 from ..evaluate import BaseTable
-from .utils import to_jsonable
 
 
 def _to_wandb_cell(v: Any) -> Any:
@@ -16,16 +16,17 @@ def _to_wandb_cell(v: Any) -> Any:
         return str(v)
 
 
-def log_results_wandb(tables: list[BaseTable]) -> None:
+def push_to_wandb(tables: list[BaseTable]) -> None:
     # tables
     for table in tables:
-        rows = table.records or []
+        rows = table.rows or []
         if not rows:
             continue
 
         cols = rows[0].keys()
         tbl = wandb.Table(columns=cols)
-        for r in rows:
-            tbl.add_data(*[to_jsonable(r.get(c)) for c in cols])  # pyright: ignore[reportUnknownMemberType]
+        for row in rows:
+            row_dict = asdict(row)
+            tbl.add_data(*[_to_wandb_cell(row_dict.get(c)) for c in cols])  # pyright: ignore[reportUnknownMemberType]
 
         wandb.log({f"tables/{table.name}": tbl})

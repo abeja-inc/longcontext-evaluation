@@ -1,22 +1,27 @@
 from abc import ABC, abstractmethod
 from logging import Logger
+from typing import Any, Generic
 
 from llm_inference.base import BaseGenerator
 
 from ..config import BenchmarkConfig, SubtaskConfig
 from .evaluate import (
-    BaseTable,
+    BenchmarkResults,
+    Bin,
     MeanScoreTable,
     MeanScoreTableRow,
-    OutputsTable,
-    OutputsTableRow,
+    OutputsTableRowType,
+    OutputsTableType,
+    TableType,
+    mean_score_by_group_and_context_bin,
 )
-from .evaluate.table import Bin, mean_score_by_group_and_context_bin
-from .logging import log_results_local, log_results_wandb
-from .predict import Output
+from .predict import OutputType
+from .save_table import push_to_wandb, save_to_local
 
 
-class BaseBenchmarkRunner(ABC):
+class BaseBenchmarkRunner(
+    ABC, Generic[OutputType, OutputsTableRowType, OutputsTableType, TableType]
+):
     def __init__(self, logger: Logger, bins: list[Bin] | None = None):
         self.logger = logger
         if bins:
@@ -28,7 +33,9 @@ class BaseBenchmarkRunner(ABC):
             ]
 
     @abstractmethod
-    def make_leaderboard_table(self, outputs: list[OutputsTableRow]) -> BaseTable: ...
+    def _make_leaderboard_table(
+        self, outputs: list[OutputsTableRowType]
+    ) -> TableType: ...
 
     @abstractmethod
     def _run_subtask(
@@ -37,7 +44,17 @@ class BaseBenchmarkRunner(ABC):
         generation_kwargs: dict[str, Any],
         config: SubtaskConfig,
         batchsize: int,
-    ) -> list[Output]: ...
+    ) -> list[OutputType]: ...
+
+    @abstractmethod
+    def _to_output_row(
+        self, *, task: str, subtask: str, output: OutputType
+    ) -> OutputsTableRowType: ...
+
+    @abstractmethod
+    def _to_outputs_table(
+        self, name: str, rows: list[OutputsTableRowType]
+    ) -> OutputsTableType: ...
 
     def run(
         self,
@@ -45,18 +62,17 @@ class BaseBenchmarkRunner(ABC):
         generation_kwargs: dict[str, Any],
         config: BenchmarkConfig,
         batchsize: int,
-        save_local: bool,
         log_wandb: bool,
     ) -> None:
         mean_score_by_subtask: list[MeanScoreTableRow] = []
         mean_score_by_task: list[MeanScoreTableRow] = []
         mean_score_by_language: list[MeanScoreTableRow] = []
 
-        all_outputs: list[OutputsTableRow] = []
+        all_outputs: list[OutputsTableRowType] = []
         for task_config in config.tasks:
-            outputs_all_subtask: list[OutputsTableRow] = []
+            outputs_all_subtask: list[OutputsTableRowType] = []
             for subtask_config in task_config.subtasks:
-                outputs: list[Output] = self._run_subtask(
+                outputs: list[OutputType] = self._run_subtask(
                     generator=generator,
                     generation_kwargs=generation_kwargs,
                     config=subtask_config,
@@ -64,10 +80,10 @@ class BaseBenchmarkRunner(ABC):
                 )
 
                 output_rows = [
-                    OutputsTableRow(
+                    self._to_output_row(
+                        output=out,
                         task=task_config.name,
                         subtask=subtask_config.name,
-                        **out.asdict(),
                     )
                     for out in outputs
                 ]
@@ -96,39 +112,28 @@ class BaseBenchmarkRunner(ABC):
         )
 
         # Table を作成
-        tables: list[BaseTable] = []
-        tables.append(
-            OutputsTable(
+        results = BenchmarkResults(
+            outputs_table=self._to_outputs_table(
                 name=f"{config.name}_outputs_table",
                 rows=all_outputs,
-            )
-        )
-        tables.append(
-            MeanScoreTable(
+            ),
+            mean_score_by_subtask=MeanScoreTable(
                 name=f"{config.name}_mean_score_by_subtask", rows=mean_score_by_subtask
-            )
-        )
-        tables.append(
-            MeanScoreTable(
+            ),
+            mean_score_by_task=MeanScoreTable(
                 name=f"{config.name}_mean_score_by_task", rows=mean_score_by_task
-            )
-        )
-        tables.append(
-            MeanScoreTable(
+            ),
+            mean_score_by_language=MeanScoreTable(
                 name=f"{config.name}_mean_score_by_language",
                 rows=mean_score_by_language,
-            )
+            ),
+            leaderboard_table=self._make_leaderboard_table(outputs=all_outputs),
         )
 
-        # leaderboard_table を追加
-        tables.append(self.make_leaderboard_table(outputs=all_outputs))
-
-        if save_local:
-            log_results_local(
-                tables=tables,
-                output_root=output_root,
-                format="jsonl",
-            )
+        # Save
+        save_to_local(
+            tables=results.tables, output_root=config.output_root, format="jsonl"
+        )
 
         if log_wandb:
-            log_results_wandb(tables=tables)
+            push_to_wandb(tables=results.tables)

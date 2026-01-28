@@ -60,6 +60,7 @@ def parse_benchmark_configs(
     return [
         BenchmarkConfig(
             name=benchmark_name,
+            output_root=output_root / benchmark_name,
             tasks=[
                 TaskConfig(
                     name=task_name,
@@ -145,7 +146,6 @@ def main() -> None:
         batchsize=batchsize,
         benchmark_configs=benchmark_configs,
         logger=logger,
-        save_local=True,
         log_wandb=log_wandb,
     )
 

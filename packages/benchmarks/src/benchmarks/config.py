@@ -20,4 +20,5 @@ class TaskConfig(BaseModel):
 
 class BenchmarkConfig(BaseModel):
     name: str
+    output_root: Path
     tasks: list[TaskConfig]

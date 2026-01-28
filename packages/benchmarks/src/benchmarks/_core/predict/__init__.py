@@ -1,2 +1,1 @@
-from .data import Output
-from .predictor import BasePredictor
+from .data import Output, OutputType
