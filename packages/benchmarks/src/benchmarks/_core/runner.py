@@ -8,11 +8,11 @@ from ..config import BenchmarkConfig, SubtaskConfig
 from .evaluate import (
     BenchmarkResults,
     Bin,
+    LeaderboardTableType,
     MeanScoreTable,
     MeanScoreTableRow,
+    OutputsTable,
     OutputsTableRowType,
-    OutputsTableType,
-    TableType,
     mean_score_by_group_and_context_bin,
 )
 from .predict import OutputType
@@ -20,7 +20,7 @@ from .save_table import push_to_wandb, save_to_local
 
 
 class BaseBenchmarkRunner(
-    ABC, Generic[OutputType, OutputsTableRowType, OutputsTableType, TableType]
+    ABC, Generic[OutputType, OutputsTableRowType, LeaderboardTableType]
 ):
     def __init__(self, logger: Logger, bins: list[Bin] | None = None):
         self.logger = logger
@@ -35,7 +35,7 @@ class BaseBenchmarkRunner(
     @abstractmethod
     def _make_leaderboard_table(
         self, outputs: list[OutputsTableRowType]
-    ) -> TableType: ...
+    ) -> LeaderboardTableType: ...
 
     @abstractmethod
     def _run_subtask(
@@ -54,7 +54,7 @@ class BaseBenchmarkRunner(
     @abstractmethod
     def _to_outputs_table(
         self, name: str, rows: list[OutputsTableRowType]
-    ) -> OutputsTableType: ...
+    ) -> OutputsTable[OutputsTableRowType]: ...
 
     def run(
         self,

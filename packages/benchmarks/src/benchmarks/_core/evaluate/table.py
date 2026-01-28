@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Generic, Literal, TypeVar
+from typing import Any, Generic, Literal, Sequence, TypeVar
 
 
 GroupBy = Literal["subtask", "task", "language"]
@@ -10,16 +10,13 @@ class BaseTableRow:
     model_name: str
 
 
-TableRowType = TypeVar("TableRowType", bound=BaseTableRow)
+TableRowType = TypeVar("TableRowType", bound=BaseTableRow, covariant=True)
 
 
 @dataclass(frozen=True)
 class BaseTable(Generic[TableRowType]):
     name: str
-    rows: list[TableRowType]
-
-
-TableType = TypeVar("TableType", bound=BaseTable)
+    rows: Sequence[TableRowType]
 
 
 @dataclass(frozen=True)
@@ -37,15 +34,14 @@ class OutputsTableRow(BaseTableRow):
     extra: dict[str, object] = field(default_factory=dict)
 
 
-OutputsTableRowType = TypeVar("OutputsTableRowType", bound=OutputsTableRow)
+OutputsTableRowType = TypeVar(
+    "OutputsTableRowType", bound=OutputsTableRow, covariant=True
+)
 
 
 @dataclass(frozen=True)
-class OutputsTable(BaseTable[OutputsTableRow]):
+class OutputsTable(BaseTable[OutputsTableRowType], Generic[OutputsTableRowType]):
     pass
-
-
-OutputsTableType = TypeVar("OutputsTableType", bound=OutputsTable)
 
 
 @dataclass(frozen=True)
@@ -59,17 +55,21 @@ class MeanScoreTable(BaseTable[MeanScoreTableRow]):
     pass
 
 
+LeaderboardTableType = TypeVar(
+    "LeaderboardTableType", bound=BaseTable[Any], covariant=True
+)
+
+
 @dataclass(frozen=True)
-class BenchmarkResults(Generic[OutputsTableRowType, OutputsTableType, TableType]):
-    outputs_table: OutputsTableType
+class BenchmarkResults(Generic[OutputsTableRowType, LeaderboardTableType]):
+    outputs_table: OutputsTable[OutputsTableRowType]
     mean_score_by_subtask: MeanScoreTable
     mean_score_by_task: MeanScoreTable
     mean_score_by_language: MeanScoreTable
-    leaderboard_table: TableType
+    leaderboard_table: LeaderboardTableType
 
     @property
-    def tables(self) -> list[BaseTable]:
-        # 保存/ログ用に「全部欲しい」ならここでまとめて BaseTable に落とす
+    def tables(self) -> list[BaseTable[Any]]:
         return [
             self.outputs_table,
             self.mean_score_by_subtask,

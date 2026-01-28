@@ -3,12 +3,11 @@ from .table import (
     BaseTable,
     BaseTableRow,
     BenchmarkResults,
+    LeaderboardTableType,
     MeanScoreTable,
     MeanScoreTableRow,
     OutputsTable,
     OutputsTableRow,
     OutputsTableRowType,
-    OutputsTableType,
     TableRowType,
-    TableType,
 )
