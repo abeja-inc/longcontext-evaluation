@@ -157,7 +157,7 @@ class SGLangOfflineGenerator(BaseGenerator):
             max_output_tokens=self.max_output_tokens,
             buffer_tokens=buffer_tokens,
         )
-        responses: list[dict[str, Any]] = self._generate(
+        sglang_responses: list[dict[str, Any]] = self._generate(
             [prompt.prompt for prompt in filtered_prompts],
             sampling_params=sampling_params,
             **kwargs,
