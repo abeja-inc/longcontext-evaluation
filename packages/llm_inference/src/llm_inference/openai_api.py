@@ -1,6 +1,7 @@
 from logging import Logger
 from typing import Any
 
+import tiktoken
 from openai import OpenAI
 from openai.types.responses import Response as OpenAIResponse
 
@@ -25,15 +26,32 @@ class OpenAIGenerator(BaseGenerator):
             logger=logger,
         )
         self.client = client
-
-    def _call_token_count_api(self, input: Prompt | Conversation, **kwargs: Any) -> int:
-        response = self.client.responses.input_tokens.count(
-            model=self.model_name, input=input.prompt, **kwargs
-        )
-        return response.input_tokens
+        self.tokenizer = tiktoken.encoding_for_model(model_name)
+        self.tokenizer_type = "tiktoken"
 
     def _count_tokens(self, input: Prompt | Conversation, **kwargs: Any) -> int:
-        return self._call_token_count_api(input=input, **kwargs)
+        if isinstance(input, Prompt):
+            return len(self.tokenizer.encode(input.prompt))
+        elif isinstance(input, Conversation):
+            tokens_per_message = 3
+            tokens_per_name = 1
+
+            num_tokens = 0
+            for message in input.prompt:
+                num_tokens += tokens_per_message
+                for key, value in message.items():
+                    if value is None:
+                        continue
+                    if not isinstance(value, str):
+                        value = str(value)
+                    num_tokens += len(self.tokenizer.encode(value))
+                    if key == "name":
+                        num_tokens += tokens_per_name
+
+            num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
+            return num_tokens
+        else:
+            raise TypeError(f"Unsupported input type: {type(input)}")
 
     def _call_response_api(
         self,

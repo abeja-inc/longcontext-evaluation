@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from logging import Logger
-from typing import Any, TypeVar
+from typing import Any, Literal, TypeVar
 
 from .data import Conversation, Prompt, Response
 
@@ -21,6 +21,8 @@ class BaseGenerator(ABC):
         self.max_context_length = max_context_length
         self.max_output_tokens = max_output_tokens
         self.logger = logger
+        self.tokenizer: Any
+        self.tokenizer_type: Literal["huggingface", "tiktoken"]
 
     @property
     def default_too_long_input_error_message(self) -> str:

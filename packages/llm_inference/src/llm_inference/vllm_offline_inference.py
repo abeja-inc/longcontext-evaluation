@@ -31,6 +31,7 @@ class VLLMOfflineGenerator(BaseGenerator):
         )
         self.tokenizer = self.llm.get_tokenizer()
         self.reasoning_parser = resolve_reasoning_parser(reasoning_parser)
+        self.tokenizer_type = "huggingface"
 
     def _count_tokens(self, input: Prompt | Conversation, **kwargs: Any) -> int:
         if isinstance(input, Conversation):
