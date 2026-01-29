@@ -10,15 +10,18 @@ dependencies = [
     "beautifulsoup4>=4.14.3",
     "datasets>=4.5.0",
     "html2text>=2025.4.15",
+    "llm-inference",
     "nltk>=3.9.2",
     "pydantic>=2.12.5",
     "requests>=2.32.5",
     "tqdm>=4.67.1",
     "wandb>=0.24.0",
     "wonderwords>=3.0.1",
-    "llm_inference>=0.1.0",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.uv.sources]
+llm-inference = { workspace = true }
