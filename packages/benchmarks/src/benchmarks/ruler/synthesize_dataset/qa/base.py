@@ -28,6 +28,7 @@ class BaseQADatasetGenerator(
         super().__init__(config, logger)
         self.contexts: list[str] = []
         self.qas: list[QAPair] = []
+        self._qa_index_order: list[int] = []
 
     def _prepare(self, **kwargs: Any) -> None:
         self._load_and_process_qa_data()
@@ -51,6 +52,9 @@ class BaseQADatasetGenerator(
         source_data = self._process_data(raw_data)
         self.contexts: list[str] = source_data.contexts
         self.qas: list[QAPair] = source_data.qas
+        self._qa_index_order = list(range(len(self.qas)))
+        rng = random.Random(self.config.random_seed)
+        rng.shuffle(self._qa_index_order)
         self.logger.info(
             "Successfully processed %s QAs and %s documents.",
             len(self.qas),
@@ -71,7 +75,7 @@ class BaseQADatasetGenerator(
         sample_index += self.config.pre_samples
 
         # QAを一つピックアップ
-        qa_pair_index = sample_index % len(self.qas)
+        qa_pair_index = self._qa_index_order[sample_index % len(self.qas)]
         qa_pair = self.qas[qa_pair_index]
 
         # QAの文書インデックスを取得
