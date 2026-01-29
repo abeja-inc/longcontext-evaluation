@@ -33,6 +33,7 @@ class OpenAIGenerator(BaseGenerator):
         if isinstance(input, Prompt):
             return len(self.tokenizer.encode(input.prompt))
         elif isinstance(input, Conversation):
+            # Reference: https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
             tokens_per_message = 3
             tokens_per_name = 1
 
@@ -48,7 +49,7 @@ class OpenAIGenerator(BaseGenerator):
                     if key == "name":
                         num_tokens += tokens_per_name
 
-            num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
+            num_tokens += 3
             return num_tokens
         else:
             raise TypeError(f"Unsupported input type: {type(input)}")
