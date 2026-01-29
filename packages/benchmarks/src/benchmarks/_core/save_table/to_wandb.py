@@ -4,7 +4,7 @@ from typing import Any
 
 import wandb
 
-from ..evaluate import BaseTable
+from ..evaluate.table import BaseTable
 
 
 def _to_wandb_cell(v: Any) -> Any:

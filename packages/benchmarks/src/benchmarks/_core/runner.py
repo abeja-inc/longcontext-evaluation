@@ -3,24 +3,28 @@ from logging import Logger
 from typing import Any, Generic
 
 from llm_inference.base import BaseGenerator
+from pydantic import ValidationError
 
 from ..config import BenchmarkConfig, SubtaskConfig
 from .evaluate import (
-    BenchmarkResults,
     Bin,
+    mean_score_by_group_and_context_bin,
+)
+from .evaluate.table import (
+    BenchmarkResults,
     LeaderboardTableType,
     MeanScoreTable,
     MeanScoreTableRow,
     OutputsTable,
     OutputsTableRowType,
-    mean_score_by_group_and_context_bin,
 )
-from .predict import OutputType
+from .predict.data import OutputType
 from .save_table import push_to_wandb, save_to_local
+from .settings import SettingsType
 
 
 class BaseBenchmarkRunner(
-    ABC, Generic[OutputType, OutputsTableRowType, LeaderboardTableType]
+    ABC, Generic[SettingsType, OutputType, OutputsTableRowType, LeaderboardTableType]
 ):
     def __init__(self, logger: Logger, bins: list[Bin] | None = None):
         self.logger = logger
@@ -31,6 +35,21 @@ class BaseBenchmarkRunner(
                 Bin(upper=length, label=f"~{length}")
                 for length in [2**i * 1024 for i in range(2, 8)]
             ]
+
+    @property
+    @abstractmethod
+    def settings_model(self) -> type[SettingsType]:
+        raise NotImplementedError
+
+    def _validate_settings(self, subtask_config: SubtaskConfig) -> SettingsType:
+        try:
+            # Pydantic v2
+            return self.settings_model.model_validate(subtask_config.settings)
+        except ValidationError as e:
+            # どの subtask の設定が壊れてるか分かるようにする
+            raise ValueError(
+                f"Invalid settings for subtask='{subtask_config.name}': {e}"
+            ) from e
 
     @abstractmethod
     def _make_leaderboard_table(
@@ -43,6 +62,7 @@ class BaseBenchmarkRunner(
         generator: BaseGenerator,
         generation_kwargs: dict[str, Any],
         config: SubtaskConfig,
+        settings: SettingsType,
         batchsize: int,
     ) -> list[OutputType]: ...
 
@@ -72,10 +92,12 @@ class BaseBenchmarkRunner(
         for task_config in config.tasks:
             outputs_all_subtask: list[OutputsTableRowType] = []
             for subtask_config in task_config.subtasks:
+                settings = self._validate_settings(subtask_config)
                 outputs: list[OutputType] = self._run_subtask(
                     generator=generator,
                     generation_kwargs=generation_kwargs,
                     config=subtask_config,
+                    settings=settings,
                     batchsize=batchsize,
                 )
 

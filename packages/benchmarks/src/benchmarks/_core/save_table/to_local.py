@@ -4,7 +4,7 @@ from dataclasses import asdict, fields
 from pathlib import Path
 from typing import Literal
 
-from ..evaluate import BaseTable
+from ..evaluate.table import BaseTable
 
 
 def save_to_local(

@@ -5,6 +5,7 @@ LLM のロングコンテキスト処理性能を評価するためのベンチ�
 ## Features
 以下の評価をサポート
 - RULER の NIAH（英） および QA（日英） タスク
+  - QA datasets: SQuAD, HotpotQA, JSQuAD, JEMHopQA
 - LongBench v2（英）
 - OpenAI-MRCR（日英）
 - experimental
@@ -90,3 +91,58 @@ export BASE_URL=http://localhost:8000/v1
 python3 scripts/benchmarks/run.py \
     --config scripts/benchmarks/run_configs/vllm_openai_compatible.yml
 ```
+
+
+# Other information
+## LongBench v2 dataset
+Total records: 503
+
+## `domain`
+
+| value | count |
+|-------|-------|
+| Single-Document QA | 175 |
+| Multi-Document QA | 125 |
+| Long In-context Learning | 81 |
+| Code Repository Understanding | 50 |
+| Long-dialogue History Understanding | 39 |
+| Long Structured Data Understanding | 33 |
+
+
+## `sub_domain`
+
+| value | count |
+|-------|-------|
+| Academic | 94 |
+| Code repo QA | 50 |
+| Governmental | 41 |
+| User guide QA | 40 |
+| Financial | 37 |
+| Legal | 33 |
+| Literary | 30 |
+| Multi-news | 23 |
+| Detective | 22 |
+| Many-shot learning | 21 |
+| New language translation | 20 |
+| Event ordering | 20 |
+| Agent history QA | 20 |
+| Dialogue history QA | 19 |
+| Table QA | 18 |
+| Knowledge graph reasoning | 15 |
+
+
+## `difficulty`
+
+| value | count |
+|-------|-------|
+| hard | 311 |
+| easy | 192 |
+
+
+## `length`
+
+| value | count |
+|-------|-------|
+| medium | 215 |
+| short | 180 |
+| long | 108 |

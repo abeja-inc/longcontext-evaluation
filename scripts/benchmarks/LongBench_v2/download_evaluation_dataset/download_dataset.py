@@ -2,14 +2,14 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Any
+from string import Template
 
 import yaml
-from transformers import AutoTokenizer
 from benchmarks.dataset_downloader import (
-    HuggingFaceDatasetDownloader,
     HuggingFaceDatasetConfig,
+    HuggingFaceDatasetDownloader,
 )
+from transformers import AutoTokenizer
 
 
 def parse_args() -> argparse.Namespace:
@@ -50,7 +50,7 @@ def main(
             downloader.download_as_jsonl(config=config)
 
     if count_tokens:
-        prompt_template = prompt_template_path.expanduser().read_text()
+        prompt_template = Template(prompt_template_path.expanduser().read_text())
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_path.expanduser())
         for config in dataset_configs:
             dataset_dir = config.output_filepath.expanduser().parent
@@ -61,13 +61,15 @@ def main(
                 with open(filepath, "r") as f:
                     for i, line in enumerate(f):
                         data = json.loads(line)
-                        user_prompt = (
-                            prompt_template.replace("$DOC$", data["context"].strip())
-                            .replace("$Q$", data["question"].strip())
-                            .replace("$C_A$", data["choice_A"].strip())
-                            .replace("$C_B$", data["choice_B"].strip())
-                            .replace("$C_C$", data["choice_C"].strip())
-                            .replace("$C_D$", data["choice_D"].strip())
+                        user_prompt = prompt_template.substitute(
+                            {
+                                "DOC": data["context"].strip(),
+                                "Q": data["question"].strip(),
+                                "C_A": data["choice_A"].strip(),
+                                "C_B": data["choice_B"].strip(),
+                                "C_C": data["choice_C"].strip(),
+                                "C_D": data["choice_D"].strip(),
+                            }
                         )
                         tokens = tokenizer.apply_chat_template(
                             [{"role": "user", "content": user_prompt}],

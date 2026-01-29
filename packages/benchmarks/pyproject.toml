@@ -16,6 +16,7 @@ dependencies = [
     "tqdm>=4.67.1",
     "wandb>=0.24.0",
     "wonderwords>=3.0.1",
+    "llm_inference>=0.1.0",
 ]
 
 [build-system]

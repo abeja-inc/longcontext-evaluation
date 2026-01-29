@@ -70,10 +70,10 @@ def parse_benchmark_configs(
                             language=subtask_config["language"],
                             dataset_filepath=dataset_root
                             / benchmark_name
-                            / subtask_config["dataset"],
+                            / subtask_config["dataset_filename"],
                             output_filepath=output_root
                             / benchmark_name
-                            / subtask_config["output"],
+                            / subtask_config["dataset_filename"],
                             metric=subtask_config["metric"],
                             settings=subtask_config["settings"],
                         )

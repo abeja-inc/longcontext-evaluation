@@ -1,1 +1,1 @@
-from .data import Output, OutputType
+from .truncate import truncate_text
