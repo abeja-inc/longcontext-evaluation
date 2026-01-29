@@ -8,7 +8,7 @@ from .data import Conversation, Prompt
 from .openai_api import OpenAIGenerator
 
 
-class VLLMOpenAICompatibleGenerator(OpenAIGenerator):
+class OpenAICompatibleGenerator(OpenAIGenerator):
     def __init__(
         self,
         *,

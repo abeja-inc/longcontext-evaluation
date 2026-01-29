@@ -1,17 +1,14 @@
 import logging
-import os
 
 from llm_inference.data import Conversation, Prompt
-from llm_inference.openai_api_compatible import OpenAICompatibleGenerator
-from openai import OpenAI
-from transformers import AutoTokenizer
+from llm_inference.sglang_offline_inference import SGLangOfflineGenerator
 
 
 # -----------------------------
 # 1) logger
 # -----------------------------
 def build_logger() -> logging.Logger:
-    logger = logging.getLogger("smoke_test_openai_generator")
+    logger = logging.getLogger("smoke_test_vllm_generator")
     logger.setLevel(logging.DEBUG)
     if not logger.handlers:
         h = logging.StreamHandler()
@@ -23,36 +20,35 @@ def build_logger() -> logging.Logger:
 
 
 def main() -> None:
+    server_config = {
+        "dtype": "float32",
+        "tp_size": 2,
+        "trust_remote_code": True,
+        "json_model_override_args": '{"rope_scaling": {"rope_type": "yarn", "factor": 4.0, "original_max_position_embeddings": 32768}}',
+    }
+    sampling_params = {
+        "n": 1,
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+    }
+    chat_template_kwargs = {"enable_thinking": True}
+
     logger = build_logger()
 
-    model_path = os.getenv("MODEL_PATH")
-    max_model_len = os.getenv("MAX_MODEL_LEN")
-    model = os.getenv("MODEL_NAME")
-    base_url = os.getenv("BASE_URL")
-    api_key = os.getenv("API_KEY")
+    model = "/workspace/models/Qwen3-0.6B"
+    reasoning_parser = "qwen3"
+    max_output_tokens = 2048
+    max_context_length = 3072
 
-    if not model:
-        raise RuntimeError("MODEL_NAME is not set")
-
-    if not base_url:
-        raise RuntimeError("BASE_URL is not set")
-
-    if not api_key:
-        raise RuntimeError("API_KEY is not set")
-
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
-    max_context_length = max_model_len
-    max_output_tokens = 128
-
-    client = OpenAI(api_key=api_key, base_url=base_url)
-
-    gen = OpenAICompatibleGenerator(
-        client=client,
-        tokenizer=tokenizer,
+    gen = SGLangOfflineGenerator(
         model_name=model,
         max_context_length=max_context_length,
         max_output_tokens=max_output_tokens,
         logger=logger,
+        reasoning_parser=reasoning_parser,
+        **server_config,
     )
 
     # -------------------------
@@ -74,6 +70,9 @@ def main() -> None:
     )
     tok2 = gen._count_tokens(input=short_conversation)
     logger.info("tokens(conv) = %s", tok2)
+
+    tok3 = gen._count_tokens(input=short_conversation, **chat_template_kwargs)
+    logger.info("tokens(conv enable thinking) = %s", tok3)
 
     # -------------------------
     # B) _is_over_context_length
@@ -101,6 +100,7 @@ def main() -> None:
         max_context_length=50,  # わざと小さく
         max_output_tokens=max_output_tokens,
         buffer_tokens=100,
+        **chat_template_kwargs,
     )
     logger.info("over_context conversation (expect True) = %s", over)
 
@@ -109,6 +109,7 @@ def main() -> None:
         max_context_length=5000,
         max_output_tokens=max_output_tokens,
         buffer_tokens=100,
+        **chat_template_kwargs,
     )
     logger.info("over_context conversation (expect False) = %s", ok)
 
@@ -117,28 +118,37 @@ def main() -> None:
     # -------------------------
     logger.info("=== (C) chat ===")
 
-    gen_small_ctx = OpenAICompatibleGenerator(
-        client=client,
-        tokenizer=tokenizer,
-        model_name=model,
-        max_context_length=1128,
-        max_output_tokens=max_output_tokens,
-        logger=logger,
-    )
-
-    r_over = gen_small_ctx.chat(
+    r_over = gen.chat(
         conversations=[short_conversation],
-        long_input_filter_kwargs={"buffer_tokens": 1000},
+        buffer_tokens=1000,
+        sampling_params=sampling_params,
+        chat_template_kwargs=chat_template_kwargs,
     )
     logger.info("chat(over) outputs[0].content = %r", r_over[0].outputs[0].content)
 
     r_ok = gen.chat(
         conversations=[short_conversation],
-        long_input_filter_kwargs={"buffer_tokens": 10},
-        temperature=0.2,
+        buffer_tokens=10,
+        sampling_params=sampling_params,
+        chat_template_kwargs={"enable_thinking": False},
     )
     logger.info("chat(ok) model_output = %r", r_ok[0].outputs[0].content)
     logger.info("chat(ok) metadata keys = %s", list((r_ok[0].metadata or {}).keys()))
+
+    r_ok = gen.chat(
+        conversations=[short_conversation],
+        buffer_tokens=10,
+        sampling_params=sampling_params,
+        chat_template_kwargs={"enable_thinking": True},
+    )
+    logger.info("chat reasoning(ok) model_output = %r", r_ok[0].outputs[0].content)
+    logger.info(
+        "chat reasoning(ok) model_output_reasoning = %r",
+        r_ok[0].outputs[0].reasoning_content,
+    )
+    logger.info(
+        "chat reasoning(ok) metadata keys = %s", list((r_ok[0].metadata or {}).keys())
+    )
 
     # -------------------------
     # D) completion
@@ -148,14 +158,10 @@ def main() -> None:
         Prompt.model_validate({"prompt": "Say 'OK' only."}),
         Prompt.model_validate({"prompt": "Give one haiku about winter."}),
     ]
-    r_comp = gen.completion(
-        prompts=prompts, temperature=0.2, long_input_filter_kwargs={"buffer_tokens": 10}
-    )
+    r_comp = gen.completion(prompts=prompts, sampling_params=sampling_params)
     for i, rr in enumerate(r_comp):
         logger.info("completion[%d] input=%r", i, rr.input)
         logger.info("completion[%d] output=%r", i, rr.outputs[0].content)
-        if rr.metadata and "usage" in rr.metadata:
-            logger.info("completion[%d] usage=%s", i, rr.metadata["usage"])
 
 
 if __name__ == "__main__":

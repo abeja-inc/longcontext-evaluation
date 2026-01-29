@@ -4,8 +4,9 @@
     "ignore": [
         "**/__init__.py",
         "packages/llm_inference/src/llm_inference/openai_api.py",
+        "packages/llm_inference/src/llm_inference/openai_api_compatible.py",
         "packages/llm_inference/src/llm_inference/vllm_offline_inference.py",
-        "packages/llm_inference/src/llm_inference/vllm_openai_api_compatible.py",
+        "packages/llm_inference/src/llm_inference/sglang_offline_inference.py",
         "tests/**/*.py",
         "scripts/**/*.py"
     ],
