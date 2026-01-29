@@ -27,6 +27,7 @@ class OpenAICompatibleGenerator(OpenAIGenerator):
             logger=logger,
         )
         self.tokenizer = tokenizer
+        self.tokenizer_type = "huggingface"
 
     def _call_token_count_api(self, input: Prompt | Conversation, **kwargs: Any) -> int:
         if isinstance(input, Conversation):

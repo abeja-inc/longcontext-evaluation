@@ -32,6 +32,7 @@ class SGLangOfflineGenerator(BaseGenerator):
         self.llm = Engine(**dataclasses.asdict(server_args))
         self.tokenizer = self.llm.tokenizer_manager.tokenizer
         self.reasoning_parser = resolve_reasoning_parser(reasoning_parser)
+        self.tokenizer_type = "huggingface"
 
     def _count_tokens(self, input: Prompt | Conversation, **kwargs: Any) -> int:
         if isinstance(input, Conversation):
