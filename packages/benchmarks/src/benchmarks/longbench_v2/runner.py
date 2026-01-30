@@ -244,12 +244,12 @@ class LongBenchV2Runner(
 
     def _make_leaderboard_table(
         self, outputs: list[LongBenchV2OutputsTableRow]
-    ) -> LongBenchV2LeaderBoardTable:
+    ) -> BaseTable[LongBenchV2LeaderBoardTableRow]:
         leaderboard_dict: dict[str, float] = defaultdict(float)
         for key in ["difficulty", "length"]:
             leaderboard_dict.update(mean_score_by_group(rows=outputs, group_by=key))
         leaderboard_dict.update(mean_score_by_group(rows=outputs, group_by=None))
-        return LongBenchV2LeaderBoardTable(
+        return BaseTable(
             name="longbenchv2_leaderboard_table",
             rows=[
                 LongBenchV2LeaderBoardTableRow(
