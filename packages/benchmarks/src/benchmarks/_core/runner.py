@@ -10,11 +10,13 @@ from .evaluate import (
     Bin,
     mean_score_by_group_and_context_bin,
 )
+from .evaluate.metrics import BaseMetrics
 from .evaluate.table import (
+    BaseTable,
     BenchmarkResults,
-    LeaderboardTableType,
-    MeanScoreTable,
-    MeanScoreTableRow,
+    LeaderboardTableRowType,
+    MeanScoreByLengthTable,
+    MeanScoreByLengthTableRow,
     OutputsTable,
     OutputsTableRowType,
 )
@@ -24,9 +26,14 @@ from .settings import SettingsType
 
 
 class BaseBenchmarkRunner(
-    ABC, Generic[SettingsType, OutputType, OutputsTableRowType, LeaderboardTableType]
+    ABC,
+    Generic[SettingsType, OutputType, OutputsTableRowType, LeaderboardTableRowType],
 ):
-    def __init__(self, logger: Logger, bins: list[Bin] | None = None):
+    def __init__(
+        self,
+        logger: Logger,
+        bins: list[Bin] | None = None,
+    ):
         self.logger = logger
         if bins:
             self.bins = sorted(bins, key=lambda b: b.upper)
@@ -35,6 +42,16 @@ class BaseBenchmarkRunner(
                 Bin(upper=length, label=f"~{length}")
                 for length in [2**i * 1024 for i in range(2, 8)]
             ]
+        self._metrics: BaseMetrics[SettingsType, OutputType] | None = None
+
+    @abstractmethod
+    def _build_metrics(self) -> BaseMetrics[SettingsType, OutputType]: ...
+
+    @property
+    def metrics(self) -> BaseMetrics[SettingsType, OutputType]:
+        if self._metrics is None:
+            self._metrics = self._build_metrics()
+        return self._metrics
 
     @property
     @abstractmethod
@@ -52,11 +69,6 @@ class BaseBenchmarkRunner(
             ) from e
 
     @abstractmethod
-    def _make_leaderboard_table(
-        self, outputs: list[OutputsTableRowType]
-    ) -> LeaderboardTableType: ...
-
-    @abstractmethod
     def _run_subtask(
         self,
         generator: BaseGenerator,
@@ -67,14 +79,31 @@ class BaseBenchmarkRunner(
     ) -> list[OutputType]: ...
 
     @abstractmethod
-    def _to_output_row(
-        self, *, task: str, subtask: str, output: OutputType
+    def _evaluate_subtask(
+        self,
+        *,
+        model_name: str,
+        task: str,
+        config: SubtaskConfig,
+        settings: SettingsType,
+        output: OutputType,
+        **kwargs: Any,
     ) -> OutputsTableRowType: ...
 
     @abstractmethod
     def _to_outputs_table(
         self, name: str, rows: list[OutputsTableRowType]
     ) -> OutputsTable[OutputsTableRowType]: ...
+
+    @abstractmethod
+    def _make_leaderboard_table(
+        self, outputs: list[OutputsTableRowType]
+    ) -> BaseTable[LeaderboardTableRowType]: ...
+
+    def _make_additional_tables(
+        self, outputs: list[OutputsTableRowType]
+    ) -> list[BaseTable[Any]]:
+        return []
 
     def run(
         self,
@@ -84,15 +113,16 @@ class BaseBenchmarkRunner(
         batchsize: int,
         log_wandb: bool,
     ) -> None:
-        mean_score_by_subtask: list[MeanScoreTableRow] = []
-        mean_score_by_task: list[MeanScoreTableRow] = []
-        mean_score_by_language: list[MeanScoreTableRow] = []
+        mean_score_by_subtask: list[MeanScoreByLengthTableRow] = []
+        mean_score_by_task: list[MeanScoreByLengthTableRow] = []
+        mean_score_by_language: list[MeanScoreByLengthTableRow] = []
 
         all_outputs: list[OutputsTableRowType] = []
         for task_config in config.tasks:
             outputs_all_subtask: list[OutputsTableRowType] = []
             for subtask_config in task_config.subtasks:
                 settings = self._validate_settings(subtask_config)
+                # Predict
                 outputs: list[OutputType] = self._run_subtask(
                     generator=generator,
                     generation_kwargs=generation_kwargs,
@@ -101,11 +131,15 @@ class BaseBenchmarkRunner(
                     batchsize=batchsize,
                 )
 
+                # Evaluate
                 output_rows = [
-                    self._to_output_row(
+                    self._evaluate_subtask(
+                        model_name=generator.model_name,
                         output=out,
                         task=task_config.name,
                         subtask=subtask_config.name,
+                        config=subtask_config,
+                        settings=settings,
                     )
                     for out in outputs
                 ]
@@ -134,22 +168,23 @@ class BaseBenchmarkRunner(
         )
 
         # Table を作成
-        results = BenchmarkResults(
+        results = BenchmarkResults[OutputsTableRowType, LeaderboardTableRowType](
             outputs_table=self._to_outputs_table(
                 name=f"{config.name}_outputs_table",
                 rows=all_outputs,
             ),
-            mean_score_by_subtask=MeanScoreTable(
+            mean_score_by_subtask=MeanScoreByLengthTable(
                 name=f"{config.name}_mean_score_by_subtask", rows=mean_score_by_subtask
             ),
-            mean_score_by_task=MeanScoreTable(
+            mean_score_by_task=MeanScoreByLengthTable(
                 name=f"{config.name}_mean_score_by_task", rows=mean_score_by_task
             ),
-            mean_score_by_language=MeanScoreTable(
+            mean_score_by_language=MeanScoreByLengthTable(
                 name=f"{config.name}_mean_score_by_language",
                 rows=mean_score_by_language,
             ),
             leaderboard_table=self._make_leaderboard_table(outputs=all_outputs),
+            additional_tables=self._make_additional_tables(outputs=all_outputs),
         )
 
         # Save

@@ -1,8 +1,5 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Generic, Literal, Sequence, TypeVar
-
-
-GroupBy = Literal["subtask", "task", "language"]
 
 
 @dataclass(frozen=True)
@@ -19,6 +16,9 @@ class BaseTable(Generic[TableRowType]):
     rows: Sequence[TableRowType]
 
 
+TableRowType = TypeVar("TableRowType", bound=BaseTableRow, covariant=True)
+
+
 @dataclass(frozen=True)
 class OutputsTableRow(BaseTableRow):
     task: str
@@ -30,8 +30,7 @@ class OutputsTableRow(BaseTableRow):
     answer: str
     score: float
     output: str
-    output_reasoning: str | None = None
-    extra: dict[str, object] = field(default_factory=dict)
+    output_reasoning: str | None
 
 
 OutputsTableRowType = TypeVar(
@@ -45,28 +44,29 @@ class OutputsTable(BaseTable[OutputsTableRowType], Generic[OutputsTableRowType])
 
 
 @dataclass(frozen=True)
-class MeanScoreTableRow(BaseTableRow):
+class MeanScoreByLengthTableRow(BaseTableRow):
     group: str
+    context_length: int | Literal["overall"]
     mean_score: float
 
 
 @dataclass(frozen=True)
-class MeanScoreTable(BaseTable[MeanScoreTableRow]):
-    pass
+class MeanScoreByLengthTable(BaseTable[MeanScoreByLengthTableRow]): ...
 
 
-LeaderboardTableType = TypeVar(
-    "LeaderboardTableType", bound=BaseTable[Any], covariant=True
+LeaderboardTableRowType = TypeVar(
+    "LeaderboardTableRowType", bound=BaseTableRow, covariant=True
 )
 
 
 @dataclass(frozen=True)
-class BenchmarkResults(Generic[OutputsTableRowType, LeaderboardTableType]):
+class BenchmarkResults(Generic[OutputsTableRowType, LeaderboardTableRowType]):
     outputs_table: OutputsTable[OutputsTableRowType]
-    mean_score_by_subtask: MeanScoreTable
-    mean_score_by_task: MeanScoreTable
-    mean_score_by_language: MeanScoreTable
-    leaderboard_table: LeaderboardTableType
+    mean_score_by_subtask: MeanScoreByLengthTable
+    mean_score_by_task: MeanScoreByLengthTable
+    mean_score_by_language: MeanScoreByLengthTable
+    leaderboard_table: BaseTable[Any]
+    additional_tables: Sequence[BaseTable[Any]]
 
     @property
     def tables(self) -> list[BaseTable[Any]]:
@@ -76,4 +76,5 @@ class BenchmarkResults(Generic[OutputsTableRowType, LeaderboardTableType]):
             self.mean_score_by_task,
             self.mean_score_by_language,
             self.leaderboard_table,
+            *self.additional_tables,
         ]

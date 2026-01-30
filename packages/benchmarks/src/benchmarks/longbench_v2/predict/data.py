@@ -1,39 +1,48 @@
-from dataclasses import dataclass
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel
 
-from ..._core.predict import Output
+from ..._core.predict.data import Input, Output
 
 
-DIFFICULTY = Literal["hard", "easy"]
-LENGTH = Literal["short", "medium", "long"]
-DOMAIN = Literal[
-    "Single-Document QA",
-    "Multi-Document QA",
-    "Long In-context Learning",
-    "Code Repository Understanding",
-    "Long-dialogue History Understanding",
-    "Long Structured Data Understanding",
-]
-SUBDOMAIN = Literal[
-    "Academic",
-    "Code repo QA",
-    "Governmental",
-    "User guide QA",
-    "Financial",
-    "Legal",
-    "Literary",
-    "Multi-news",
-    "Detective",
-    "Many-shot learning",
-    "New language translation",
-    "Event ordering",
-    "Agent history QA",
-    "Dialogue history QA",
-    "Table QA",
-    "Knowledge graph reasoning",
-]
+class Difficulty(StrEnum):
+    EASY = "easy"
+    HARD = "hard"
+
+
+class Length(StrEnum):
+    SHORT = "short"
+    MEDIUM = "medium"
+    LONG = "long"
+
+
+class Domain(StrEnum):
+    SINGLE_DOCUMENT_QA = "Single-Document QA"
+    MULTI_DOCUMENT_QA = "Multi-Document QA"
+    LONG_IN_CONTEXT_LEARNING = "Long In-context Learning"
+    CODE_REPOSITORY_UNDERSTANDING = "Code Repository Understanding"
+    LONG_DIALOGUE_HISTORY_UNDERSTANDING = "Long-dialogue History Understanding"
+    LONG_STRUCTURED_DATA_UNDERSTANDING = "Long Structured Data Understanding"
+
+
+class SubDomain(StrEnum):
+    ACADEMIC = "Academic"
+    CODE_REPO_QA = "Code repo QA"
+    GOVERNMENTAL = "Governmental"
+    USER_GUIDE_QA = "User guide QA"
+    FINANCIAL = "Financial"
+    LEGAL = "Legal"
+    LITERARY = "Literary"
+    MULTI_NEWS = "Multi-news"
+    DETECTIVE = "Detective"
+    MANY_SHOT_LEARNING = "Many-shot learning"
+    NEW_LANGUAGE_TRANSLATION = "New language translation"
+    EVENT_ORDERING = "Event ordering"
+    AGENT_HISTORY_QA = "Agent history QA"
+    DIALOGUE_HISTORY_QA = "Dialogue history QA"
+    TABLE_QA = "Table QA"
+    KNOWLEDGE_GRAPH_REASONING = "Knowledge graph reasoning"
 
 
 class RetrievedChunk(BaseModel):
@@ -43,9 +52,7 @@ class RetrievedChunk(BaseModel):
     source: str
 
 
-class LongBenchV2Input(BaseModel):
-    id: str
-    tokens: int
+class LongBenchV2Input(Input):
     question: str
     choice_A: str
     choice_B: str
@@ -53,16 +60,15 @@ class LongBenchV2Input(BaseModel):
     choice_D: str
     answer: Literal["A", "B", "C", "D"]
     context: str
-    difficulty: DIFFICULTY
-    length: LENGTH
-    domain: DOMAIN
-    sub_domain: SUBDOMAIN
+    difficulty: Difficulty
+    length: Length
+    domain: Domain
+    sub_domain: SubDomain
     retrieved_context: list[RetrievedChunk] | None = None
 
 
-@dataclass(frozen=True)
 class LongBenchV2Output(Output):
-    difficulty: DIFFICULTY
-    length: LENGTH
-    domain: DOMAIN
-    sub_domain: SUBDOMAIN
+    difficulty: Difficulty
+    length: Length
+    domain: Domain
+    sub_domain: SubDomain

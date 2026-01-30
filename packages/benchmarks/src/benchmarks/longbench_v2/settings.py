@@ -1,6 +1,7 @@
 from pathlib import Path
+from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .._core.settings import BaseSettings
 
@@ -24,3 +25,4 @@ class LongBenchV2Settings(BaseSettings):
     no_context: bool
     compensate_missing: bool
     prompt: Prompt
+    metric_kwargs: dict[str, Any] = Field(default_factory=dict)

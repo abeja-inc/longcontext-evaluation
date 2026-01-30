@@ -107,7 +107,7 @@ def main() -> None:
     config = load_config(args.config)
 
     # Initialize wandb
-    wandb_config = config.get("wandb")
+    wandb_config = config.get("wandb", None)
     if wandb_config:
         wandb.init(**wandb_config)
         log_wandb = True
@@ -127,7 +127,7 @@ def main() -> None:
     )
 
     # Initialize generator
-    generator_config = config["generator"]
+    generator_config = config["llm"]["generator"]
     generator_type = generator_config.pop("type")
     if "client" in generator_config:
         client = OpenAI(**generator_config["client"])
@@ -142,7 +142,7 @@ def main() -> None:
     # Run evaluation
     run_benchmarks(
         generator=generator,
-        generation_kwargs=config["generation_kwargs"],
+        generation_kwargs=config["llm"]["generation_kwargs"],
         batchsize=batchsize,
         benchmark_configs=benchmark_configs,
         logger=logger,

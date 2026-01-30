@@ -1,14 +1,16 @@
 base_config: scripts/benchmarks/run_configs/base.yaml
 
-generator:
-    type: openai
-    client:
-        api_key: ${OPENAI_API_KEY}
-    model_name: ${OPENAI_MODEL_NAME}
-    max_context_length: 8192
-    max_output_tokens: 256
+run_name: ${OPENAI_MODEL_NAME}/trial_1
+llm:
+    generator:
+        type: openai
+        client:
+            api_key: ${OPENAI_API_KEY}
+        model_name: ${OPENAI_MODEL_NAME}
+        max_context_length: 8192
+        max_output_tokens: 256
 
-generation_kwargs:
-    long_input_filter_kwargs:
-        buffer_tokens: 10
-    temperature: 0.2
+    generation_kwargs:
+        long_input_filter_kwargs:
+            buffer_tokens: 10
+        temperature: 0.2

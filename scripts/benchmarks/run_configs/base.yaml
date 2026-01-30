@@ -2,13 +2,13 @@ output_root: outputs/benchmarks
 dataset_root: datasets/benchmarks
 batchsize: 1
 
+run_name: null
 llm: null
 
 wandb:
-    entity: xxx
-    project: xxx
-    id: xxx
-    name: xxx
+    null
+    # entity: xxx
+    # project: longcontext_evaluation_benchmark
 
 benchmarks:
     longbench_v2:

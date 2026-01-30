@@ -2,7 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Iterable
 
-from .table import GroupBy, MeanScoreTableRow, OutputsTableRow, OutputsTableRowType
+from .table import MeanScoreByLengthTableRow, OutputsTableRow, OutputsTableRowType
 
 
 @dataclass(frozen=True)
@@ -20,24 +20,41 @@ def context_bin_label(
     return f"{over_label}_{max(b.upper for b in bins)}"
 
 
-def _get_group_value(row: OutputsTableRow, group_by: GroupBy) -> str:
-    if group_by == "subtask":
-        return row.subtask
-    if group_by == "task":
-        return row.task
-    if group_by == "language":
-        return row.language
-    else:
+def _get_group_value(row: OutputsTableRow, group_by: str) -> str:
+    try:
+        value = getattr(row, group_by)
+    except AttributeError:
         raise ValueError(f"Invalid group_by: {group_by}")
+    return str(value)
+
+
+def mean_score_by_group(
+    rows: Iterable[OutputsTableRowType],
+    *,
+    group_by: str | None = None,
+) -> dict[str, float]:
+    sums: dict[str, float] = defaultdict(float)
+    counts: dict[str, int] = defaultdict(int)
+
+    for row in rows:
+        if group_by is None:
+            key = "overall"
+        else:
+            key = _get_group_value(row=row, group_by=group_by)
+
+        sums[key] += float(row.score)
+        counts[key] += 1
+
+    return {key: sums[key] / counts[key] for key in sums}
 
 
 def mean_score_by_group_and_context_bin(
     rows: Iterable[OutputsTableRowType],
     *,
-    group_by: GroupBy,
+    group_by: str,
     context_bins: list[Bin],
     over_label: str = "over",
-) -> list[MeanScoreTableRow]:
+) -> list[MeanScoreByLengthTableRow]:
     sums: dict[tuple[str, str], float] = defaultdict(float)
     counts: dict[tuple[str, str], int] = defaultdict(int)
 
@@ -52,7 +69,7 @@ def mean_score_by_group_and_context_bin(
         counts[key] += 1
 
     return [
-        MeanScoreTableRow(
+        MeanScoreByLengthTableRow(
             model_name=model_name,
             group=group,
             mean_score=sums[(model_name, group)] / counts[(model_name, group)],

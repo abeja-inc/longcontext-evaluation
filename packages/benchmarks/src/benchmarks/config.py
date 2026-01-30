@@ -10,6 +10,7 @@ class SubtaskConfig(BaseModel):
     dataset_filepath: Path
     output_filepath: Path
     metric: str
+    inference_mode: Literal["chat", "completion"]
     settings: dict[str, Any] | None = None
 
 
