@@ -2,13 +2,13 @@ import csv
 import json
 from dataclasses import asdict, fields
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Sequence
 
-from ..evaluate.table import BaseTable
+from ..evaluate.table import BaseTable, BaseTableRow
 
 
 def save_to_local(
-    tables: list[BaseTable],
+    tables: Sequence[BaseTable[BaseTableRow]],
     output_root: Path,
     format: Literal["jsonl", "csv"] = "jsonl",
 ) -> None:

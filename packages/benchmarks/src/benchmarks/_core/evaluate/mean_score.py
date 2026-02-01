@@ -11,7 +11,7 @@ class Bin:
     label: str
 
 
-def context_bin_label(
+def _context_bin_label(
     context_length: int, bins: list[Bin], over_label: str = "over"
 ) -> str:
     for bin in sorted(bins, key=lambda b: b.upper):
@@ -32,20 +32,23 @@ def mean_score_by_group(
     rows: Iterable[OutputsTableRowType],
     *,
     group_by: str | None = None,
-) -> dict[str, float]:
-    sums: dict[str, float] = defaultdict(float)
-    counts: dict[str, int] = defaultdict(int)
+) -> dict[str, dict[str, float]]:
+    sums: defaultdict[tuple[str, str], float] = defaultdict(float)
+    counts: defaultdict[tuple[str, str], int] = defaultdict(int)
 
     for row in rows:
         if group_by is None:
-            key = "overall"
+            key = (row.model_name, "overall")
         else:
-            key = _get_group_value(row=row, group_by=group_by)
+            key = (row.model_name, _get_group_value(row=row, group_by=group_by))
 
         sums[key] += float(row.score)
         counts[key] += 1
 
-    return {key: sums[key] / counts[key] for key in sums}
+    out: defaultdict[str, dict[str, float]] = defaultdict(dict)
+    for (model, group), total in sums.items():
+        out[model][group] = total / counts[(model, group)]
+    return dict(out)
 
 
 def mean_score_by_group_and_context_bin(
@@ -55,24 +58,26 @@ def mean_score_by_group_and_context_bin(
     context_bins: list[Bin],
     over_label: str = "over",
 ) -> list[MeanScoreByLengthTableRow]:
-    sums: dict[tuple[str, str], float] = defaultdict(float)
-    counts: dict[tuple[str, str], int] = defaultdict(int)
+    sums: defaultdict[tuple[str, str, str], float] = defaultdict(float)
+    counts: defaultdict[tuple[str, str, str], int] = defaultdict(int)
 
     for row in rows:
         group_val = _get_group_value(row=row, group_by=group_by)
-        ctx_bin = context_bin_label(
+        ctx_bin = _context_bin_label(
             context_length=row.context_length, bins=context_bins, over_label=over_label
         )
 
-        key = (row.model_name, f"{group_val} | {ctx_bin}")
+        key = (row.model_name, group_val, ctx_bin)
         sums[key] += float(row.score)
         counts[key] += 1
 
     return [
         MeanScoreByLengthTableRow(
-            model_name=model_name,
+            model_name=model,
             group=group,
-            mean_score=sums[(model_name, group)] / counts[(model_name, group)],
+            context_length=context_length,
+            mean_score=sums[(model, group, context_length)]
+            / counts[(model, group, context_length)],
         )
-        for (model_name, group) in sums
+        for (model, group, context_length) in sorted(sums)
     ]

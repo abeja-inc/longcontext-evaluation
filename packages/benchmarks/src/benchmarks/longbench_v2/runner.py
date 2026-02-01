@@ -22,7 +22,7 @@ from .evaluate import (
     LongBenchV2OutputsTableRow,
 )
 from .evaluate.metrics import LongBenchV2Metrics
-from .predict import build_input_prompt, load_prompts
+from .predict import build_input_prompt
 from .predict.data import LongBenchV2Input, LongBenchV2Output
 from .settings import LongBenchV2Settings
 
@@ -102,7 +102,7 @@ class LongBenchV2Runner(
         )
 
         # Select prompt template
-        prompt_templates = load_prompts(settings.prompt)
+        prompt_templates = settings.prompt.load_prompts()
 
         # Prediction
         total = len(filtered_data)
@@ -245,22 +245,30 @@ class LongBenchV2Runner(
     def _make_leaderboard_table(
         self, outputs: list[LongBenchV2OutputsTableRow]
     ) -> BaseTable[LongBenchV2LeaderBoardTableRow]:
-        leaderboard_dict: dict[str, float] = defaultdict(float)
+        leaderboard_by_model: defaultdict[str, dict[str, float]] = defaultdict(dict)
+
         for key in ["difficulty", "length"]:
-            leaderboard_dict.update(mean_score_by_group(rows=outputs, group_by=key))
-        leaderboard_dict.update(mean_score_by_group(rows=outputs, group_by=None))
+            grouped = mean_score_by_group(rows=outputs, group_by=key)
+            for model, group_scores in grouped.items():
+                leaderboard_by_model[model].update(group_scores)
+
+        overall = mean_score_by_group(rows=outputs, group_by=None)
+        for model, group_scores in overall.items():
+            leaderboard_by_model[model].update(group_scores)
+
         return BaseTable(
             name="longbenchv2_leaderboard_table",
             rows=[
                 LongBenchV2LeaderBoardTableRow(
-                    model_name=outputs[0].model_name,
-                    overall=leaderboard_dict["overall"],
-                    easy=leaderboard_dict["easy"],
-                    hard=leaderboard_dict["hard"],
-                    short=leaderboard_dict["short"],
-                    medium=leaderboard_dict["medium"],
-                    long=leaderboard_dict["long"],
+                    model_name=model,
+                    overall=groups["overall"],
+                    easy=groups["easy"],
+                    hard=groups["hard"],
+                    short=groups["short"],
+                    medium=groups["medium"],
+                    long=groups["long"],
                 )
+                for model, groups in sorted(leaderboard_by_model.items())
             ],
         )
 

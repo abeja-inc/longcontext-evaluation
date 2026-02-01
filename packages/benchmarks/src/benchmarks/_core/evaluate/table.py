@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Generic, Literal, Sequence, TypeVar
+from typing import Generic, Sequence, TypeVar
 
 
 @dataclass(frozen=True)
@@ -46,7 +46,7 @@ class OutputsTable(BaseTable[OutputsTableRowType], Generic[OutputsTableRowType])
 @dataclass(frozen=True)
 class MeanScoreByLengthTableRow(BaseTableRow):
     group: str
-    context_length: int | Literal["overall"]
+    context_length: str
     mean_score: float
 
 
@@ -65,16 +65,16 @@ class BenchmarkResults(Generic[OutputsTableRowType, LeaderboardTableRowType]):
     mean_score_by_subtask: MeanScoreByLengthTable
     mean_score_by_task: MeanScoreByLengthTable
     mean_score_by_language: MeanScoreByLengthTable
-    leaderboard_table: BaseTable[Any]
-    additional_tables: Sequence[BaseTable[Any]]
+    leaderboard_table: BaseTable[LeaderboardTableRowType]
+    additional_tables: Sequence[BaseTable[BaseTableRow]]
 
     @property
-    def tables(self) -> list[BaseTable[Any]]:
-        return [
+    def tables(self) -> Sequence[BaseTable[BaseTableRow]]:
+        return (
             self.outputs_table,
             self.mean_score_by_subtask,
             self.mean_score_by_task,
             self.mean_score_by_language,
             self.leaderboard_table,
             *self.additional_tables,
-        ]
+        )

@@ -25,4 +25,4 @@ class BaseMetrics(ABC, Generic[SettingsType, OutputType]):
         return method(output=output, config=config, settings=settings, **kwargs)
 
 
-MetricsType = TypeVar("MetricsType", bound=BaseMetrics)
+MetricsType = TypeVar("MetricsType", bound=BaseMetrics[Any, Any])

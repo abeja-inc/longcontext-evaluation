@@ -1,15 +1,6 @@
 from string import Template
 
-from ..settings import Prompt
 from .data import LongBenchV2Input
-
-
-def load_prompts(prompt: Prompt) -> dict[str, Template]:
-    prompts: dict[str, Template] = {}
-    for key, filename in prompt.files.model_dump().item():
-        prompt_file = prompt.dirpath / filename
-        prompts[key] = Template(prompt_file.read_text(encoding="utf-8"))
-    return prompts
 
 
 def build_input_prompt(

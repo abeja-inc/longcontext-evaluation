@@ -1,10 +1,10 @@
 import json
-from dataclasses import asdict
-from typing import Any
+from dataclasses import asdict, fields
+from typing import Any, Sequence
 
 import wandb
 
-from ..evaluate.table import BaseTable
+from ..evaluate.table import BaseTable, BaseTableRow
 
 
 def _to_wandb_cell(v: Any) -> Any:
@@ -16,17 +16,16 @@ def _to_wandb_cell(v: Any) -> Any:
         return str(v)
 
 
-def push_to_wandb(tables: list[BaseTable]) -> None:
-    # tables
+def push_to_wandb(tables: Sequence[BaseTable[BaseTableRow]]) -> None:
     for table in tables:
         rows = table.rows or []
         if not rows:
             continue
 
-        cols = rows[0].keys()
-        tbl = wandb.Table(columns=cols)
+        cols: list[str] = [f.name for f in fields(rows[0])]
+        wandb_table = wandb.Table(columns=cols)
         for row in rows:
             row_dict = asdict(row)
-            tbl.add_data(*[_to_wandb_cell(row_dict.get(c)) for c in cols])  # pyright: ignore[reportUnknownMemberType]
+            wandb_table.add_data(*[_to_wandb_cell(row_dict.get(c)) for c in cols])  # pyright: ignore[reportUnknownMemberType]
 
-        wandb.log({f"tables/{table.name}": tbl})
+        wandb.log({f"tables/{table.name}": wandb_table})
