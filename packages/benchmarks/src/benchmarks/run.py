@@ -3,8 +3,8 @@ from typing import Any
 
 from llm_inference.base import BaseGenerator
 
-from ._core import get_runner
 from .config import BenchmarkConfig
+from .runner_factory import get_runner
 
 
 def run_benchmarks(
