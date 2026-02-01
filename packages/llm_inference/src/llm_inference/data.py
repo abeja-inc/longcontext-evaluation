@@ -29,5 +29,5 @@ class OutputContent(BaseModel):
 
 class Response(BaseModel):
     input: str | list[dict[str, str]]
-    outputs: list[OutputContent] | None
+    outputs: list[OutputContent]
     metadata: dict[str, Any] | None = None

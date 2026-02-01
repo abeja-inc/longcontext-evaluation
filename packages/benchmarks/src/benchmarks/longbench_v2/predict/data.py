@@ -53,6 +53,7 @@ class RetrievedChunk(BaseModel):
 
 
 class LongBenchV2Input(Input):
+    prompt: str
     question: str
     choice_A: str
     choice_B: str

@@ -76,7 +76,7 @@ class LongBenchV2Runner(
                     )
 
         # Skip processed samples
-        processed_ids = set()
+        processed_ids: set[str | int] = set()
         outputs: list[LongBenchV2Output] = []
         if output_dilepath.exists():
             with output_dilepath.open("r", encoding="utf-8") as f:
@@ -84,8 +84,9 @@ class LongBenchV2Runner(
                     if line.strip():
                         try:
                             record = json.loads(line)
-                            outputs.append(LongBenchV2Output(**record))
-                            processed_ids.add(record["id"])
+                            output = LongBenchV2Output(**record)
+                            outputs.append(output)
+                            processed_ids.add(output.id)
                         except json.JSONDecodeError:
                             self.logger.warning(
                                 f"Skipping invalid JSON in {output_dilepath}"
@@ -102,11 +103,11 @@ class LongBenchV2Runner(
         )
 
         # Select prompt template
-        prompt_templates = settings.prompt.load_prompts()
+        prompt_templates = settings.prompt.load_templates()
 
         # Prediction
         total = len(filtered_data)
-        new_responses = [Response]
+        new_responses: list[Response] = []
         for start in tqdm(
             range(0, total, batchsize),
             desc=f"Processing {dataset_filepath.name}",
@@ -114,9 +115,7 @@ class LongBenchV2Runner(
         ):
             batch = filtered_data[start : start + batchsize]
 
-            if settings.cot:
-                cot_templates: list[Template] = []
-
+            cot_templates: list[Template] = []  # For settings.cot == True
             conversations: list[Conversation] = []
             for sample in batch:
                 user_prompt, cot_template = build_input_prompt(
@@ -127,6 +126,7 @@ class LongBenchV2Runner(
                     no_context=settings.no_context,
                 )
                 if settings.cot:
+                    assert cot_template is not None
                     cot_templates.append(cot_template)
 
                 truncated_user_prompt = truncate_text(
@@ -153,11 +153,11 @@ class LongBenchV2Runner(
             if settings.cot:
                 conversations: list[Conversation] = []
                 for resp, cot_template in zip(responses, cot_templates, strict=True):
-                    next_user_prompt = cot_template.safe_replace(
+                    next_prompt = cot_template.safe_substitute(
                         {"COT": resp.outputs[0].content.strip()}
                     )
-                    truncated_next_user_prompt = truncate_text(
-                        text=next_user_prompt,
+                    truncated_next_prompt = truncate_text(
+                        text=next_prompt,
                         tokenizer=generator.tokenizer,
                         max_context_length=generator.max_context_length,
                         max_output_tokens=generator.max_output_tokens,
@@ -171,8 +171,8 @@ class LongBenchV2Runner(
                                 "messages": [
                                     {
                                         "role": "assistant",
-                                        "content": cot_template.safe_replace(
-                                            {"COT": truncated_next_user_prompt}
+                                        "content": cot_template.safe_substitute(
+                                            {"COT": truncated_next_prompt}
                                         ),
                                     }
                                 ]
@@ -195,7 +195,7 @@ class LongBenchV2Runner(
                     output_reasoning=response.outputs[0].reasoning_content.strip()
                     if response.outputs[0].reasoning_content
                     else None,
-                    answer=input.asnwer,
+                    answer=input.answer,
                     difficulty=input.difficulty,
                     length=input.length,
                     domain=input.domain,
@@ -275,7 +275,7 @@ class LongBenchV2Runner(
     def _make_additional_tables(
         self, outputs: list[LongBenchV2OutputsTableRow]
     ) -> list[BaseTable[Any]]:
-        tables: list[MeanScoreByLengthTable] = []
+        tables: list[BaseTable[Any]] = []
         for key in ["difficulty", "domain", "subdomain"]:
             tables.append(
                 MeanScoreByLengthTable(

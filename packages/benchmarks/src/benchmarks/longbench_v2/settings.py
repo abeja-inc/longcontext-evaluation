@@ -21,8 +21,7 @@ class Prompt(BaseModel):
 
     @model_validator(mode="after")
     def _check_files_exist(self) -> "Prompt":
-        for key in self.files.model_fields:
-            filename = getattr(self.files, key)
+        for key, filename in self.files.model_dump().items():
             path = self.dirpath / filename
             if not path.is_file():
                 raise ValueError(
@@ -32,8 +31,7 @@ class Prompt(BaseModel):
 
     def load_templates(self) -> dict[str, Template]:
         out: dict[str, Template] = {}
-        for key in self.files.model_fields:
-            filename = getattr(self.files, key)
+        for key, filename in self.files.model_dump().items():
             path = self.dirpath / filename
             out[key] = Template(path.read_text(encoding="utf-8"))
         return out

@@ -1,11 +1,35 @@
 from string import Template
+from typing import Literal, overload
 
 from .data import LongBenchV2Input
+
+
+@overload
+def build_input_prompt(
+    input: LongBenchV2Input,
+    prompt_templates: dict[str, Template],
+    *,
+    rag_topn: int = 0,
+    cot: Literal[True],
+    no_context: bool = False,
+) -> tuple[str, Template]: ...
+
+
+@overload
+def build_input_prompt(
+    input: LongBenchV2Input,
+    prompt_templates: dict[str, Template],
+    *,
+    rag_topn: int = 0,
+    cot: Literal[False] = False,
+    no_context: bool = False,
+) -> tuple[str, None]: ...
 
 
 def build_input_prompt(
     input: LongBenchV2Input,
     prompt_templates: dict[str, Template],
+    *,
     rag_topn: int = 0,
     cot: bool = False,
     no_context: bool = False,
