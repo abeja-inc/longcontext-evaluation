@@ -1,11 +1,12 @@
 import argparse
 import logging
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import wandb
 import yaml
-from benchmark import BenchmarkConfig, SubtaskConfig, TaskConfig, run_benchmarks
+from benchmarks import BenchmarkConfig, SubtaskConfig, TaskConfig, run_benchmarks
 from llm_inference import get_generator
 from openai import OpenAI
 
@@ -47,7 +48,7 @@ def load_config(config_path: Path) -> dict[str, Any]:
     # Load base configuration
     base_config_path = config.get("base_config")
     if base_config_path:
-        base_config_path = Path(base_config_path)
+        base_config_path = Path(base_config_path).resolve()
         with base_config_path.open("r", encoding="utf-8") as f:
             base_config = yaml.safe_load(f)
         config = merge_dicts(base_config, config)
@@ -75,6 +76,7 @@ def parse_benchmark_configs(
                             / benchmark_name
                             / subtask_config["dataset_filename"],
                             metric=subtask_config["metric"],
+                            inference_mode=subtask_config["inference_mode"],
                             settings=subtask_config["settings"],
                         )
                         for subtask_name, subtask_config in task_config.items()
@@ -104,29 +106,38 @@ def main() -> None:
     args = parse_args()
 
     # Load configuration
-    config = load_config(args.config)
+    logger.info("Loading configuration")
+    config = load_config(args.config.resolve())
 
     # Initialize wandb
     wandb_config = config.get("wandb", None)
+    run_name = config.get(
+        "run_name",
+        f"{config['llm']['generator']['model_name'].split('/')[-1]}-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+    )
     if wandb_config:
+        logger.info("Initializing wandb")
+        wandb_config["name"] = run_name
         wandb.init(**wandb_config)
         log_wandb = True
     else:
         log_wandb = False
 
     # Initialize dataset and output paths
-    dataset_root = Path(config["dataset_root"])
-    output_root = Path(config["output_root"])
+    dataset_root = Path(config["dataset_root"]).resolve()
+    output_root = Path(config["output_root"]).resolve() / run_name
 
     # Parse benchmark configurations
+    logger.info("Parsing benchmark configurations")
     batchsize = int(config["batchsize"])
     benchmark_configs = parse_benchmark_configs(
-        config=config,
+        config=config["benchmarks"],
         dataset_root=dataset_root,
         output_root=output_root,
     )
 
     # Initialize generator
+    logger.info("Initializing generator")
     generator_config = config["llm"]["generator"]
     generator_type = generator_config.pop("type")
     if "client" in generator_config:
@@ -138,8 +149,10 @@ def main() -> None:
         generator = get_generator(
             type=generator_type, logger=logger, **generator_config
         )
+    logger.info(f"Generator of type '{generator_type}' initialized successfully")
 
     # Run evaluation
+    logger.info("Running benchmarks")
     run_benchmarks(
         generator=generator,
         generation_kwargs=config["llm"]["generation_kwargs"],
@@ -151,6 +164,7 @@ def main() -> None:
 
     # Finish wandb
     if log_wandb:
+        logger.info("Finishing wandb")
         wandb.finish()
 
 

@@ -92,6 +92,21 @@ python3 scripts/benchmarks/run.py \
     --config scripts/benchmarks/run_configs/vllm_openai_compatible.yml
 ```
 
+## Run benchmarks
+### Configuration
+- benchmark settings: [base_config.yaml](scripts/benchmarks/run_configs/base_config.yaml)
+- model setting examples:
+    - [OpenAI API](scripts/benchmarks/run_configs/openai_api.yml)
+    - [vLLM OpenAI-compatible Server](scripts/benchmarks/run_configs/openai_compatible.yml)
+    - [vLLM Offline Inference](scripts/benchmarks/run_configs/vllm_offline.yml)
+
+### Execution
+- [run.py](scripts/benchmarks/run.py)
+
+```sh
+python3 scripts/benchmarks/run.py \
+    --config scripts/benchmarks/run_configs/vllm_offline.yaml
+```
 
 # Other information
 ## LongBench v2 dataset

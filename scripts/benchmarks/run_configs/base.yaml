@@ -16,9 +16,10 @@ benchmarks:
             all:
                 language: english
                 dataset_filename: english/longbench_v2_with_token_count.jsonl
+                inference_mode: chat
                 metric: all
                 settings:
-                    truncate: true
+                    use_truncate: true
                     rag_topn: 0
                     cot: false
                     no_context: false
@@ -31,95 +32,3 @@ benchmarks:
                             zero_shot_cot_ans: 0shot_cot_ans.txt
                             zero_shot_no_context: 0shot_no_context.txt
                             zero_shot_rag: 0shot_rag.txt
-
-    openai_mrcr:
-        mrcr_eng:
-            2needle:
-                language: english
-                dataset_filename: english/2needle.parquet
-                metric: all
-                settings:
-                    truncate: true
-            4needle:
-                language: english
-                dataset_filename: english/4needle.parquet
-                metric: all
-                settings:
-                    truncate: true
-            8needle:
-                language: english
-                dataset_filename: english/8needle.parquet
-                metric: all
-                settings:
-                    truncate: true
-        mrcr_jpn:
-            2needle:
-                language: japanese
-                dataset_filename: japanese/2needle.parquet
-                metric: all
-                settings:
-                    truncate: true
-            4needle:
-                language: japanese
-                dataset_filename: japanese/4needle.parquet
-                metric: all
-                settings:
-                    truncate: true
-            8needle:
-                language: japanese
-                dataset_filename: japanese/8needle.parquet
-                metric: all
-                settings:
-                    truncate: true
-
-    ruler:
-        niah:
-            niah_single_2:
-                language: english
-                dataset_filename: niah/niah_single_2.jsonl
-                metric: all
-                settings:
-                    truncate: true
-            niah_multikey_1:
-                language: english
-                dataset_filename: niah/niah_multikey_1.jsonl
-                metric: all
-                settings:
-                    truncate: true
-            niah_multikey_2:
-                language: english
-                dataset_filename: niah/niah_multikey_2.jsonl
-                metric: all
-                settings:
-                    truncate: true
-            niah_multikey_3:
-                language: english
-                dataset_filename: niah/niah_multikey_3.jsonl
-                metric: all
-                settings:
-                    truncate: true
-        qa:
-            squad:
-                language: english
-                dataset_filename: qa/squad.jsonl
-                metric: part
-                settings:
-                    truncate: true
-            hotpotqa:
-                language: english
-                dataset_filename: qa/hotpotqa.jsonl
-                metric: part
-                settings:
-                    truncate: true
-            jsquad:
-                language: japanese
-                dataset_filename: qa/jsquad.jsonl
-                metric: part
-                settings:
-                    truncate: true
-            jemhopqa:
-                language: japanese
-                dataset_filename: qa/jemhopqa.jsonl
-                metric: part
-                settings:
-                    truncate: true

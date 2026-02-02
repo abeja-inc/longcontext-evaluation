@@ -2,7 +2,7 @@ base_config: scripts/benchmarks/run_configs/base.yaml
 
 run_name: ${MODEL_NAME}/trial_1
 llm:
-    generator_config:
+    generator:
         type: openai_api_compatible
         client:
             base_url: ${BASE_URL}

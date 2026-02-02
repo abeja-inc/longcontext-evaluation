@@ -12,6 +12,7 @@ RUNNER_REGISTRY: Final[dict[str, RunnerConstructor]] = {
 
 
 def get_runner(name: str, *, logger: Logger, bins: list[Bin] | None = None) -> Runner:
+    logger.info(f"Initializing runner of type '{name}'")
     if name not in RUNNER_REGISTRY:
         raise ValueError(f"Unknown runner: {name}. Available: {list(RUNNER_REGISTRY)}")
     return RUNNER_REGISTRY[name](logger=logger, bins=bins)
