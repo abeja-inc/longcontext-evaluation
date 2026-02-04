@@ -21,6 +21,7 @@ TableRowType = TypeVar("TableRowType", bound=BaseTableRow, covariant=True)
 
 @dataclass(frozen=True)
 class OutputsTableRow(BaseTableRow):
+    id: str | int
     task: str
     subtask: str
     language: str

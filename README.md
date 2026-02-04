@@ -94,7 +94,7 @@ python3 scripts/benchmarks/run.py \
 
 ## Run benchmarks
 ### Configuration
-- benchmark settings: [base_config.yaml](scripts/benchmarks/run_configs/base_config.yaml)
+- benchmark settings: [base_config.yaml](scripts/benchmarks/run_configs/base.yaml)
 - model setting examples:
     - [OpenAI API](scripts/benchmarks/run_configs/openai_api.yml)
     - [vLLM OpenAI-compatible Server](scripts/benchmarks/run_configs/openai_compatible.yml)

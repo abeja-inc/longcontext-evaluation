@@ -5,17 +5,12 @@ llm:
     generator:
         type: vllm_offline_inference
         model_name: /workspace/models/Qwen3-0.6B
-        max_context_length: 131072
-        max_output_tokens: 8192
+        max_context_length: 8192
+        max_output_tokens: 1024
         dtype: float32
-        tensor_parallel_size: 8
+        tensor_parallel_size: 1
         trust_remote_code: true
         max_num_seqs: 256
-        hf_overrides:
-            rope_parameters:
-                rope_type: yarn
-                factor: 4.0
-                original_max_position_embeddings: 32768
         reasoning_parser: qwen3
 
     generation_kwargs:
@@ -26,4 +21,4 @@ llm:
             top_k: 20
             min_p: 0.0
         chat_template_kwargs:
-            enable_thinking: true
+            enable_thinking: false

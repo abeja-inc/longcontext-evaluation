@@ -3,9 +3,8 @@ from collections import defaultdict
 from string import Template
 from typing import Any
 
-from llm_inference.base import BaseGenerator
+from llm_inference.base import BaseGenerator, Prompt
 from llm_inference.data import Conversation, Response
-from pydantic import ValidationError
 from tqdm import tqdm
 
 from .._core.evaluate import mean_score_by_group, mean_score_by_group_and_context_bin
@@ -52,6 +51,11 @@ class LongBenchV2Runner(
         settings: LongBenchV2Settings,
         batchsize: int,
     ) -> list[LongBenchV2Output]:
+        if config.inference_mode == "completion":
+            raise NotImplementedError(
+                "Completion mode is not supported for LongBenchV2"
+            )
+
         # Load dataset
         dataset_filepath = config.dataset_filepath
         output_dilepath = config.output_filepath
@@ -61,19 +65,15 @@ class LongBenchV2Runner(
             for idx, line in enumerate(f):
                 try:
                     record = json.loads(line)
+                except json.JSONDecodeError as e:
+                    self.logger.warning(
+                        "[JSONDecodeError]: Skipping invalid data in %s at line %d: %s",
+                        dataset_filepath,
+                        idx + 1,
+                        str(e),
+                    )
+                else:
                     all_data.append(LongBenchV2Input.model_validate(record))
-                except json.JSONDecodeError:
-                    self.logger.warning(
-                        "[JSONDecodeError]: Skipping invalid data in %s at line %d",
-                        dataset_filepath,
-                        idx + 1,
-                    )
-                except ValidationError:
-                    self.logger.warning(
-                        "[ValidationError]: Skipping invalid data in %s at line %d",
-                        dataset_filepath,
-                        idx + 1,
-                    )
 
         # Skip processed samples
         processed_ids: set[str | int] = set()
@@ -107,6 +107,7 @@ class LongBenchV2Runner(
 
         # Prediction
         total = len(filtered_data)
+        input_prompts: list[str] = []
         new_responses: list[Response] = []
         for start in tqdm(
             range(0, total, batchsize),
@@ -118,6 +119,7 @@ class LongBenchV2Runner(
             cot_templates: list[Template] = []  # For settings.cot == True
             conversations: list[Conversation] = []
             for sample in batch:
+                self.logger.info("Make input prompt")
                 user_prompt, cot_template = build_input_prompt(
                     input=sample,
                     prompt_templates=prompt_templates,
@@ -129,14 +131,19 @@ class LongBenchV2Runner(
                     assert cot_template is not None
                     cot_templates.append(cot_template)
 
-                truncated_user_prompt = truncate_text(
-                    text=user_prompt,
-                    tokenizer=generator.tokenizer,
-                    max_context_length=generator.max_context_length,
-                    max_output_tokens=generator.max_output_tokens,
-                    tokenizer_type=generator.tokenizer_type,
-                    truncate_type=settings.truncate_type,
-                )
+                if settings.truncate_type is not None:
+                    self.logger.info("Truncate input prompt")
+                    truncated_user_prompt = truncate_text(
+                        text=user_prompt,
+                        tokenizer=generator.tokenizer,
+                        max_context_length=generator.max_context_length,
+                        max_output_tokens=generator.max_output_tokens,
+                        tokenizer_type=generator.tokenizer_type,
+                        truncate_type=settings.truncate_type,
+                        buffer_tokens=settings.truncate_buffer_tokens,
+                    )
+                else:
+                    truncated_user_prompt = user_prompt
                 conversations.append(
                     Conversation.model_validate(
                         {
@@ -146,11 +153,14 @@ class LongBenchV2Runner(
                         }
                     )
                 )
+            input_prompts += [conv.to_string for conv in conversations]
+            self.logger.info("Inference started")
             responses: list[Response] = generator.chat(
                 conversations=conversations, **generation_kwargs
             )
 
             if settings.cot:
+                self.logger.info("The Chain-of-thought inference mode is selected")
                 conversations: list[Conversation] = []
                 for resp, cot_template in zip(responses, cot_templates, strict=True):
                     next_prompt = cot_template.safe_substitute(
@@ -179,17 +189,20 @@ class LongBenchV2Runner(
                             }
                         )
                     )
+                self.logger.info("Chain-of-Thought inference started")
                 responses: list[Response] = generator.chat(
                     conversations=conversations, **generation_kwargs
                 )
             new_responses += responses
 
         # Format
-        for input, response in zip(filtered_data, new_responses, strict=True):
+        for input, prompt, response in zip(
+            filtered_data, input_prompts, new_responses, strict=True
+        ):
             outputs.append(
                 LongBenchV2Output(
                     id=input.id,
-                    input=str(input.prompt),
+                    input=prompt,
                     context_length=input.tokens,
                     output=response.outputs[0].content.strip(),
                     output_reasoning=response.outputs[0].reasoning_content.strip()
@@ -204,6 +217,8 @@ class LongBenchV2Runner(
             )
 
         # Overwrite
+        self.logger.info("Output llm responses to %s", config.output_filepath)
+        config.output_filepath.parent.mkdir(parents=True, exist_ok=True)
         with config.output_filepath.open("w") as f:
             for out in outputs:
                 json.dump(out.model_dump(), f, ensure_ascii=False)
@@ -229,7 +244,6 @@ class LongBenchV2Runner(
             task=task,
             subtask=config.name,
             language=config.language,
-            context_length=output.context_length,
             score=score,
             **output.model_dump(),
         )
@@ -276,7 +290,7 @@ class LongBenchV2Runner(
         self, outputs: list[LongBenchV2OutputsTableRow]
     ) -> list[BaseTable[Any]]:
         tables: list[BaseTable[Any]] = []
-        for key in ["difficulty", "domain", "subdomain"]:
+        for key in ["difficulty", "domain", "sub_domain"]:
             tables.append(
                 MeanScoreByLengthTable(
                     name=f"{key}_mean_score_by_subtask",

@@ -9,7 +9,7 @@ class LongBenchV2OutputsTableRow(OutputsTableRow):
     length: Length
     difficulty: Difficulty
     domain: Domain
-    subdomain: SubDomain
+    sub_domain: SubDomain
 
 
 @dataclass(frozen=True)

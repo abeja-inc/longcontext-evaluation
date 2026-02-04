@@ -135,9 +135,8 @@ class BaseBenchmarkRunner(
                 output_rows = [
                     self._evaluate_subtask(
                         model_name=generator.model_name,
-                        output=out,
                         task=task_config.name,
-                        subtask=subtask_config.name,
+                        output=out,
                         config=subtask_config,
                         settings=settings,
                     )

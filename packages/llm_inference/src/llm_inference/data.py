@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 from pydantic import BaseModel
@@ -16,10 +17,18 @@ class Conversation(BaseModel):
     def prompt(self) -> list[dict[str, str]]:
         return [message.model_dump() for message in self.messages]
 
+    @property
+    def to_string(self) -> str:
+        return "\n\n".join(f"[{m.role}]\n{m.content}" for m in self.messages)
+
 
 class Prompt(BaseModel):
     prompt: str
     metadata: dict[str, Any] | None = None
+
+    @property
+    def to_string(self) -> str:
+        return self.prompt
 
 
 class OutputContent(BaseModel):

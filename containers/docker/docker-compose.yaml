@@ -6,7 +6,7 @@ services:
             context: ../..
             dockerfile: containers/docker/Dockerfile
             args:
-                BASE_IMAGE: vllm/vllm-openai:v0.13.0
+                BASE_IMAGE: vllm/vllm-openai:v0.15.0
         working_dir: /workspace
         volumes:
             - ../..:/workspace

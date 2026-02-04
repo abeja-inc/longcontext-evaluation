@@ -103,12 +103,12 @@ class SGLangOfflineGenerator(BaseGenerator):
         )
         return outputs
 
-    def chat(
+    def _chat(
         self,
         *,
         conversations: list[Conversation],
         sampling_params: dict[str, Any] = {},
-        buffer_tokens: int = 10,
+        buffer_tokens: int = 0,
         chat_template_kwargs: dict[str, Any] = {},
         **kwargs: Any,
     ) -> list[Response]:
@@ -141,12 +141,12 @@ class SGLangOfflineGenerator(BaseGenerator):
             inputs=conversations, sglang_responses=responses, skip_idx=skip_idx
         )
 
-    def completion(
+    def _completion(
         self,
         *,
         prompts: list[Prompt],
         sampling_params: dict[str, Any] = {},
-        buffer_tokens: int = 10,
+        buffer_tokens: int = 0,
         **kwargs: Any,
     ) -> list[Response]:
         sampling_params["max_tokens"] = self.max_output_tokens
