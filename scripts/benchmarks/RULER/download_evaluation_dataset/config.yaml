@@ -1,11 +1,11 @@
 download_datasource: true
 hf_dataset_configs:
-     jsquad:
+    jsquad:
         output_filepath: datasets/benchmarks/ruler/raw/japanese/qa/jsquad.jsonl
         huggingface_dataset_name: sbintuitions/JSQuAD
         split: validation
-        
-     jemhopqa:
+
+    jemhopqa:
         output_filepath: datasets/benchmarks/ruler/raw/japanese/qa/jemhopqa.jsonl
         huggingface_dataset_name: sbintuitions/JEMHopQA
         name: v1.2-extended-answers
@@ -20,5 +20,5 @@ url_dataset_configs:
         dataset_url: http://curtis.ml.cmu.edu/datasets/hotpot/hotpot_dev_distractor_v1.json
 
 essay_dataset_config:
-     output_filepath: datasets/benchmarks/ruler/raw/english/niah/PaulGrahamEssays.json
-     url_list_path: scripts/benchmarks/RULER/download_evaluation_dataset/paulgraham_essay_urls.txt
+    output_filepath: datasets/benchmarks/ruler/raw/english/niah/PaulGrahamEssays.json
+    url_list_path: scripts/benchmarks/RULER/download_evaluation_dataset/paulgraham_essay_urls.txt
