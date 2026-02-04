@@ -17,9 +17,9 @@ benchmarks:
                 language: english
                 dataset_filename: english/longbench_v2_with_token_count.jsonl
                 inference_mode: chat
-                metric: all
+                metric: exact_match
                 settings:
-                    truncate: true
+                    use_truncate: true
                     rag_topn: 0
                     cot: false
                     no_context: false

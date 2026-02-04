@@ -59,6 +59,7 @@ class EssayDownloader:
         return content
 
     def download(self, config: EssayConfig) -> None:
+        config.output_filepath.parent.mkdir(parents=True, exist_ok=True)
         with TemporaryDirectory(dir=config.output_filepath.parent) as tmp:
             tmp_dir = Path(tmp)
 
