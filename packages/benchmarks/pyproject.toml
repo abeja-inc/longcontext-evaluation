@@ -13,6 +13,7 @@ dependencies = [
     "llm-inference",
     "nltk>=3.9.2",
     "pydantic>=2.12.5",
+    "rapidfuzz>=3.14.3",
     "requests>=2.32.5",
     "tqdm>=4.67.1",
     "wandb>=0.24.0",

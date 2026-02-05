@@ -58,8 +58,8 @@ def mean_score_by_group_and_context_bin(
     context_bins: list[Bin],
     over_label: str = "over",
 ) -> list[MeanScoreByLengthTableRow]:
-    sums: defaultdict[tuple[str, str, str], float] = defaultdict(float)
-    counts: defaultdict[tuple[str, str, str], int] = defaultdict(int)
+    sums: defaultdict[tuple[str, object, str], float] = defaultdict(float)
+    counts: defaultdict[tuple[str, object, str], int] = defaultdict(int)
 
     for row in rows:
         group_val = _get_group_value(row=row, group_by=group_by)

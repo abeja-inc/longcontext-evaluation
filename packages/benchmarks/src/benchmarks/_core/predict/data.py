@@ -12,6 +12,7 @@ class Input(BaseModel):
             "token_counts",
             "target_token_count",
             "target_token_counts",
+            "target_context_length",
         )
     )
 

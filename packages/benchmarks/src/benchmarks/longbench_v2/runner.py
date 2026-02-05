@@ -293,7 +293,7 @@ class LongBenchV2Runner(
         for key in ["difficulty", "domain", "sub_domain"]:
             tables.append(
                 MeanScoreByLengthTable(
-                    name=f"{key}_mean_score_by_subtask",
+                    name=f"{key}_mean_score_by_context_length",
                     rows=mean_score_by_group_and_context_bin(
                         rows=outputs,
                         group_by=key,
