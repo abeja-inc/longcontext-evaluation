@@ -9,8 +9,8 @@ LLM のロングコンテキスト処理性能を評価するためのベンチ�
 - LongBench v2（英）
 - OpenAI-MRCR（日英）
 - experimental
-    - Nemotron-Persona_Japanese_QA
-    - Context-Poisoning-Make-10-Puzzle
+    - Nemotron-Persona_Japanese_QA (To be added)
+    - Context-Poisoning-Make-10-Puzzle (To be added)
 
 補助機能
 - chat mode (text generation with chat-template), completion-mode (text completion without chat-template)
