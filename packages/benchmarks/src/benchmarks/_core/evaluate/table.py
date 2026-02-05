@@ -46,7 +46,7 @@ class OutputsTable(BaseTable[OutputsTableRowType], Generic[OutputsTableRowType])
 
 @dataclass(frozen=True)
 class MeanScoreByLengthTableRow(BaseTableRow):
-    group: str
+    group: object
     context_length: str
     mean_score: float
 

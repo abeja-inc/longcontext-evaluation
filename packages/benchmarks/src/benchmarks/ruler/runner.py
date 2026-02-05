@@ -184,10 +184,7 @@ class RULERRunner(
                     if response.outputs[0].reasoning_content
                     else None,
                     answer=input.answer,
-                    random_string_to_prepend=input.random_string_to_prepend,
-                    n_needles=input.n_needles,
-                    desired_msg_index=input.desired_msg_index,
-                    total_messages=input.total_messages,
+                    needle_depth=input.needle_depth,
                 )
             )
 

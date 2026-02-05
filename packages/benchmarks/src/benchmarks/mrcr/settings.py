@@ -12,7 +12,7 @@ class OpenAIMRCRSettings(BaseSettings):
     metric_kwargs: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("use_truncate")
-    def _check_use_truncate(cls, value):
+    def _check_use_truncate(cls, value: bool) -> bool:
         if value:
             warnings.warn(
                 "Warning: truncation is not recommended for the benchmark OpenAI-MRCR."

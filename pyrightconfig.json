@@ -8,8 +8,11 @@
         "packages/llm_inference/src/llm_inference/vllm_offline_inference.py",
         "packages/llm_inference/src/llm_inference/sglang_offline_inference.py",
         "tests/**/*.py",
+        "smoke_tests/**/*.py",
         "scripts/**/*.py"
     ],
     "reportMissingTypeStubs": false,
+    "reportUnnecessaryComparison": false,
+    "reportUnnecessaryIsInstance": false,
     "typeCheckingMode": "strict"
 }

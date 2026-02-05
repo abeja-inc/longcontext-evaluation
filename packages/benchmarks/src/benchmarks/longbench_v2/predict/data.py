@@ -68,6 +68,7 @@ class LongBenchV2Input(Input):
 
 
 class LongBenchV2Output(Output):
+    answer: str
     difficulty: Difficulty
     length: Length
     domain: Domain

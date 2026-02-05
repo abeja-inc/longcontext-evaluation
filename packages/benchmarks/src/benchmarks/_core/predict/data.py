@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from pydantic import AliasChoices, BaseModel, Field
 
@@ -20,7 +20,7 @@ class Input(BaseModel):
 class Output(BaseModel):
     id: str | int
     input: str
-    answer: object
+    answer: Any
     output: str
     context_length: int
 

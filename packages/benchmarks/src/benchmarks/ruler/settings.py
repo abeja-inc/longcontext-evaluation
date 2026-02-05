@@ -12,7 +12,7 @@ class RULERSettings(BaseSettings):
     metric_kwargs: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("use_truncate")
-    def _check_use_truncate(cls, value):
+    def _check_use_truncate(cls, value: bool) -> bool:
         if value:
             warnings.warn(
                 "Warning: truncation is not recommended for the benchmark RULER. Recommend to synthesize dataset for the model."
@@ -22,7 +22,7 @@ class RULERSettings(BaseSettings):
     @field_validator("truncate_type")
     def _check_truncate_type(
         cls, value: Literal["middle", "last_n_turns"]
-    ) -> Literal["last_n_turns"]:
+    ) -> Literal["middle"]:
         if value not in ["middle", "last_n_turns"]:
             raise ValueError("Invalid truncate type")
 

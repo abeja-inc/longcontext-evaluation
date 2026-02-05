@@ -71,7 +71,7 @@ def _truncate_last_n_turns(
     max_context_length: int,
     max_output_tokens: int,
     buffer_tokens: int = 10,
-) -> str:
+) -> Conversation:
     messages = conversation.messages
     if not messages:
         raise ValueError("Conversation.messages is empty")
@@ -86,8 +86,8 @@ def _truncate_last_n_turns(
     if not user_idxs:
         raise ValueError("No user message found in conversation")
 
-    first_user = user_idxs[0]
-    last_user = user_idxs[-1]
+    first_user: int = user_idxs[0]
+    last_user: int = user_idxs[-1]
 
     # user のメッセージが一つだけ
     if first_user == last_user:
@@ -98,10 +98,10 @@ def _truncate_last_n_turns(
         return conversation
 
     # 必ず残すパート
-    prefix_indices = list(range(0, first_user))
-    second_user = user_idxs[1]
-    first_segment_indices = list(range(first_user, second_user))
-    last_user_indices = [last_user]
+    prefix_indices: list[int] = list(range(0, first_user))
+    second_user: int = user_idxs[1]
+    first_segment_indices: list[int] = list(range(first_user, second_user))
+    last_user_indices: list[int] = [last_user]
 
     # 削る対象
     middle_segments: list[list[int]] = []
@@ -111,7 +111,7 @@ def _truncate_last_n_turns(
         middle_segments.append(list(range(start, end)))
 
     # Truncation process
-    kept_indices = []
+    kept_indices: list[int] = []
     kept_indices.extend(prefix_indices)
     kept_indices.extend(first_segment_indices)
     kept_indices.extend(last_user_indices)
@@ -161,7 +161,7 @@ def truncate_text(
     max_context_length: int,
     max_output_tokens: int,
     tokenizer_type: Literal["huggingface", "tiktoken"],
-    truncate_type: Literal["middle", "last_n_turns"] == "middle",
+    truncate_type: Literal["middle", "last_n_turns"] = "middle",
     buffer_tokens: int = 10,
 ) -> str: ...
 
@@ -173,7 +173,7 @@ def truncate_text(
     max_context_length: int,
     max_output_tokens: int,
     tokenizer_type: Literal["huggingface", "tiktoken"],
-    truncate_type: Literal["middle", "last_n_turns"] == "last_n_turns",
+    truncate_type: Literal["middle", "last_n_turns"] = "last_n_turns",
     buffer_tokens: int = 10,
 ) -> Conversation: ...
 
@@ -184,7 +184,7 @@ def truncate_text(
     max_context_length: int,
     max_output_tokens: int,
     tokenizer_type: Literal["huggingface", "tiktoken"],
-    truncate_type: Literal["middle", "last_n_turns"],
+    truncate_type: Literal["middle", "last_n_turns"] = "middle",
     buffer_tokens: int = 10,
 ) -> str | Conversation:
     if truncate_type == "middle":

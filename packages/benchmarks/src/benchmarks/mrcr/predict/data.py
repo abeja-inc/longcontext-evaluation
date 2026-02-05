@@ -11,6 +11,7 @@ class OpenAIMRCRInput(Input):
 
 
 class OpenAIMRCROutput(Output):
+    answer: str
     random_string_to_prepend: str
     n_needles: int
     desired_msg_index: int

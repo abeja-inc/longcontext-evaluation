@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any
 
 from rapidfuzz.distance import LCSseq
 
@@ -36,10 +36,10 @@ class RULERMetrics(BaseMetrics[RULERSettings, RULEROutput]):
         if not output.output or output.output == default_error_message:
             return 0.0
 
-        ref_list = cast(list, output.answer)
+        ref_list: list[str] = output.answer
         return max(
             1.0 if _match_pattern(pred=output.output, ref=str(ref)) else 0.0
-            for ref in cast(list, ref_list)
+            for ref in ref_list
         )
 
     def _eval_substr_coverage(
@@ -63,7 +63,7 @@ class RULERMetrics(BaseMetrics[RULERSettings, RULEROutput]):
         if not output.output or output.output == default_error_message:
             return 0.0
 
-        ref_list = cast(list, output.answer)
+        ref_list: list[str] = output.answer
         return sum(
             [
                 1.0 if _match_pattern(pred=output.output, ref=ref) else 0.0
@@ -91,7 +91,7 @@ class RULERMetrics(BaseMetrics[RULERSettings, RULEROutput]):
         正解候補列 `ref_list`（= output.answer）に含まれる各 `ref` について f1 を計算し、
         その最大値をスコアとして返す。
         """
-        ref_list = cast(list, output.answer)
+        ref_list: list[str] = output.answer
         if not output.output or output.output == default_error_message:
             return 0.0
 
