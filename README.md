@@ -12,6 +12,15 @@ LLM のロングコンテキスト処理性能を評価するためのベンチ�
     - Nemotron-Persona_Japanese_QA
     - Context-Poisoning-Make-10-Puzzle
 
+補助機能
+- chat mode (text generation with chat-template), completion-mode (text completion without chat-template)
+    - データセットの形式に依存するためベンチマークごとにサポート状況が異なる
+        - chat: LongBench v2, OpenAI-MRCR, RULER
+        - completion: RULER
+- truncation: 入力プロンプト＋最大出力トークン数がモデルのコンテキスト長を超える場合に、入力プロンプトの一部を切り取る
+    - `middle` truncation (for LongBench v2, RULER): 入力プロンプトの中央を切り取る。プロンプトがテキスト形式のデータに使用。
+    - `last_n_turns` truncation (for RULER): 入力プロンプトの末尾の会話（最後のユーザプロンプトを除く）からNターンを切り取る。プロンプトが Messages (`[{"role": "user", "content": "..."}, ...]`)形式のデータに使用。
+
 ## Installation
 ### For Docker
 ```sh
@@ -112,7 +121,7 @@ python3 scripts/benchmarks/run.py \
 ## LongBench v2 dataset
 Total records: 503
 
-## `domain`
+### `domain`
 
 | value | count |
 |-------|-------|
@@ -124,7 +133,7 @@ Total records: 503
 | Long Structured Data Understanding | 33 |
 
 
-## `sub_domain`
+### `sub_domain`
 
 | value | count |
 |-------|-------|
@@ -146,7 +155,7 @@ Total records: 503
 | Knowledge graph reasoning | 15 |
 
 
-## `difficulty`
+### `difficulty`
 
 | value | count |
 |-------|-------|
@@ -154,7 +163,7 @@ Total records: 503
 | easy | 192 |
 
 
-## `length`
+### `length`
 
 | value | count |
 |-------|-------|

@@ -139,6 +139,7 @@ class BaseBenchmarkRunner(
                         output=out,
                         config=subtask_config,
                         settings=settings,
+                        default_error_message=generator.default_too_long_input_error_message,
                     )
                     for out in outputs
                 ]

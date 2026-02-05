@@ -42,11 +42,11 @@ def main(
     prompt_template_path: Path,
     dataset_configs: list[HuggingFaceDatasetConfig],
 ) -> None:
-    logegr = build_logger()
+    logger = build_logger()
 
     if download_datasource:
         for config in dataset_configs:
-            downloader = HuggingFaceDatasetDownloader(logger=logegr)
+            downloader = HuggingFaceDatasetDownloader(logger=logger)
             downloader.download_as_jsonl(config=config)
 
     if count_tokens:
@@ -54,12 +54,12 @@ def main(
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_path.expanduser())
         for config in dataset_configs:
             dataset_dir = config.output_filepath.expanduser().parent
-            for filepath in dataset_dir.glob("*.jsonl"):
+            for filepath in dataset_dir.glob("**/*.jsonl"):
                 output_filepath = (
                     filepath.parent / f"{filepath.stem}_with_token_count.jsonl"
                 )
-                with open(filepath, "r") as f:
-                    for i, line in enumerate(f):
+                with open(filepath, "r") as in_f, open(output_filepath, "a") as out_f:
+                    for i, line in enumerate(in_f):
                         data = json.loads(line)
                         user_prompt = prompt_template.substitute(
                             {
@@ -78,8 +78,7 @@ def main(
                         )
                         data["tokens"] = len(tokens)
                         data["sample_id"] = i
-                        with open(output_filepath, "a") as out_f:
-                            out_f.write(json.dumps(data) + "\n")
+                        out_f.write(json.dumps(data) + "\n")
 
 
 if __name__ == "__main__":

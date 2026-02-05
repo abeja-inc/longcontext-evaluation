@@ -37,47 +37,47 @@ benchmarks:
         mrcr_eng:
             2needle:
                 language: english
-                dataset_filename: english/2needle.parquet
+                dataset_filename: english/2needle/mrcr_with_token_count.jsonl
                 inference_mode: chat
-                metric: all
+                metric: prefix_match_similarity
                 settings:
-                    truncate: true
+                    use_truncate: true
             4needle:
                 language: english
-                dataset_filename: english/4needle.parquet
+                dataset_filename: english/4needle/mrcr_with_token_count.jsonl
                 inference_mode: chat
-                metric: all
+                metric: prefix_match_similarity
                 settings:
-                    truncate: true
+                    use_truncate: true
             8needle:
                 language: english
-                dataset_filename: english/8needle.parquet
+                dataset_filename: english/8needle/mrcr_with_token_count.jsonl
                 inference_mode: chat
-                metric: all
+                metric: prefix_match_similarity
                 settings:
-                    truncate: true
+                    use_truncate: true
         mrcr_jpn:
             2needle:
                 language: japanese
-                dataset_filename: japanese/2needle.parquet
+                dataset_filename: japanese/2needle/mrcr_japanese_with_token_count.jsonl
                 inference_mode: chat
-                metric: all
+                metric: prefix_match_similarity
                 settings:
-                    truncate: true
+                    use_truncate: true
             4needle:
                 language: japanese
-                dataset_filename: japanese/4needle.parquet
+                dataset_filename: japanese/4needle/mrcr_japanese_with_token_count.jsonl
                 inference_mode: chat
-                metric: all
+                metric: prefix_match_similarity
                 settings:
-                    truncate: true
+                    use_truncate: true
             8needle:
                 language: japanese
-                dataset_filename: japanese/8needle.parquet
+                dataset_filename: japanese/8needle/mrcr_japanese_with_token_count.jsonl
                 inference_mode: chat
-                metric: all
+                metric: prefix_match_similarity
                 settings:
-                    truncate: true
+                    use_truncate: true
 
     ruler:
         niah:
@@ -87,28 +87,28 @@ benchmarks:
                 inference_mode: chat
                 metric: all
                 settings:
-                    truncate: true
+                    use_truncate: true
             niah_multikey_1:
                 language: english
                 dataset_filename: niah/niah_multikey_1.jsonl
                 inference_mode: chat
                 metric: all
                 settings:
-                    truncate: true
+                    use_truncate: true
             niah_multikey_2:
                 language: english
                 dataset_filename: niah/niah_multikey_2.jsonl
                 inference_mode: chat
                 metric: all
                 settings:
-                    truncate: true
+                    use_truncate: true
             niah_multikey_3:
                 language: english
                 dataset_filename: niah/niah_multikey_3.jsonl
                 inference_mode: chat
                 metric: all
                 settings:
-                    truncate: true
+                    use_truncate: true
         qa:
             squad:
                 language: english
@@ -116,25 +116,25 @@ benchmarks:
                 inference_mode: chat
                 metric: part
                 settings:
-                    truncate: true
+                    use_truncate: true
             hotpotqa:
                 language: english
                 dataset_filename: qa/hotpotqa.jsonl
                 inference_mode: chat
                 metric: part
                 settings:
-                    truncate: true
+                    use_truncate: true
             jsquad:
                 language: japanese
                 dataset_filename: qa/jsquad.jsonl
                 inference_mode: chat
                 metric: part
                 settings:
-                    truncate: true
+                    use_truncate: true
             jemhopqa:
                 language: japanese
                 dataset_filename: qa/jemhopqa.jsonl
                 inference_mode: chat
                 metric: part
                 settings:
-                    truncate: true
+                    use_truncate: true

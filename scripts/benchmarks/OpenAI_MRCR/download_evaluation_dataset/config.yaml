@@ -1,4 +1,6 @@
 download_datasource: true
+count_tokens: true
+tokenizer_path: models/Qwen3-0.6B
 dataset_configs:
     openai_mrcr:
         output_filepath: datasets/benchmarks/openai_mrcr/english/mrcr.jsonl

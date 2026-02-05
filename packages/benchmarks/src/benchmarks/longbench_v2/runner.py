@@ -3,7 +3,7 @@ from collections import defaultdict
 from string import Template
 from typing import Any
 
-from llm_inference.base import BaseGenerator, Prompt
+from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Response
 from tqdm import tqdm
 
@@ -16,11 +16,11 @@ from .._core.evaluate.table import (
 from .._core.predict import truncate_text
 from .._core.runner import BaseBenchmarkRunner
 from ..config import SubtaskConfig
-from .evaluate import (
+from .evaluate.metrics import LongBenchV2Metrics
+from .evaluate.table import (
     LongBenchV2LeaderBoardTableRow,
     LongBenchV2OutputsTableRow,
 )
-from .evaluate.metrics import LongBenchV2Metrics
 from .predict import build_input_prompt
 from .predict.data import LongBenchV2Input, LongBenchV2Output
 from .settings import LongBenchV2Settings
@@ -131,7 +131,7 @@ class LongBenchV2Runner(
                     assert cot_template is not None
                     cot_templates.append(cot_template)
 
-                if settings.truncate_type is not None:
+                if settings.use_truncate:
                     self.logger.info("Truncate input prompt")
                     truncated_user_prompt = truncate_text(
                         text=user_prompt,

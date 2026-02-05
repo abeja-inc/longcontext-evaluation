@@ -26,9 +26,14 @@ class LongBenchV2Metrics(BaseMetrics[LongBenchV2Settings, LongBenchV2Output]):
 
     def _exact_match(
         self,
+        *,
         output: LongBenchV2Output,
+        default_error_message: str,
         compensate_missing: bool = False,
     ) -> float:
+        if output.output == default_error_message:
+            return 0.25 if compensate_missing else 0.0
+
         parsed_output = self._extract_answer(output.output)
         answer = output.answer if output.answer in ["A", "B", "C", "D"] else None
 
@@ -44,6 +49,12 @@ class LongBenchV2Metrics(BaseMetrics[LongBenchV2Settings, LongBenchV2Output]):
         output: LongBenchV2Output,
         config: SubtaskConfig,
         settings: LongBenchV2Settings,
+        default_error_message: str,
         **kwargs: Any,
     ) -> float:
-        return self._exact_match(output, **settings.metric_kwargs, **kwargs)
+        return self._exact_match(
+            output=output,
+            default_error_message=default_error_message,
+            **settings.metric_kwargs,
+            **kwargs,
+        )

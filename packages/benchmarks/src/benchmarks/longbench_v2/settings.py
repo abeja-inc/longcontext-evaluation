@@ -1,8 +1,8 @@
 from pathlib import Path
 from string import Template
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from .._core.settings import BaseSettings
 
@@ -38,9 +38,23 @@ class Prompt(BaseModel):
 
 
 class LongBenchV2Settings(BaseSettings):
+    truncate_type: Literal["middle", "last_n_turns"] = "middle"
     rag_topn: int
     cot: bool
     no_context: bool
     compensate_missing: bool
     prompt: Prompt
     metric_kwargs: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("truncate_type")
+    def _check_truncate_type(
+        cls, value: Literal["middle", "last_n_turns"]
+    ) -> Literal["last_n_turns"]:
+        if value not in ["middle", "last_n_turns"]:
+            raise ValueError("Invalid truncate type")
+
+        if value == "middle":
+            raise ValueError(
+                "Unsupported configuration: truncate type 'middle' is not recommended for the benchmark LongBench V2."
+            )
+        return value

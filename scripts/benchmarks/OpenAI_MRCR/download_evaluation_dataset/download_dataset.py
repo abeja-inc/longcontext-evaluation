@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 from pathlib import Path
 
@@ -7,6 +8,7 @@ from benchmarks.dataset_downloader import (
     HuggingFaceDatasetConfig,
     HuggingFaceDatasetDownloader,
 )
+from transformers import AutoTokenizer
 
 
 def parse_args() -> argparse.Namespace:
@@ -33,14 +35,38 @@ def build_logger() -> logging.Logger:
 
 
 def main(
-    download_datasource: bool, dataset_configs: list[HuggingFaceDatasetConfig]
+    download_datasource: bool,
+    count_tokens: bool,
+    tokenizer_path: Path,
+    dataset_configs: list[HuggingFaceDatasetConfig],
 ) -> None:
-    logegr = build_logger()
+    logger = build_logger()
 
     if download_datasource:
         for config in dataset_configs:
-            downloader = HuggingFaceDatasetDownloader(logger=logegr)
+            downloader = HuggingFaceDatasetDownloader(logger=logger)
             downloader.download_as_jsonl(config=config)
+
+    if count_tokens:
+        tokenizer = AutoTokenizer.from_pretrained(tokenizer_path.expanduser())
+        for config in dataset_configs:
+            dataset_dir = config.output_filepath.expanduser().parent
+            logger.info(f"Processing dataset directory: {dataset_dir}")
+            for filepath in dataset_dir.glob("**/*.jsonl"):
+                output_filepath = (
+                    filepath.parent / f"{filepath.stem}_with_token_count.jsonl"
+                )
+                with open(filepath, "r") as in_f, open(output_filepath, "a") as out_f:
+                    for i, line in enumerate(in_f):
+                        data = json.loads(line)
+                        tokens = tokenizer.apply_chat_template(
+                            json.loads(data["prompt"]),
+                            add_generation_prompt=True,
+                            tokenize=True,
+                        )
+                        data["token_counts"] = len(tokens)
+                        data["sample_id"] = i
+                        out_f.write(json.dumps(data) + "\n")
 
 
 if __name__ == "__main__":
@@ -49,6 +75,8 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     download_datasource = config["download_datasource"]
+    count_tokens = config["count_tokens"]
+    tokenizer_path = Path(config["tokenizer_path"])
     dataset_configs = [
         HuggingFaceDatasetConfig.model_validate(config["dataset_configs"][key])
         for key in config["dataset_configs"]
@@ -56,5 +84,7 @@ if __name__ == "__main__":
 
     main(
         download_datasource=download_datasource,
+        count_tokens=count_tokens,
+        tokenizer_path=tokenizer_path,
         dataset_configs=dataset_configs,
     )

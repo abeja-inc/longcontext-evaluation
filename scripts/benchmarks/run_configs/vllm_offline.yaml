@@ -1,6 +1,6 @@
 base_config: scripts/benchmarks/run_configs/base.yaml
 
-run_name: Qwen3-0.6B-enable-thinking/trial_1
+run_name: Qwen3-0.6B-enable-thinking/trial_2
 llm:
     generator:
         type: vllm_offline_inference
