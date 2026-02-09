@@ -9,7 +9,7 @@ from benchmarks.dataset_downloader import (
     URLConfig,
     URLDownloader,
 )
-from benchmarks.ruler.dataset_downloader import EssayConfig, EssayDownloader
+from benchmarks.ruler.essay_downloader import EssayConfig, EssayDownloader
 
 
 def parse_args() -> argparse.Namespace:

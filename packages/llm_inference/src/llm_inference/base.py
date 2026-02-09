@@ -40,14 +40,23 @@ class BaseGenerator(ABC):
         **kwargs: Any,
     ) -> bool:
         token_count: int = self._count_tokens(input=input, **kwargs)
-        return token_count + max_output_tokens + buffer_tokens > max_context_length
+        flag = token_count + max_output_tokens + buffer_tokens > max_context_length
+        if flag:
+            self.logger.warning(
+                "Input is too long. input tokens(%d) + max output tokens(%d) + buffer tokens(%d) > max context length(%d)",
+                token_count,
+                max_output_tokens,
+                buffer_tokens,
+                max_context_length,
+            )
+        return flag
 
     def _filter_long_inputs(
         self,
         inputs: list[InputType],
         max_context_length: int,
         max_output_tokens: int,
-        buffer_tokens: int,
+        buffer_tokens: int = 0,
         **kwargs: Any,
     ) -> tuple[list[InputType], list[int]]:
         filtered_inputs: list[InputType] = []
@@ -66,9 +75,31 @@ class BaseGenerator(ABC):
         return filtered_inputs, skip_idx
 
     @abstractmethod
-    def chat(
+    def _chat(
         self, *, conversations: list[Conversation], **kwargs: Any
     ) -> list[Response]: ...
 
+    def chat(
+        self, *, conversations: list[Conversation], **kwargs: Any
+    ) -> list[Response]:
+        outputs = self._chat(conversations=conversations, **kwargs)
+        if len(outputs) != len(conversations):
+            raise RuntimeError(
+                f"{self.__class__.__name__}._chat must return same length as input: "
+                f"in={len(conversations)} out={len(outputs)}"
+            )
+        return outputs
+
     @abstractmethod
-    def completion(self, *, prompts: list[Prompt], **kwargs: Any) -> list[Response]: ...
+    def _completion(
+        self, *, prompts: list[Prompt], **kwargs: Any
+    ) -> list[Response]: ...
+
+    def completion(self, *, prompts: list[Prompt], **kwargs: Any) -> list[Response]:
+        outputs = self._completion(prompts=prompts, **kwargs)
+        if len(outputs) != len(prompts):
+            raise RuntimeError(
+                f"{self.__class__.__name__}._completion must return same length as input: "
+                f"in={len(prompts)} out={len(outputs)}"
+            )
+        return outputs

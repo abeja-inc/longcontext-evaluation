@@ -4,12 +4,27 @@ LLM のロングコンテキスト処理性能を評価するためのベンチ�
 
 ## Features
 以下の評価をサポート
-- RULER の NIAH（英） および QA（日英） タスク
-- LongBench v2（英）
-- OpenAI-MRCR（日英）
+- RULER: [NVIDIA/RULER](https://github.com/NVIDIA/RULER)
+  - NIAH（英） および QA（日英） タスク
+    - QA datasets: SQuAD, HotpotQA, JSQuAD, JEMHopQA
+- LongBench v2: [THUDM/LongBench](https://github.com/THUDM/LongBench)
+  - 英
+- OpenAI-MRCR: [openai/mrcr](https://huggingface.co/datasets/openai/mrcr)
+  - 日英（日本語は英語データセットを翻訳）
 - experimental
-    - Nemotron-Persona_Japanese_QA
-    - Context-Poisoning-Make-10-Puzzle
+    - Nemotron-Persona_Japanese_QA (To be added)
+      - 日
+    - Context-Poisoning-Make-10-Puzzle (To be added)
+      - 日
+
+補助機能
+- chat mode (text generation with chat-template), completion-mode (text completion without chat-template)
+    - データセットの形式に依存するためベンチマークごとにサポート状況が異なる
+        - chat: LongBench v2, OpenAI-MRCR, RULER
+        - completion: RULER
+- truncation: 入力プロンプト＋最大出力トークン数がモデルのコンテキスト長を超える場合に、入力プロンプトの一部を切り取る
+    - `middle` truncation (for LongBench v2, RULER): 入力プロンプトの中央を切り取る。プロンプトがテキスト形式のデータに使用。
+    - `last_n_turns` truncation (for RULER): 入力プロンプトの末尾の会話（最後のユーザプロンプトを除く）からNターンを切り取る。プロンプトが Messages (`[{"role": "user", "content": "..."}, ...]`)形式のデータに使用。
 
 ## Installation
 ### For Docker
@@ -21,10 +36,22 @@ docker compose -f containers/docker/docker-compose.yaml run --rm vllm
 docker compose -f containers/docker/docker-compose.yaml run --rm --entrypoint /bin/bash vllm
 ```
 
-### For slurm
+#### Optional) Update dependencies
+依存関係を更新したい場合、
+
 ```sh
-sbatch containers/enroot/sbatch_make_image.sh
+docker compose -f containers/docker/docker-compose-update-dependancies.yaml run --rm --entrypoint /bin/bash vllm
 ```
+でベースイメージのコンテナを作成し、
+
+1. `uv add ...` / `uv remove ...`
+2. `uv pip compile pyproject.toml --constraint base-image-constraints.txt`
+3. `uv lock`
+
+を行って `uv.lock` を更新してください。その上で、ベンチマーク実行用のコンテナを image の build から作成し直してください。
+
+### For slurm
+TBD
 
 ## Download models
 ### HuggingFace
@@ -66,3 +93,91 @@ python3 scripts/benchmarks/RULER/synthesize_evaluation_dataset/niah/make_dataset
 python3 scripts/benchmarks/RULER/synthesize_evaluation_dataset/qa/make_dataset.py \
     --config scripts/benchmarks/RULER/synthesize_evaluation_dataset/qa/config.yaml
 ```
+
+## Benchmark Execution
+統一実行スクリプトでベンチマーク評価を実行します。
+
+**Configuration**
+- benchmark settings: [base_config.yaml](scripts/benchmarks/run_configs/base.yaml)
+- model setting examples:
+    - [OpenAI API](scripts/benchmarks/run_configs/openai_api.yml)
+    - [vLLM OpenAI-compatible Server](scripts/benchmarks/run_configs/openai_compatible.yml)
+    - [vLLM Offline Inference](scripts/benchmarks/run_configs/vllm_offline.yml)
+
+**Execution**
+- [run.py](scripts/benchmarks/run.py)
+
+### vLLM Offline Inference
+```sh
+CUDA_VISIBLE_DEVICES=8 python3 scripts/benchmarks/run.py \
+    --config scripts/benchmarks/run_configs/vllm_offline.yaml
+```
+
+### OpenAI API
+```sh
+export OPENAI_API_KEY=your_key
+python3 scripts/benchmarks/run.py \
+    --config scripts/benchmarks/run_configs/openai_api.yaml
+```
+
+### vLLM OpenAI-compatible Server
+```sh
+export API_KEY=your_key
+export BASE_URL=http://localhost:8000/v1
+python3 scripts/benchmarks/run.py \
+    --config scripts/benchmarks/run_configs/vllm_openai_compatible.yaml
+```
+
+# Other information
+## LongBench v2 dataset
+Total records: 503
+
+### `domain`
+
+| value | count |
+|-------|-------|
+| Single-Document QA | 175 |
+| Multi-Document QA | 125 |
+| Long In-context Learning | 81 |
+| Code Repository Understanding | 50 |
+| Long-dialogue History Understanding | 39 |
+| Long Structured Data Understanding | 33 |
+
+
+### `sub_domain`
+
+| value | count |
+|-------|-------|
+| Academic | 94 |
+| Code repo QA | 50 |
+| Governmental | 41 |
+| User guide QA | 40 |
+| Financial | 37 |
+| Legal | 33 |
+| Literary | 30 |
+| Multi-news | 23 |
+| Detective | 22 |
+| Many-shot learning | 21 |
+| New language translation | 20 |
+| Event ordering | 20 |
+| Agent history QA | 20 |
+| Dialogue history QA | 19 |
+| Table QA | 18 |
+| Knowledge graph reasoning | 15 |
+
+
+### `difficulty`
+
+| value | count |
+|-------|-------|
+| hard | 311 |
+| easy | 192 |
+
+
+### `length`
+
+| value | count |
+|-------|-------|
+| medium | 215 |
+| short | 180 |
+| long | 108 |

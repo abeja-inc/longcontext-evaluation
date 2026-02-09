@@ -108,7 +108,7 @@ class OpenAIGenerator(BaseGenerator):
                 )
         return responses
 
-    def chat(
+    def _chat(
         self,
         *,
         conversations: list[Conversation],
@@ -121,7 +121,7 @@ class OpenAIGenerator(BaseGenerator):
             **kwargs,
         )
 
-    def completion(
+    def _completion(
         self,
         *,
         prompts: list[Prompt],

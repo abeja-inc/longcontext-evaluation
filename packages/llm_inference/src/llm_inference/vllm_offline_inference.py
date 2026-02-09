@@ -89,15 +89,17 @@ class VLLMOfflineGenerator(BaseGenerator):
             formatted_responses.append(response)
         return formatted_responses
 
-    def chat(
+    def _chat(
         self,
         *,
         conversations: list[Conversation],
-        sampling_params: SamplingParams,
-        buffer_tokens: int = 10,
+        sampling_params: SamplingParams | dict[str, Any],
+        buffer_tokens: int = 0,
         chat_template_kwargs: dict[str, Any] = {},
         **kwargs: Any,
     ) -> list[Response]:
+        if isinstance(sampling_params, dict):
+            sampling_params = SamplingParams(**sampling_params)
         if sampling_params:
             sampling_params.max_tokens = self.max_output_tokens
         else:
@@ -121,12 +123,12 @@ class VLLMOfflineGenerator(BaseGenerator):
             inputs=conversations, vllm_responses=responses, skip_idx=skip_idx
         )
 
-    def completion(
+    def _completion(
         self,
         *,
         prompts: list[Prompt],
         sampling_params: SamplingParams | None = None,
-        buffer_tokens: int = 10,
+        buffer_tokens: int = 0,
         **kwargs: Any,
     ) -> list[Response]:
         if sampling_params:

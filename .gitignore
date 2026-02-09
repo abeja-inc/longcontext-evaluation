@@ -210,3 +210,4 @@ __marimo__/
 !/datasets/.gitkeep
 /models
 !/models/.gitkeep
+**/*output*
