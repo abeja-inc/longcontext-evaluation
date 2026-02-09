@@ -2,6 +2,8 @@
 ## Overview
 LLM のロングコンテキスト処理性能を評価するためのベンチマーク実装
 
+設計の概要は [DESIGN.md](DESIGN.md) を参照してください。
+
 ## Features
 以下の評価をサポート
 - RULER: [NVIDIA/RULER](https://github.com/NVIDIA/RULER)
