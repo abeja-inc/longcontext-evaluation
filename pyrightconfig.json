@@ -7,6 +7,7 @@
         "packages/llm_inference/src/llm_inference/openai_api_compatible.py",
         "packages/llm_inference/src/llm_inference/vllm_offline_inference.py",
         "packages/llm_inference/src/llm_inference/sglang_offline_inference.py",
+        "packages/llm_inference/src/llm_inference/token_counter.py",
         "tests/**/*.py",
         "smoke_tests/**/*.py",
         "scripts/**/*.py"

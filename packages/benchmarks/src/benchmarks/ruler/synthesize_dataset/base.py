@@ -4,9 +4,8 @@ from logging import Logger
 from typing import Any, Generic, Sequence, Type, TypeVar
 
 import numpy as np
-from transformers import (  # pyright: ignore[reportMissingImports]
-    AutoTokenizer,  # pyright: ignore[reportUnknownVariableType]
-)
+from llm_inference.data import Conversation, Message
+from llm_inference.token_counter import TokenCounter
 
 from .config import BaseSynthesisConfig
 from .data_model import BaseDatasetSchema, Content
@@ -31,8 +30,9 @@ class BaseDatasetGenerator(ABC, Generic[SchemaType, ConfigType]):
         random.seed(config.random_seed)
         np.random.seed(config.random_seed)
         self.config: ConfigType = config
-        self.tokenizer = AutoTokenizer.from_pretrained(  # pyright: ignore[reportUnknownMemberType]
-            config.hf_tokenizer_path, trust_remote_code=True
+        self.token_counter = TokenCounter(
+            tokenizer_name_or_path=config.tokenizer_name_or_path,
+            tokenizer_type=config.tokenizer_type,
         )
         self.logger: Logger = logger
         self._prepared = False
@@ -68,19 +68,19 @@ class BaseDatasetGenerator(ABC, Generic[SchemaType, ConfigType]):
         """
 
         if with_chat_template:
-            prompt: str = (  # pyright: ignore[reportUnknownVariableType]
-                self.tokenizer.apply_chat_template(  # pyright: ignore[reportUnknownMemberType]
-                    [{"role": "user", "content": user_prompt}],
-                    tokenize=False,
-                    add_generation_prompt=True,
-                    **self.config.apply_chat_template_kwargs,
-                )
-                + answer_prefix
+            conversation = Conversation(
+                messages=[
+                    Message(role="user", content=user_prompt),
+                    Message(role="assistant", content=answer_prefix),
+                ]
             )
-        else:
-            prompt = user_prompt + answer_prefix
-        ids = self.tokenizer.encode(prompt)  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-        return len(ids)  # pyright: ignore[reportUnknownArgumentType]
+            return self.token_counter.count_tokens(
+                conversation,
+                add_generation_prompt=False,
+                **self.config.apply_chat_template_kwargs,
+            )
+        prompt = user_prompt + answer_prefix
+        return self.token_counter.count_tokens(prompt)
 
     def _within_context_limit(
         self, prompt_tokens: int, max_context_length: int

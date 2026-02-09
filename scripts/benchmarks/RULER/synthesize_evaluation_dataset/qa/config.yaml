@@ -2,7 +2,8 @@ dataset_root: datasets/benchmarks/ruler
 
 base_config:
     task: qa
-    hf_tokenizer_path: Qwen/Qwen3-0.6B
+    tokenizer_name_or_path: Qwen/Qwen3-0.6B
+    tokenizer_type: huggingface
     max_new_tokens: 128
     context_lengths: [4000, 8000, 16000, 32000, 64000, 128000]
     num_samples: 200

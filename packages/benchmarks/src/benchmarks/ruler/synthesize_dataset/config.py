@@ -9,7 +9,8 @@ class BaseSynthesisConfig(BaseModel):
     task: str  # タスク名
     subset: str  # サブセット名
 
-    hf_tokenizer_path: str = "Qwen/Qwen3-4B"
+    tokenizer_name_or_path: str = "Qwen/Qwen3-4B"
+    tokenizer_type: Literal["huggingface", "tiktoken"] = "huggingface"
     max_new_tokens: int = 32  # LLM推論時の生成トークン長
     apply_chat_template_kwargs: dict[str, Any] = {"enable_thinking": True}
     task_prompt_template: str
