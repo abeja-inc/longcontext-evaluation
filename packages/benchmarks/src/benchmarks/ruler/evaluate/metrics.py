@@ -14,9 +14,10 @@ def _match_pattern(pred: str, ref: str) -> bool:
 
 class RULERMetrics(BaseMetrics[RULERSettings, RULEROutput]):
     _metric_registry = {
-        "substr_any": "eval_substr_any",
-        "substr_coverage": "eval_substr_coverage",
-        "lcs_f1_max": "eval_lcs_f1_max",
+        "substr_any": "eval_substr_any",  # metric `part` of RULER
+        "substr_coverage": "eval_substr_coverage",  # metric `all` of RULER
+        "lcs_f1_max": "eval_lcs_f1_max",  # substitution for `substr_any`
+        "lcs_f1_coverage": "eval_lcs_f1_coverage",  # substitution for `substr_coverage`
     }
 
     def _eval_substr_any(
@@ -108,6 +109,56 @@ class RULERMetrics(BaseMetrics[RULERSettings, RULEROutput]):
                 best_f1 = f1
         return best_f1
 
+    def _eval_lcs_f1_coverage(
+        self,
+        *,
+        default_error_message: str,
+        output: RULEROutput,
+        **kwargs: Any,
+    ) -> float:
+        """
+        文字レベル LCS に基づく F1 のカバレッジ（COVERAGE）。
+
+        `ref_list` 内の各参照文字列 `ref` について LCS-F1 を計算し、
+        その平均値を返す。
+
+        スコア:
+            - score = sum_i f1(pred, ref_i) / len(ref_list)
+            - 値域は [0.0, 1.0]
+        """
+        if not output.output or output.output == default_error_message:
+            return 0.0
+
+        ref_list: list[str] = output.answer
+        if not ref_list:
+            return 0.0
+
+        total_f1 = 0.0
+        for ref in ref_list:
+            ref_norm = str(ref).lower()
+            if not ref_norm:
+                continue
+
+            lcs_len = LCSseq.similarity(output.output, ref_norm)
+            if lcs_len <= 0:
+                continue
+
+            pred_len = len(output.output)
+            ref_len = len(ref_norm)
+            if pred_len == 0 or ref_len == 0:
+                continue
+
+            precision = lcs_len / pred_len
+            recall = lcs_len / ref_len
+            denom = precision + recall
+            if denom == 0:
+                continue
+
+            f1 = (2 * precision * recall) / denom
+            total_f1 += f1
+
+        return total_f1 / len(ref_list)
+
     def eval_substr_any(
         self,
         output: RULEROutput,
@@ -147,6 +198,21 @@ class RULERMetrics(BaseMetrics[RULERSettings, RULEROutput]):
         **kwargs: Any,
     ) -> float:
         return self._eval_lcs_f1_max(
+            output=output,
+            default_error_message=default_error_message,
+            **settings.metric_kwargs,
+            **kwargs,
+        )
+
+    def eval_lcs_f1_coverage(
+        self,
+        output: RULEROutput,
+        config: SubtaskConfig,
+        settings: RULERSettings,
+        default_error_message: str,
+        **kwargs: Any,
+    ) -> float:
+        return self._eval_lcs_f1_coverage(
             output=output,
             default_error_message=default_error_message,
             **settings.metric_kwargs,

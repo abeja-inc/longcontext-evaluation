@@ -9,7 +9,7 @@ class RULERInput(Input):
     prompt: str
     answer_prefix: str
     answer: list[str]
-    needle_depth: float
+    needle_depth: list[float]
 
     # Optional (NIAH)
     needles: list[str] | None = None
@@ -20,7 +20,7 @@ class RULERInput(Input):
 
     @model_validator(mode="before")
     def validate_content(cls, values: dict[str, Any]) -> dict[str, Any]:
-        values["prompt"] = values["content"]["prompt"]
+        values["prompt"] = values["content"]["user_prompt"]
         values["answer"] = values["content"]["outputs"]
         values["answer_prefix"] = values["content"]["answer_prefix"]
         values["needle_depth"] = values["target_depth_percent"]
@@ -29,4 +29,4 @@ class RULERInput(Input):
 
 class RULEROutput(Output):
     answer: list[str]
-    needle_depth: float
+    needle_depth: list[float]

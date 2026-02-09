@@ -5,8 +5,7 @@ from ..._core.evaluate.table import BaseTableRow, OutputsTableRow
 
 @dataclass(frozen=True)
 class RULEROutputsTableRow(OutputsTableRow):
-    target_context_length: int
-    target_depth_percent: float
+    needle_depth: list[float]
 
 
 @dataclass(frozen=True)
