@@ -1,0 +1,17 @@
+base_config: scripts/benchmarks/run_configs/base.yaml
+
+run_name: ${MODEL_NAME}/trial_1
+llm:
+    generator:
+        type: openai_api_compatible
+        client:
+            base_url: ${BASE_URL}
+            api_key: ${API_KEY}
+        model_name: ${MODEL_NAME}
+        max_context_length: 8192
+        max_output_tokens: 256
+
+    generation_kwargs:
+        long_input_filter_kwargs:
+            buffer_tokens: 10
+        temperature: 0.2

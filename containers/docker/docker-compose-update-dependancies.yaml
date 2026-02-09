@@ -1,0 +1,25 @@
+services:
+    vllm:
+        container_name: longcontext-evaluation-vllm-dev
+        image: longcontext-evaluation-vllm-openai-dev:${TAG:-latest}
+        build:
+            context: ../..
+            dockerfile: containers/docker/update_dependencies.Dockerfile
+            args:
+                BASE_IMAGE: vllm/vllm-openai:v0.15.0
+        working_dir: /workspace
+        volumes:
+            - ../..:/workspace
+            - ../../.cache:/.cache
+        deploy:
+            resources:
+                reservations:
+                    devices:
+                        - driver: nvidia
+                          count: all
+                          capabilities: [gpu]
+        environment:
+            - HF_HUB_ENABLE_HF_TRANSFER=1
+            - HF_HOME=/.cache/huggingface
+            - NVIDIA_VISIBLE_DEVICES=all
+            - NVIDIA_DRIVER_CAPABILITIES=utility,compute

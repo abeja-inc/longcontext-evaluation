@@ -1,14 +1,14 @@
 Please read the following text and answer the questions below.
 
 <text>
-$DOC$
+$DOC
 </text>
 
-What is the correct answer to this question: $Q$
+What is the correct answer to this question: $Q
 Choices:
-(A) $C_A$
-(B) $C_B$
-(C) $C_C$
-(D) $C_D$
+(A) $C_A
+(B) $C_B
+(C) $C_C
+(D) $C_D
 
 Let’s think step by step:

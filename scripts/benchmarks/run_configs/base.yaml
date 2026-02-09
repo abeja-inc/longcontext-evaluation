@@ -1,0 +1,141 @@
+output_root: outputs/benchmarks
+dataset_root: datasets/benchmarks
+batchsize: 1
+
+run_name: null
+llm: null
+
+wandb:
+    null
+    # entity: xxx
+    # project: longcontext_evaluation_benchmark
+
+benchmarks:
+    # Add your benchmark configurations here
+    longbench_v2:
+        longbench_v2_eng:
+            all:
+                language: english
+                dataset_filename: english/longbench_v2_with_token_count.jsonl
+                inference_mode: chat
+                metric: parsed_answer_match
+                settings:
+                    use_truncate: true
+                    rag_topn: 0
+                    cot: false
+                    no_context: false
+                    compensate_missing: false
+                    prompt:
+                        dirpath: scripts/benchmarks/LongBench_v2/prompts
+                        files:
+                            zero_shot: 0shot.txt
+                            zero_shot_cot: 0shot_cot.txt
+                            zero_shot_cot_ans: 0shot_cot_ans.txt
+                            zero_shot_no_context: 0shot_no_context.txt
+                            zero_shot_rag: 0shot_rag.txt
+
+    openai_mrcr:
+        mrcr_eng:
+            2needle:
+                language: english
+                dataset_filename: english/2needle/mrcr_with_token_count.jsonl
+                inference_mode: chat
+                metric: prefix_match_similarity
+                settings:
+                    use_truncate: true
+            4needle:
+                language: english
+                dataset_filename: english/4needle/mrcr_with_token_count.jsonl
+                inference_mode: chat
+                metric: prefix_match_similarity
+                settings:
+                    use_truncate: true
+            8needle:
+                language: english
+                dataset_filename: english/8needle/mrcr_with_token_count.jsonl
+                inference_mode: chat
+                metric: prefix_match_similarity
+                settings:
+                    use_truncate: true
+        mrcr_jpn:
+            2needle:
+                language: japanese
+                dataset_filename: japanese/2needle/mrcr_japanese_with_token_count.jsonl
+                inference_mode: chat
+                metric: prefix_match_similarity
+                settings:
+                    use_truncate: true
+            4needle:
+                language: japanese
+                dataset_filename: japanese/4needle/mrcr_japanese_with_token_count.jsonl
+                inference_mode: chat
+                metric: prefix_match_similarity
+                settings:
+                    use_truncate: true
+            8needle:
+                language: japanese
+                dataset_filename: japanese/8needle/mrcr_japanese_with_token_count.jsonl
+                inference_mode: chat
+                metric: prefix_match_similarity
+                settings:
+                    use_truncate: true
+
+    ruler:
+        niah:
+            niah_single_2:
+                language: english
+                dataset_filename: niah/niah_single_2.jsonl
+                inference_mode: chat
+                metric: substr_coverage # or lcs_f1_coverage
+                settings:
+                    use_truncate: true
+            niah_multikey_1:
+                language: english
+                dataset_filename: niah/niah_multikey_1.jsonl
+                inference_mode: chat
+                metric: substr_coverage # or lcs_f1_coverage
+                settings:
+                    use_truncate: true
+            niah_multikey_2:
+                language: english
+                dataset_filename: niah/niah_multikey_2.jsonl
+                inference_mode: chat
+                metric: substr_coverage # or lcs_f1_coverage
+                settings:
+                    use_truncate: true
+            niah_multikey_3:
+                language: english
+                dataset_filename: niah/niah_multikey_3.jsonl
+                inference_mode: chat
+                metric: substr_coverage # or lcs_f1_coverage
+                settings:
+                    use_truncate: true
+        qa:
+            squad:
+                language: english
+                dataset_filename: qa/squad.jsonl
+                inference_mode: chat
+                metric: substr_any # or lcs_f1_max
+                settings:
+                    use_truncate: true
+            hotpotqa:
+                language: english
+                dataset_filename: qa/hotpotqa.jsonl
+                inference_mode: chat
+                metric: substr_any # or lcs_f1_max
+                settings:
+                    use_truncate: true
+            jsquad:
+                language: japanese
+                dataset_filename: qa/jsquad.jsonl
+                inference_mode: chat
+                metric: substr_any # or lcs_f1_max
+                settings:
+                    use_truncate: true
+            jemhopqa:
+                language: japanese
+                dataset_filename: qa/jemhopqa.jsonl
+                inference_mode: chat
+                metric: substr_any # or lcs_f1_max
+                settings:
+                    use_truncate: true

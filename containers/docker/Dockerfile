@@ -25,9 +25,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     -e /workspace/packages/benchmarks \
     -e /workspace/packages/llm_inference
 
-RUN python3 -m pip install -U "transformers"
-RUN python3 -m pip install sglang
-
 # Check imports (use the venv python explicitly)
 ENTRYPOINT ["python3", "-c"]
 CMD ["import benchmarks, llm_inference; print('IMPORT CHECK OK')"]
