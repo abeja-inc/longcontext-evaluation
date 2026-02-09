@@ -1,6 +1,36 @@
 # DESIGN.md
 このドキュメントは、`packages/llm_inference` と `packages/benchmarks` の実装（設計思想・構成・使い方）を整理したものです。コードの読み取り結果に基づき、どこで責務を分けているか、どのように拡張しやすくしているかに焦点を当てています。
 
+# 全体構成（概略図）
+```mermaid
+flowchart TB
+    subgraph Benchmarks
+        RunnerFactory["runner_factory.get_runner"]
+        BaseRunner["BaseBenchmarkRunner"]
+        Dataset["Datasets (jsonl)"]
+        OutputTables["Outputs/Tables (jsonl)"]
+        RunnerFactory --> BaseRunner
+        Dataset --> BaseRunner
+        BaseRunner --> OutputTables
+    end
+
+    subgraph LLM_Inference
+        GeneratorFactory["llm_inference.get_generator"]
+        BaseGenerator["BaseGenerator"]
+        OpenAI["OpenAIGenerator"]
+        OpenAICompatible["OpenAICompatibleGenerator"]
+        VLLM["VLLMOfflineGenerator"]
+        SGLang["SGLangOfflineGenerator"]
+        GeneratorFactory --> BaseGenerator
+        BaseGenerator --> OpenAI
+        BaseGenerator --> OpenAICompatible
+        BaseGenerator --> VLLM
+        BaseGenerator --> SGLang
+    end
+
+    BaseRunner --> BaseGenerator
+```
+
 # llm_inference
 ## 設計意図
 - **複数の推論バックエンドを統一インターフェースで扱う**ことを主目的に、`BaseGenerator` を中心とした設計にしています。オンライン（OpenAI API / OpenAI互換API）とオフライン（vLLM / SGLang）を同じ `chat` / `completion` で呼び出せるようにすることで、ベンチマーク側のロジックを単純化しています。([base.py](packages/llm_inference/src/llm_inference/base.py)、[openai_api.py](packages/llm_inference/src/llm_inference/openai_api.py)、[vllm_offline_inference.py](packages/llm_inference/src/llm_inference/vllm_offline_inference.py))
@@ -27,6 +57,23 @@
   - 完了形式: `generator.completion(prompts=[Prompt(...), ...])`
   - いずれも `Response` が返り、`outputs[0].content` に生成結果が入ります。([base.py](packages/llm_inference/src/llm_inference/base.py)、[data.py](packages/llm_inference/src/llm_inference/data.py))
 
+## 推論フロー（簡略）
+```mermaid
+sequenceDiagram
+    participant B as Benchmarks
+    participant G as BaseGenerator
+    participant M as Backend (OpenAI/vLLM/SGLang)
+    B->>G: chat() / completion()
+    G->>G: _count_tokens & context check
+    alt too long
+        G-->>B: error response
+    else ok
+        G->>M: _chat() / _completion()
+        M-->>G: raw outputs
+        G-->>B: Response(outputs)
+    end
+```
+
 # benchmarks
 ## 設計意図
 - **ベンチマークごとの処理差分を最小化**するため、共通の `BaseBenchmarkRunner` を中心に「予測 → 評価 → 集計 → 保存」を一貫して処理します。各ベンチマークは `_run_subtask` と `_evaluate_subtask` の実装に集中できます。([_core/runner.py](packages/benchmarks/src/benchmarks/_core/runner.py))
@@ -51,3 +98,14 @@
   1. YAML で `dataset_root` / `output_root` / `benchmarks` を定義。([scripts/benchmarks/run.py](scripts/benchmarks/run.py))
   2. `BenchmarkConfig` / `TaskConfig` / `SubtaskConfig` に変換し、実行時に runner へ渡す。([scripts/benchmarks/run.py](scripts/benchmarks/run.py)、[config.py](packages/benchmarks/src/benchmarks/config.py))
   3. 推論結果は `output_root/<run_name>/tables` 以下に JSONL として保存されます。([_core/runner.py](packages/benchmarks/src/benchmarks/_core/runner.py)、[_core/save_table/to_local.py](packages/benchmarks/src/benchmarks/_core/save_table/to_local.py))
+
+## ベンチマーク実行フロー（簡略）
+```mermaid
+flowchart LR
+    Config["YAML config"] --> Parse["parse_benchmark_configs"]
+    Parse --> Runner["BaseBenchmarkRunner.run"]
+    Runner --> Predict["_run_subtask (predict)"]
+    Predict --> Evaluate["_evaluate_subtask (score)"]
+    Evaluate --> Aggregate["aggregate scores / bins"]
+    Aggregate --> Save["save_to_local / push_to_wandb"]
+```
