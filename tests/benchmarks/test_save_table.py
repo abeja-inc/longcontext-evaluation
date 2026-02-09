@@ -1,16 +1,16 @@
-from __future__ import annotations
-
 import json
 import importlib
 import sys
 import types
 from dataclasses import dataclass
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
 from benchmarks._core.evaluate.table import BaseTable, BaseTableRow
 from benchmarks._core.save_table import to_local
+from benchmarks._core.save_table.to_wandb import push_to_wandb
 
 
 @dataclass(frozen=True)
@@ -45,6 +45,15 @@ def test_save_to_local_serializes_dict_and_objects(tmp_path: Path) -> None:
     csv_text = csv_path.read_text(encoding="utf-8")
     assert "payload" in csv_text
     assert "{\"a\": 1}" in csv_text
+
+
+def test_push_to_wandb_skips_empty_rows() -> None:
+    table = BaseTable(name="empty", rows=[])
+
+    with patch("benchmarks._core.save_table.to_wandb.wandb.log") as mock_log:
+        push_to_wandb([table])
+
+    mock_log.assert_not_called()
 
 
 def test_push_to_wandb_serializes_cells(monkeypatch: pytest.MonkeyPatch) -> None:
