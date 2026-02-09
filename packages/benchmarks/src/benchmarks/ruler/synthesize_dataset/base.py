@@ -5,8 +5,8 @@ from typing import Any, Generic, Sequence, Type, TypeVar
 
 import numpy as np
 from llm_inference.data import Conversation, Message
+from llm_inference.token_counter import TokenCounter
 
-from benchmarks._core.token_counter import TokenCounter
 from .config import BaseSynthesisConfig
 from .data_model import BaseDatasetSchema, Content
 
