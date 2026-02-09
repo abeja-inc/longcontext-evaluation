@@ -61,8 +61,11 @@ TBD
 hf download Qwen/Qwen3-0.6B --local-dir models/Qwen3-0.6B
 hf download openai/gpt-oss-20b --local-dir models/gpt-oss-20b
 ```
+ローカル実行や smoke test では `/workspace/models/` を想定するテストがあるため、Docker コンテナ内では `models/` を `/workspace/models` にマウントしてください。
 
 ## Dataset Preparation
+ダウンロードしたデータセットはデフォルトで `datasets/benchmarks` に配置されます（`scripts/benchmarks/run_configs/base.yaml` の `dataset_root` 参照）。
+
 ### LongBench v2
 評価用データセットをダウンロード
 ```sh
@@ -109,6 +112,10 @@ python3 scripts/benchmarks/RULER/synthesize_evaluation_dataset/qa/make_dataset.p
 **Execution**
 - [run.py](scripts/benchmarks/run.py)
 
+**Outputs**
+- 実行結果は `scripts/benchmarks/run_configs/base.yaml` の `output_root` 配下に `run_name` で保存されます。
+- `run_name` は各 config で定義するか、`--config` 内の環境変数で上書きできます。
+
 ### vLLM Offline Inference
 ```sh
 CUDA_VISIBLE_DEVICES=8 python3 scripts/benchmarks/run.py \
@@ -118,6 +125,7 @@ CUDA_VISIBLE_DEVICES=8 python3 scripts/benchmarks/run.py \
 ### OpenAI API
 ```sh
 export OPENAI_API_KEY=your_key
+export OPENAI_MODEL_NAME=gpt-4o-2024-11-20
 python3 scripts/benchmarks/run.py \
     --config scripts/benchmarks/run_configs/openai_api.yaml
 ```
@@ -129,6 +137,12 @@ export BASE_URL=http://localhost:8000/v1
 python3 scripts/benchmarks/run.py \
     --config scripts/benchmarks/run_configs/vllm_openai_compatible.yaml
 ```
+
+## Repository layout (high-level)
+- `packages/benchmarks`: ベンチマーク評価ロジック
+- `packages/llm_inference`: モデル推論の抽象化レイヤ
+- `scripts/benchmarks`: データセットのダウンロード/合成/評価実行
+- `smoke_tests/llm_inference`: 推論モジュールの簡易動作チェック
 
 # Other information
 ## LongBench v2 dataset
