@@ -1,9 +1,10 @@
 import logging
-from pathlib import Path
 import sys
 import types
+from pathlib import Path
 
 import pytest
+
 
 benchmarks_src = Path(__file__).resolve().parents[2] / "packages" / "benchmarks" / "src"
 sys.path.append(str(benchmarks_src))
