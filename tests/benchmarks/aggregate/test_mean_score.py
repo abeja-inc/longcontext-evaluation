@@ -1,17 +1,12 @@
+import sys
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from types import ModuleType
-import sys
+
 
 ROOT = Path(__file__).resolve().parents[2]
 BENCHMARKS_SRC = ROOT / "packages" / "benchmarks" / "src"
-MEAN_SCORE_PATH = (
-    BENCHMARKS_SRC
-    / "benchmarks"
-    / "_core"
-    / "evaluate"
-    / "mean_score.py"
-)
+MEAN_SCORE_PATH = BENCHMARKS_SRC / "benchmarks" / "_core" / "evaluate" / "mean_score.py"
 
 sys.path.insert(0, str(BENCHMARKS_SRC))
 
@@ -24,9 +19,7 @@ core_pkg.__path__ = [str(BENCHMARKS_SRC / "benchmarks" / "_core")]
 sys.modules.setdefault("benchmarks._core", core_pkg)
 
 evaluate_pkg = ModuleType("benchmarks._core.evaluate")
-evaluate_pkg.__path__ = [
-    str(BENCHMARKS_SRC / "benchmarks" / "_core" / "evaluate")
-]
+evaluate_pkg.__path__ = [str(BENCHMARKS_SRC / "benchmarks" / "_core" / "evaluate")]
 sys.modules.setdefault("benchmarks._core.evaluate", evaluate_pkg)
 
 spec = spec_from_file_location(
