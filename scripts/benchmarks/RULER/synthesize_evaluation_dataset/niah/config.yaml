@@ -3,7 +3,8 @@ essay_file: raw/english/niah/PaulGrahamEssays.json
 
 base_config:
     task: niah
-    hf_tokenizer_path: Qwen/Qwen3-0.6B
+    tokenizer_name_or_path: Qwen/Qwen3-0.6B
+    tokenizer_type: huggingface
     max_new_tokens: 32
     context_lengths: [1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000]
     num_samples: 200
