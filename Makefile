@@ -1,4 +1,4 @@
-.PHONY: check ruff-check ruff-format ruff-format-check pyright-check
+.PHONY: check ruff-check ruff-format ruff-format-check pyright-check test-coverage
 
 pre-commit-install:
 	pre-commit install
@@ -25,3 +25,6 @@ PYRIGHT_PYTHON_VERSION ?=
 pyright-check:
 	uv run pyright $(if $(PYRIGHT_PYTHON_VERSION),--pythonversion $(PYRIGHT_PYTHON_VERSION),) \
 		$(filter-out $@,$(MAKECMDGOALS)) --project ./pyrightconfig.json
+
+test-coverage:
+	uv run pytest tests --cov=. --cov-report=term-missing --cov-fail-under=100
