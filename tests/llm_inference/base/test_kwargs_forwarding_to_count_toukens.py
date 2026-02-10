@@ -4,7 +4,7 @@ from typing import Any
 from llm_inference.base import BaseGenerator
 
 
-class DummyGenerator(BaseGenerator):
+class LoggingDummyGenerator(BaseGenerator):
     def __init__(self) -> None:
         super().__init__(
             model_name="dummy-model",
@@ -20,7 +20,9 @@ class DummyGenerator(BaseGenerator):
         self.count_tokens_call_count += 1
         return 1
 
-    def _chat(self, *, conversations: list[list[dict[str, str]]], **kwargs: Any) -> list[dict[str, Any]]:
+    def _chat(
+        self, *, conversations: list[list[dict[str, str]]], **kwargs: Any
+    ) -> list[dict[str, Any]]:
         return [{"text": "ok"} for _ in conversations]
 
     def _completion(self, *, prompts: list[str], **kwargs: Any) -> list[dict[str, Any]]:
@@ -28,7 +30,7 @@ class DummyGenerator(BaseGenerator):
 
 
 def test_is_over_context_length_passes_kwargs_to_count_tokens() -> None:
-    generator = DummyGenerator()
+    generator = LoggingDummyGenerator()
 
     _ = generator._is_over_context_length(
         input="hello",
@@ -43,7 +45,7 @@ def test_is_over_context_length_passes_kwargs_to_count_tokens() -> None:
 
 
 def test_filter_long_inputs_passes_kwargs_to_each_count_tokens_call() -> None:
-    generator = DummyGenerator()
+    generator = LoggingDummyGenerator()
     prompts = ["hello", "world", "!"]
 
     _ = generator._filter_long_inputs(
