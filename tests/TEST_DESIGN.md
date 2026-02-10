@@ -18,6 +18,10 @@
   verifies `BaseGenerator.chat` raises `RuntimeError` when `_chat` returns fewer responses than input conversations.
 - `test_completion_raises_runtime_error_when__completion_returns_too_few_responses`:
   verifies `BaseGenerator.completion` raises `RuntimeError` when `_completion` returns fewer responses than input prompts.
+- `test_chat_raises_runtime_error_when__chat_returns_too_many_responses`:
+  verifies `BaseGenerator.chat` raises `RuntimeError` when `_chat` returns more responses than input conversations.
+- `test_completion_raises_runtime_error_when__completion_returns_too_many_responses`:
+  verifies `BaseGenerator.completion` raises `RuntimeError` when `_completion` returns more responses than input prompts.
 
 ### test for keyword arguments forwarding to `_count_tokens`
 - Verify that `BaseGenerator._is_over_context_length` forwards keyword arguments to `_count_tokens`.
