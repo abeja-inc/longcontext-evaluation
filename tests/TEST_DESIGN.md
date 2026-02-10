@@ -47,3 +47,21 @@
   - 目的: tiktoken 分岐の `Prompt` / `str` 入力で `encode(...)` が使われることを確認する。
 - `test_count_tokens_tiktoken_conversation_counts_overhead_and_special_fields`
   - 目的: tiktoken 分岐の `Conversation` 入力で、メッセージ固定オーバーヘッド・`name` キー加算・`None` スキップ・非文字列 `str(...)` 化・末尾固定トークン加算の各分岐を網羅的に検証する。
+
+### `tests/llm_inference/openai_api/test_openai_generator.py`: test for `OpenAIGenerator`
+- `test_count_tokens_prompt_uses_tokenizer_encode`
+  - 目的: `Prompt` 入力で `_count_tokens` が tokenizer の `encode(prompt)` 長をそのまま返すことを確認する。
+- `test_count_tokens_conversation_counts_overhead_special_fields_and_footer`
+  - 目的: `Conversation` 入力で OpenAI chat 形式の固定オーバーヘッド (`tokens_per_message=3`)・`name` キー加算・`None` スキップ・非文字列の `str(...)` 化・末尾 `+3` を含む合計トークン数計算を検証する。
+- `test_count_tokens_raises_type_error_for_unsupported_input`
+  - 目的: サポート外入力型に対して `_count_tokens` が `TypeError` を送出する異常系を確認する。
+- `test_call_response_api_calls_openai_and_builds_response_with_usage_and_input_metadata`
+  - 目的: `_is_over_context_length=False` の通常経路で `client.responses.create` への引数 (`model`, `input`, `max_output_tokens`) が正しく渡され、`output_text` が `Response.outputs[0].content` に格納され、`input.metadata` と `usage.model_dump()` が `Response.metadata` 上で共存できることを確認する。
+- `test_call_response_api_returns_too_long_error_without_calling_api`
+  - 目的: `_is_over_context_length=True` の長文入力経路で API が呼ばれず、`default_too_long_input_error_message` を含む `Response` が返ることを検証する。
+- `test_call_response_api_skips_usage_metadata_when_usage_is_none`
+  - 目的: `api_response.usage is None` のとき `Response.metadata` に `usage` が追加されないことを確認する。
+- `test_chat_forwards_inputs_and_long_input_filter_kwargs`
+  - 目的: `_chat` が `inputs` と `long_input_filter_kwargs`、および追加 kwargs を `_call_response_api` に透過して委譲することを spy で検証する。
+- `test_completion_forwards_inputs_and_long_input_filter_kwargs`
+  - 目的: `_completion` が `inputs` と `long_input_filter_kwargs`、および追加 kwargs を `_call_response_api` に透過して委譲することを spy で検証する。
