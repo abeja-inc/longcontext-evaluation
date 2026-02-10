@@ -49,6 +49,18 @@
   - 目的: tiktoken 分岐の `Conversation` 入力で、メッセージ固定オーバーヘッド・`name` キー加算・`None` スキップ・非文字列 `str(...)` 化・末尾固定トークン加算の各分岐を網羅的に検証する。
 
 ### `tests/llm_inference/openai_api/test_openai_generator.py`: test for `OpenAIGenerator`
+- 方針: clientレスポンスの妥当性は仮定し、Generator層の入出力対応（入力順序と `Response.outputs[0].content` の位置対応）が維持されることのみを検証する。
+- `test_chat_keeps_input_output_correspondence_for_normal_case`
+  - 目的: `_chat` に長さ 3 の複数 `Conversation` を渡した通常系で、クライアントの応答内容 (`response:<input>`) が入力順序と 1:1 で対応して返却されることを確認する。
+- `test_completion_keeps_input_output_correspondence_for_normal_case`
+  - 目的: `completion` に長さ 3 の複数 `Prompt` を渡した通常系で、クライアントの応答内容 (`response:<input>`) が入力順序と 1:1 で対応して返却されることを確認する。
+- `test_chat_keeps_input_output_correspondence_when_middle_input_is_too_long`
+  - 目的: `_chat` の異常/境界系として中間入力のみ長文扱いにした場合、該当位置だけエラーメッセージに置換され、前後入力との対応関係・順序が崩れないことを確認する。
+- `test_completion_keeps_input_output_correspondence_when_middle_input_is_too_long`
+  - 目的: `completion` の異常/境界系として中間入力のみ長文扱いにした場合、該当位置だけエラーメッセージに置換され、前後入力との対応関係・順序が崩れないことを確認する。
+
+### `tests/llm_inference/openai_api_compatible/test_openai_compatible_generator.py`: test for `OpenAICompatibleGenerator`
+- 方針: clientレスポンスの妥当性は仮定し、Generator層の入出力対応（入力順序と `Response.outputs[0].content` の位置対応）が維持されることのみを検証する。
 - `test_chat_keeps_input_output_correspondence_for_normal_case`
   - 目的: `_chat` に長さ 3 の複数 `Conversation` を渡した通常系で、クライアントの応答内容 (`response:<input>`) が入力順序と 1:1 で対応して返却されることを確認する。
 - `test_completion_keeps_input_output_correspondence_for_normal_case`
