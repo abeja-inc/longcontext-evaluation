@@ -1,6 +1,7 @@
 # Test Design
 
-## `tests/llm_inference/test_base.py`
+## `tests/llm_inference`
+### `/base`
 
 - `test_is_over_context_length_allows_equal_boundary`
   - 目的: `input_tokens + max_output_tokens + buffer_tokens == max_context_length` の境界条件で、`BaseGenerator._is_over_context_length(...)` が `False` を返すことを確認する。
