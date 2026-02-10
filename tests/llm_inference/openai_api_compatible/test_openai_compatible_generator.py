@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tests.llm_inference._helpers.openai_correspondence import (
+from tests.llm_inference._helpers.response_correspondence import (
     assert_response_outputs_match_expected_order,
     expected_outputs_with_middle_too_long,
 )

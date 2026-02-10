@@ -69,3 +69,15 @@
   - 目的: `_chat` の異常/境界系として中間入力のみ長文扱いにした場合、該当位置だけエラーメッセージに置換され、前後入力との対応関係・順序が崩れないことを確認する。
 - `test_completion_keeps_input_output_correspondence_when_middle_input_is_too_long`
   - 目的: `completion` の異常/境界系として中間入力のみ長文扱いにした場合、該当位置だけエラーメッセージに置換され、前後入力との対応関係・順序が崩れないことを確認する。
+
+
+### `tests/llm_inference/vllm_offline_inference/test_vllm_offline_generator.py`: test for `VLLMOfflineGenerator`
+- 方針: Generator層の対応関係保証を検証し、backend品質は仮定する。`vllm.LLM` は fake 実装に差し替え、deterministic な `response:<input>` を返すことで入出力順序とスキップ位置の整合性にのみ注目する。
+- `test_chat_keeps_input_output_correspondence_for_normal_case`
+  - 目的: `_chat` に長さ 3 の複数 `Conversation` を渡した通常系で、入力順序と `Response.outputs[0].content` の 1:1 対応が維持されることを確認する。
+- `test_completion_keeps_input_output_correspondence_for_normal_case`
+  - 目的: `completion` に長さ 3 の複数 `Prompt` を渡した通常系で、入力順序と `Response.outputs[0].content` の 1:1 対応が維持されることを確認する。
+- `test_chat_keeps_input_output_correspondence_when_middle_input_is_too_long`
+  - 目的: `_chat` で middle input のみ長文扱いにした混在系 (`[ok, too_long, ok]`) で、該当位置に `default_too_long_input_error_message` が入り、前後要素との index 対応が崩れないことを確認する。
+- `test_completion_keeps_input_output_correspondence_when_middle_input_is_too_long`
+  - 目的: `completion` で middle input のみ長文扱いにした混在系 (`[ok, too_long, ok]`) で、該当位置に `default_too_long_input_error_message` が入り、前後要素との index 対応が崩れないことを確認する。
