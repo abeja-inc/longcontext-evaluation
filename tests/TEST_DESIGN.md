@@ -81,3 +81,16 @@
   - 目的: `_chat` で middle input のみ長文扱いにした混在系 (`[ok, too_long, ok]`) で、該当位置に `default_too_long_input_error_message` が入り、前後要素との index 対応が崩れないことを確認する。
 - `test_completion_keeps_input_output_correspondence_when_middle_input_is_too_long`
   - 目的: `completion` で middle input のみ長文扱いにした混在系 (`[ok, too_long, ok]`) で、該当位置に `default_too_long_input_error_message` が入り、前後要素との index 対応が崩れないことを確認する。
+
+### `tests/llm_inference/sglang_offline_inference/test_sglang_offline_generator.py`: test for `SGLangOfflineGenerator`
+- 方針: backend品質は仮定し、Generator層の対応保証（入力順序・スキップ位置・`max_tokens` 反映）に限定して検証する。`ServerArgs`/`Engine`/tokenizer を fake 化し、`Engine.generate` は deterministic な `response:<input>` を返す。
+- `test_chat_keeps_input_output_correspondence_for_normal_case`
+  - 目的: `_chat` 通常系で入力3件と出力3件の index 対応が崩れず、chat 文字列整形経由で `generate` が呼ばれることを確認する。
+- `test_completion_keeps_input_output_correspondence_for_normal_case`
+  - 目的: `_completion` 通常系で入力3件と出力3件の index 対応が崩れず、prompt 配列経由で `generate` が呼ばれることを確認する。
+- `test_chat_keeps_input_output_correspondence_when_middle_input_is_too_long`
+  - 目的: `_chat` の混在系 (`[ok, too_long, ok]`) で、too long 位置のみ `default_too_long_input_error_message` となり、前後要素のずれや欠落がないことを確認する。
+- `test_completion_keeps_input_output_correspondence_when_middle_input_is_too_long`
+  - 目的: `_completion` の混在系 (`[ok, too_long, ok]`) で、too long 位置のみ `default_too_long_input_error_message` となり、前後要素のずれや欠落がないことを確認する。
+- `test_generate_raises_value_error_when_sampling_param_n_is_greater_than_one`
+  - 目的: `_generate` 異常系として `sampling_params={"n": 2}` を渡したときに `ValueError` が送出されることを確認する（`n>1` 非対応制約の防御）。
