@@ -1,87 +1,90 @@
 name: Ruff & Pyright Check
 
 on:
-    push:
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-    uv-sync-check:
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                python-version: ["3.11"]
+  uv-sync-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
-        steps:
-            - name: Install build tools
-              run: |
-                sudo apt-get update
-                sudo apt-get install -y build-essential
+    steps:
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
 
-            - name: Checkout code
-              uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Install uv
-              uses: astral-sh/setup-uv@v3
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
 
-            - name: Run uv sync
-              run: |
-                uv python install ${{ matrix.python-version }}
-                uv sync --python ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          uv sync --frozen
 
-    pyright-check:
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                python-version: ["3.11"]
+  pyright-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
-        steps:
-            - name: Install build tools
-              run: |
-                sudo apt-get update
-                sudo apt-get install -y build-essential
+    steps:
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
 
-            - name: Checkout code
-              uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Install uv
-              uses: astral-sh/setup-uv@v3
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
 
-            - name: Install dependencies
-              run: |
-                uv python install ${{ matrix.python-version }}
-                uv sync --python ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          uv sync --frozen
 
-            - name: Run pyright-check
-              run: |
-                  make pyright-check . PYRIGHT_PYTHON_VERSION=${{ matrix.python-version }}
+      - name: Run pyright-check
+        run: |
+          make pyright-check . PYRIGHT_PYTHON_VERSION=${{ matrix.python-version }}
 
-    ruff-check:
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                python-version: ["3.11"]
+  ruff-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
-        steps:
-            - name: Install build tools
-              run: |
-                sudo apt-get update
-                sudo apt-get install -y build-essential
+    steps:
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
 
-            - name: Checkout code
-              uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Install uv
-              uses: astral-sh/setup-uv@v3
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
 
-            - name: Install dependencies
-              run: |
-                uv python install ${{ matrix.python-version }}
-                uv sync --python ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          uv sync --frozen
 
-            - name: Run ruff-check
-              run: |
-                  make ruff-check .
+      - name: Run ruff-check
+        run: |
+          make ruff-check .

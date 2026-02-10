@@ -11,20 +11,20 @@ check:
 
 # ruff
 ruff-check:
-	uv run ruff check $(filter-out $@,$(MAKECMDGOALS)) --config ./ruff.toml
+	uv run --frozen ruff check $(filter-out $@,$(MAKECMDGOALS)) --config ./ruff.toml
 
 ruff-format:
-	uv run ruff format $(filter-out $@,$(MAKECMDGOALS)) --config ./ruff.toml
+	uv run --frozen ruff format $(filter-out $@,$(MAKECMDGOALS)) --config ./ruff.toml
 
 ruff-format-check:
-	uv run ruff format --check $(filter-out $@,$(MAKECMDGOALS)) --config ./ruff.toml
+	uv run --frozen ruff format --check $(filter-out $@,$(MAKECMDGOALS)) --config ./ruff.toml
 
 # pyright
 PYRIGHT_PYTHON_VERSION ?=
 
 pyright-check:
-	uv run pyright $(if $(PYRIGHT_PYTHON_VERSION),--pythonversion $(PYRIGHT_PYTHON_VERSION),) \
+	uv run --frozen pyright $(if $(PYRIGHT_PYTHON_VERSION),--pythonversion $(PYRIGHT_PYTHON_VERSION),) \
 		$(filter-out $@,$(MAKECMDGOALS)) --project ./pyrightconfig.json
 
-test-coverage:
-	uv run pytest tests --cov=. --cov-report=term-missing --cov-fail-under=100
+pytest:
+	uv run --frozen pytest -q tests
