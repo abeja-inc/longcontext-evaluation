@@ -45,7 +45,9 @@ if "transformers" not in sys.modules:
     fake_transformers = types.ModuleType("transformers")
 
     class _AutoTokenizer:
-        pass
+        @staticmethod
+        def from_pretrained(*_args: Any, **_kwargs: Any) -> "_AutoTokenizer":
+            return _AutoTokenizer()
 
     fake_transformers.AutoTokenizer = _AutoTokenizer
     sys.modules["transformers"] = fake_transformers
