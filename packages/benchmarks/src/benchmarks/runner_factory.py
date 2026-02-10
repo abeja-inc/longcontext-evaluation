@@ -6,12 +6,14 @@ from ._core.evaluate import Bin
 from .longbench_v2 import LongBenchV2Runner
 from .mrcr import OpenAIMRCRRunner
 from .ruler import RULERRunner
+from .nemotron_persona_qa import NemotronPersonaQARunner
 
 
 RUNNER_REGISTRY: Final[dict[str, RunnerConstructor]] = {
     "longbench_v2": LongBenchV2Runner,
     "openai_mrcr": OpenAIMRCRRunner,
     "ruler": RULERRunner,
+    "nemotron_persona_qa": NemotronPersonaQARunner,
 }
 
 

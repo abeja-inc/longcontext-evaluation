@@ -12,3 +12,20 @@ wandb:
 
 benchmarks:
     # Add your benchmark configurations here
+    nemotron_persona_qa:
+        japanese:
+            easy:
+                language: japanese
+                dataset_filename: japanese/nemotron_persona_qa_easy.jsonl
+                inference_mode: chat
+                metric: parsed_answer_match
+                settings:
+                    use_truncate: true
+
+            hard:
+                language: japanese
+                dataset_filename: japanese/nemotron_persona_qa_hard.jsonl
+                inference_mode: chat
+                metric: parsed_answer_match
+                settings:
+                    use_truncate: true
