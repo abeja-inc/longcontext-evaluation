@@ -208,3 +208,101 @@ def test_completion_forwards_inputs_and_long_input_filter_kwargs(
         long_input_filter_kwargs={"buffer_tokens": 5},
         temperature=0.1,
     )
+
+
+def test_chat_keeps_input_output_correspondence_for_normal_case(
+    generator: OpenAIGenerator,
+) -> None:
+    conversations = [
+        Conversation(messages=[Message(role="user", content="a")]),
+        Conversation(messages=[Message(role="user", content="b")]),
+        Conversation(messages=[Message(role="user", content="c")]),
+    ]
+    generator._is_over_context_length = MagicMock(return_value=False)
+
+    def fake_create(*, input: list[dict[str, str]], **_kwargs: Any) -> MagicMock:
+        return MagicMock(output_text=f"response:{input[0]['content']}", usage=None)
+
+    generator.client.responses.create.side_effect = fake_create
+
+    responses = generator._chat(conversations=conversations)
+
+    assert [r.outputs[0].content for r in responses] == [
+        "response:a",
+        "response:b",
+        "response:c",
+    ]
+
+
+def test_completion_keeps_input_output_correspondence_for_normal_case(
+    generator: OpenAIGenerator,
+) -> None:
+    prompts = [Prompt(prompt="a"), Prompt(prompt="b"), Prompt(prompt="c")]
+    generator._is_over_context_length = MagicMock(return_value=False)
+
+    def fake_create(*, input: str, **_kwargs: Any) -> MagicMock:
+        return MagicMock(output_text=f"response:{input}", usage=None)
+
+    generator.client.responses.create.side_effect = fake_create
+
+    responses = generator.completion(prompts=prompts)
+
+    assert [r.outputs[0].content for r in responses] == [
+        "response:a",
+        "response:b",
+        "response:c",
+    ]
+
+
+def test_chat_keeps_input_output_correspondence_when_middle_input_is_too_long(
+    generator: OpenAIGenerator,
+) -> None:
+    conversations = [
+        Conversation(messages=[Message(role="user", content="a")]),
+        Conversation(messages=[Message(role="user", content="b")]),
+        Conversation(messages=[Message(role="user", content="c")]),
+    ]
+
+    def fake_over_context(*, input: Conversation, **_kwargs: Any) -> bool:
+        return input.messages[0].content == "b"
+
+    generator._is_over_context_length = MagicMock(side_effect=fake_over_context)
+
+    def fake_create(*, input: list[dict[str, str]], **_kwargs: Any) -> MagicMock:
+        return MagicMock(output_text=f"response:{input[0]['content']}", usage=None)
+
+    generator.client.responses.create.side_effect = fake_create
+
+    responses = generator._chat(conversations=conversations)
+
+    assert [r.outputs[0].content for r in responses] == [
+        "response:a",
+        generator.default_too_long_input_error_message,
+        "response:c",
+    ]
+    assert generator.client.responses.create.call_count == 2
+
+
+def test_completion_keeps_input_output_correspondence_when_middle_input_is_too_long(
+    generator: OpenAIGenerator,
+) -> None:
+    prompts = [Prompt(prompt="a"), Prompt(prompt="b"), Prompt(prompt="c")]
+
+    def fake_over_context(*, input: Prompt, **_kwargs: Any) -> bool:
+        return input.prompt == "b"
+
+    generator._is_over_context_length = MagicMock(side_effect=fake_over_context)
+
+    def fake_create(*, input: str, **_kwargs: Any) -> MagicMock:
+        return MagicMock(output_text=f"response:{input}", usage=None)
+
+    generator.client.responses.create.side_effect = fake_create
+
+    responses = generator.completion(prompts=prompts)
+
+    assert [r.outputs[0].content for r in responses] == [
+        "response:a",
+        generator.default_too_long_input_error_message,
+        "response:c",
+    ]
+    assert generator.client.responses.create.call_count == 2

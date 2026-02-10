@@ -65,3 +65,11 @@
   - 目的: `_chat` が `inputs` と `long_input_filter_kwargs`、および追加 kwargs を `_call_response_api` に透過して委譲することを spy で検証する。
 - `test_completion_forwards_inputs_and_long_input_filter_kwargs`
   - 目的: `_completion` が `inputs` と `long_input_filter_kwargs`、および追加 kwargs を `_call_response_api` に透過して委譲することを spy で検証する。
+- `test_chat_keeps_input_output_correspondence_for_normal_case`
+  - 目的: `_chat` に複数 `Conversation` を渡した通常系で、クライアントの応答内容 (`response:<input>`) が入力順序と 1:1 で対応して返却されることを確認する。
+- `test_completion_keeps_input_output_correspondence_for_normal_case`
+  - 目的: `completion` に複数 `Prompt` を渡した通常系で、クライアントの応答内容 (`response:<input>`) が入力順序と 1:1 で対応して返却されることを確認する。
+- `test_chat_keeps_input_output_correspondence_when_middle_input_is_too_long`
+  - 目的: `_chat` の異常/境界系として中間入力のみ長文扱いにした場合、該当位置だけエラーメッセージに置換され、前後入力との対応関係・順序が崩れないことを確認する。
+- `test_completion_keeps_input_output_correspondence_when_middle_input_is_too_long`
+  - 目的: `completion` の異常/境界系として中間入力のみ長文扱いにした場合、該当位置だけエラーメッセージに置換され、前後入力との対応関係・順序が崩れないことを確認する。
