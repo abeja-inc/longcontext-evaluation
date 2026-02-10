@@ -32,7 +32,8 @@ if "openai.types.responses" not in sys.modules:
 # Test environment may not have optional tokenizer dependency installed.
 if "tiktoken" not in sys.modules:
     sys.modules["tiktoken"] = types.SimpleNamespace(
-        encoding_for_model=lambda *_args, **_kwargs: None
+        encoding_for_model=lambda *_args, **_kwargs: None,
+        get_encoding=lambda *_args, **_kwargs: None,
     )
 
 from llm_inference.data import Conversation, Message, Prompt, Response
