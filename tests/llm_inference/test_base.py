@@ -1,7 +1,6 @@
 import logging
 
 import pytest
-
 from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Prompt, Response
 
@@ -25,7 +24,9 @@ class DummyGenerator(BaseGenerator):
     def _count_tokens(self, input: Prompt | Conversation, **kwargs: object) -> int:
         return self.fixed_token_count
 
-    def _chat(self, *, conversations: list[Conversation], **kwargs: object) -> list[Response]:
+    def _chat(
+        self, *, conversations: list[Conversation], **kwargs: object
+    ) -> list[Response]:
         return []
 
     def _completion(self, *, prompts: list[Prompt], **kwargs: object) -> list[Response]:
