@@ -5,7 +5,7 @@ from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Prompt, Response
 
 
-class DummyGenerator(BaseGenerator):
+class FixedTokenCountDummyGenerator(BaseGenerator):
     def __init__(
         self,
         *,
@@ -48,7 +48,7 @@ def test_is_over_context_length_allows_equal_boundary(
     buffer_tokens = 10
     input_tokens = max_context_length - max_output_tokens - buffer_tokens
 
-    generator = DummyGenerator(
+    generator = FixedTokenCountDummyGenerator(
         fixed_token_count=input_tokens,
         max_context_length=max_context_length,
         max_output_tokens=max_output_tokens,
@@ -79,7 +79,7 @@ def test_is_over_context_length_returns_true_when_total_exceeds_by_one(
     buffer_tokens = 10
     input_tokens = max_context_length - max_output_tokens - buffer_tokens + 1
 
-    generator = DummyGenerator(
+    generator = FixedTokenCountDummyGenerator(
         fixed_token_count=input_tokens,
         max_context_length=max_context_length,
         max_output_tokens=max_output_tokens,
