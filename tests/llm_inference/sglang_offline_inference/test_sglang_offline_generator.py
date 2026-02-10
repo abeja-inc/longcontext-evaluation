@@ -99,7 +99,9 @@ class FakeEngine:
                 "kwargs": kwargs,
             }
         )
-        return [{"text": f"response:{prompt}"} for prompt in prompts]
+        return [
+            {"text": f"response:{prompt.removeprefix('chat:')}"} for prompt in prompts
+        ]
 
 
 sys.modules["sglang"].Engine = FakeEngine
