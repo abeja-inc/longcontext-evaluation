@@ -5,8 +5,8 @@ from ._core import Runner, RunnerConstructor
 from ._core.evaluate import Bin
 from .longbench_v2 import LongBenchV2Runner
 from .mrcr import OpenAIMRCRRunner
-from .ruler import RULERRunner
 from .nemotron_persona_qa import NemotronPersonaQARunner
+from .ruler import RULERRunner
 
 
 RUNNER_REGISTRY: Final[dict[str, RunnerConstructor]] = {
