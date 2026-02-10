@@ -1,7 +1,6 @@
 import logging
 
 import pytest
-
 from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Message, Prompt, Response
 
@@ -10,21 +9,22 @@ class _TooShortChatGenerator(BaseGenerator):
     def _count_tokens(self, input: Prompt | Conversation, **kwargs: object) -> int:
         return 0
 
-    def _chat(self, *, conversations: list[Conversation], **kwargs: object) -> list[Response]:
+    def _chat(
+        self, *, conversations: list[Conversation], **kwargs: object
+    ) -> list[Response]:
         return []
 
     def _completion(self, *, prompts: list[Prompt], **kwargs: object) -> list[Response]:
-        return [
-            Response(input=prompt.prompt, outputs=[])
-            for prompt in prompts
-        ]
+        return [Response(input=prompt.prompt, outputs=[]) for prompt in prompts]
 
 
 class _TooShortCompletionGenerator(BaseGenerator):
     def _count_tokens(self, input: Prompt | Conversation, **kwargs: object) -> int:
         return 0
 
-    def _chat(self, *, conversations: list[Conversation], **kwargs: object) -> list[Response]:
+    def _chat(
+        self, *, conversations: list[Conversation], **kwargs: object
+    ) -> list[Response]:
         return [
             Response(input=conversation.prompt, outputs=[])
             for conversation in conversations
