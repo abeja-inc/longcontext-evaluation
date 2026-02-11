@@ -94,3 +94,12 @@
   - 目的: `_completion` の混在系 (`[ok, too_long, ok]`) で、too long 位置のみ `default_too_long_input_error_message` となり、前後要素のずれや欠落がないことを確認する。
 - `test_generate_raises_value_error_when_sampling_param_n_is_greater_than_one`
   - 目的: `_generate` 異常系として `sampling_params={"n": 2}` を渡したときに `ValueError` が送出されることを確認する（`n>1` 非対応制約の防御）。
+
+## `tests/benchmarks/ruler/synthesize_dataset`
+### `test_base_generator_units.py`: test for `_optimal_units`
+- `test_optimal_units_returns_max_valid_unit_and_fixed_search_path`
+  - 目的: `BaseDatasetGenerator` のダミー実装で `num_units` に比例する疑似トークン長を作り、`max_context_length` と `max_new_tokens` の関係に対して `_optimal_units(...)` が「条件を満たす最大値」を返すことを確認する。
+  - 観点: 等号境界（ちょうど収まるケース）と超過境界（1段階上で超えるケース）を含む複数ケースをパラメータ化し、指数拡張→二分探索で辿る `num_units` の列を固定検証する。
+- `test_optimal_units_returns_one_when_context_not_larger_than_max_new_tokens`
+  - 目的: `max_context_length <= max_new_tokens` の早期リターン分岐で `1` が返ることを確認する。
+  - 観点: 早期リターン時に探索処理（`_sample_total_tokens`）が呼ばれないことを検証する。
