@@ -94,3 +94,10 @@
   - 目的: `_completion` の混在系 (`[ok, too_long, ok]`) で、too long 位置のみ `default_too_long_input_error_message` となり、前後要素のずれや欠落がないことを確認する。
 - `test_generate_raises_value_error_when_sampling_param_n_is_greater_than_one`
   - 目的: `_generate` 異常系として `sampling_params={"n": 2}` を渡したときに `ValueError` が送出されることを確認する（`n>1` 非対応制約の防御）。
+
+## `tests/benchmarks/ruler/synthesize_dataset/niah/test_niah_randomness_across_records.py`
+- `test_niah_randomness_is_reflected_across_records`
+  - 目的: 同一 `NIAHDatasetGenerator` インスタンスで `sample_index` を変えながら十分な件数のサンプルを生成した際、`(needles, query)` の組が複数種類になることを確認する。
+  - 目的: `target_depth_percent` が全レコードで固定パターン／固定値にならず、深度選択が複数パターンを取り得ることを確認する。
+  - 目的: `type_haystack="essay"` で本文コンテキストの先頭・中間スニペットがサンプル間で変化し、haystack 側にもランダム性が反映されることを確認する。
+  - 安定性: `random_seed` 固定と 40 サンプル生成により、確率依存で不安定な判定になりにくい構成にする。
