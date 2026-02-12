@@ -94,3 +94,17 @@
   - 目的: `_completion` の混在系 (`[ok, too_long, ok]`) で、too long 位置のみ `default_too_long_input_error_message` となり、前後要素のずれや欠落がないことを確認する。
 - `test_generate_raises_value_error_when_sampling_param_n_is_greater_than_one`
   - 目的: `_generate` 異常系として `sampling_params={"n": 2}` を渡したときに `ValueError` が送出されることを確認する（`n>1` 非対応制約の防御）。
+
+## `tests/benchmarks/ruler/synthesize_dataset/niah/test_niah_haystack_selection.py`: test for NIAH haystack composition
+- `test_gen_one_sample_noise_haystack_keeps_noise_as_main_component`
+  - 目的: `type_haystack="noise"` で `_gen_one_sample(...)` を固定 seed で呼び、`content.user_prompt` 本文が「ノイズ文の繰り返し + 挿入 needle」で構成されることを確認する。
+  - 観点: 抽出した needle 候補が `extra_fields['needles']` と一致し、ノイズ文の出現数が `num_units` を維持することを検証する。
+- `test_gen_one_sample_needle_haystack_keeps_targets_identifiable_as_inserted`
+  - 目的: `type_haystack="needle"` で `_gen_one_sample(...)` を固定 seed で呼び、背景 needle と target needle が混在する中でも target needle 群が本文内で識別可能であることを確認する。
+  - 観点: `extra_fields['needles']` が本文から抽出した needle 候補集合に欠落なく含まれ、かつ候補全体と完全同一化しない（背景 needle が別途存在する）ことを検証する。
+
+## `tests/benchmarks/ruler/synthesize_dataset/qa/test_qa_context_selection.py`: test for QA context composition
+- `test_gen_one_sample_qa_keeps_gold_context_in_prompt_and_target_context`
+  - 目的: QA の `_gen_one_sample(...)` を固定 seed で実行し、gold context が `content.user_prompt` の本文（Document 群）に確実に含まれ、`extra_fields['target_context']` と整合することを確認する。
+- `test_gen_one_sample_qa_mixes_gold_and_distractors_when_available`
+  - 目的: distractor が利用可能な条件で `_gen_one_sample(...)` を固定 seed で実行し、生成本文が gold のみで単一化されず、gold と distractor が混在することを確認する。
