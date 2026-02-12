@@ -94,3 +94,9 @@
   - 目的: `_completion` の混在系 (`[ok, too_long, ok]`) で、too long 位置のみ `default_too_long_input_error_message` となり、前後要素のずれや欠落がないことを確認する。
 - `test_generate_raises_value_error_when_sampling_param_n_is_greater_than_one`
   - 目的: `_generate` 異常系として `sampling_params={"n": 2}` を渡したときに `ValueError` が送出されることを確認する（`n>1` 非対応制約の防御）。
+
+## `tests/benchmarks/ruler/synthesize_dataset/qa/test_base_qa_generator_sample.py`: test for `BaseQADatasetGenerator._gen_one_sample`
+- `test_gen_one_sample_includes_gold_docs_and_answer_candidates`
+  - 目的: 固定データを返すテスト用 `BaseQADatasetGenerator` サブクラスを使い、生成サンプルの `target_context` に `context_indices` の全文書が含まれること、`content.outputs` が正解候補と一致すること、`target_depth_percent` が `-1.0` または `0..100` に収まることを検証する。
+- `test_gen_one_sample_boundary_cases_for_document_count_and_prompt_order`
+  - 目的: `num_units` が gold 文書数より小さい場合と全 context 数より大きい場合の境界ケースで、`document_prompt` の連番 (`Document 1..N`) と文書ブロック順序が整合することを検証する。
