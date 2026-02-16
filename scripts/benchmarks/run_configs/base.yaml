@@ -20,6 +20,7 @@ benchmarks:
                 inference_mode: chat
                 metric: parsed_answer_match
                 settings:
+                    require_reasoning: false
                     use_truncate: true
                     rag_topn: 0
                     cot: false
@@ -42,6 +43,7 @@ benchmarks:
                 inference_mode: chat
                 metric: prefix_match_similarity
                 settings:
+                    require_reasoning: false
                     use_truncate: true
             4needle:
                 language: english
@@ -49,6 +51,7 @@ benchmarks:
                 inference_mode: chat
                 metric: prefix_match_similarity
                 settings:
+                    require_reasoning: false
                     use_truncate: true
             8needle:
                 language: english
@@ -56,6 +59,7 @@ benchmarks:
                 inference_mode: chat
                 metric: prefix_match_similarity
                 settings:
+                    require_reasoning: false
                     use_truncate: true
         mrcr_jpn:
             2needle:
@@ -64,6 +68,7 @@ benchmarks:
                 inference_mode: chat
                 metric: prefix_match_similarity
                 settings:
+                    require_reasoning: false
                     use_truncate: true
             4needle:
                 language: japanese
@@ -71,6 +76,7 @@ benchmarks:
                 inference_mode: chat
                 metric: prefix_match_similarity
                 settings:
+                    require_reasoning: false
                     use_truncate: true
             8needle:
                 language: japanese
@@ -78,6 +84,7 @@ benchmarks:
                 inference_mode: chat
                 metric: prefix_match_similarity
                 settings:
+                    require_reasoning: false
                     use_truncate: true
 
     ruler:
@@ -88,6 +95,7 @@ benchmarks:
                 inference_mode: chat
                 metric: substr_coverage # or lcs_f1_coverage
                 settings:
+                    require_reasoning: false
                     use_truncate: true
             niah_multikey_1:
                 language: english
@@ -95,6 +103,7 @@ benchmarks:
                 inference_mode: chat
                 metric: substr_coverage # or lcs_f1_coverage
                 settings:
+                    require_reasoning: false
                     use_truncate: true
             niah_multikey_2:
                 language: english
@@ -102,6 +111,7 @@ benchmarks:
                 inference_mode: chat
                 metric: substr_coverage # or lcs_f1_coverage
                 settings:
+                    require_reasoning: false
                     use_truncate: true
             niah_multikey_3:
                 language: english
@@ -109,6 +119,7 @@ benchmarks:
                 inference_mode: chat
                 metric: substr_coverage # or lcs_f1_coverage
                 settings:
+                    require_reasoning: false
                     use_truncate: true
         qa:
             squad:
@@ -117,6 +128,7 @@ benchmarks:
                 inference_mode: chat
                 metric: substr_any # or lcs_f1_max
                 settings:
+                    require_reasoning: false
                     use_truncate: true
             hotpotqa:
                 language: english
@@ -124,6 +136,7 @@ benchmarks:
                 inference_mode: chat
                 metric: substr_any # or lcs_f1_max
                 settings:
+                    require_reasoning: false
                     use_truncate: true
             jsquad:
                 language: japanese
@@ -131,6 +144,7 @@ benchmarks:
                 inference_mode: chat
                 metric: substr_any # or lcs_f1_max
                 settings:
+                    require_reasoning: false
                     use_truncate: true
             jemhopqa:
                 language: japanese
@@ -138,4 +152,5 @@ benchmarks:
                 inference_mode: chat
                 metric: substr_any # or lcs_f1_max
                 settings:
+                    require_reasoning: false
                     use_truncate: true
