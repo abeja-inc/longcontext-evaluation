@@ -79,6 +79,7 @@ sequenceDiagram
 - **ベンチマークごとの処理差分を最小化**するため、共通の `BaseBenchmarkRunner` を中心に「予測 → 評価 → 集計 → 保存」を一貫して処理します。各ベンチマークは `_run_subtask` と `_evaluate_subtask` の実装に集中できます。([_core/runner.py](packages/benchmarks/src/benchmarks/_core/runner.py))
 - **設定駆動**でデータセットや出力先を切り替えられるよう、`BenchmarkConfig` / `TaskConfig` / `SubtaskConfig` による構造化設定を採用しています。([config.py](packages/benchmarks/src/benchmarks/config.py))
 - **文脈長超過時の取り扱いを統一**するため、共通の `truncate_text` を提供し、ベンチマーク固有の設定（`BaseSettings`）から制御します。([_core/predict/truncate.py](packages/benchmarks/src/benchmarks/_core/predict/truncate.py)、[_core/settings.py](packages/benchmarks/src/benchmarks/_core/settings.py))
+- **Reasoning モデル評価の一貫性**として、subtask settings の `require_reasoning` が有効な場合は `output_reasoning` の欠損を自動で不正解（スコア 0.0）扱いにします。これにより既存メトリクス実装を変更せず、全ベンチマークに同一ルールを適用できます。([_core/settings.py](packages/benchmarks/src/benchmarks/_core/settings.py)、[_core/runner.py](packages/benchmarks/src/benchmarks/_core/runner.py)、[_core/evaluate/metrics.py](packages/benchmarks/src/benchmarks/_core/evaluate/metrics.py))
 
 ## デザイン・構成
 - **エントリポイント**:

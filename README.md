@@ -104,6 +104,7 @@ python3 scripts/benchmarks/RULER/synthesize_evaluation_dataset/qa/make_dataset.p
 
 **Configuration**
 - benchmark settings: [base_config.yaml](scripts/benchmarks/run_configs/base.yaml)
+- 各 subtask `settings` で `require_reasoning: true` を指定すると、`output_reasoning` が欠損したサンプルは全ベンチマーク共通で不正解（score=0.0）として扱います。
 - model setting examples:
     - [OpenAI API](scripts/benchmarks/run_configs/openai_api.yml)
     - [vLLM OpenAI-compatible Server](scripts/benchmarks/run_configs/openai_compatible.yml)

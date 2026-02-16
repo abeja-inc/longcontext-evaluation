@@ -100,3 +100,21 @@
   - 目的: 固定データを返すテスト用 `BaseQADatasetGenerator` サブクラスを使い、生成サンプルの `target_context` に `context_indices` の全文書が含まれること、`content.outputs` が正解候補と一致すること、`target_depth_percent` が `-1.0` または `0..100` に収まることを検証する。
 - `test_gen_one_sample_boundary_cases_for_document_count_and_prompt_order`
   - 目的: `num_units` が gold 文書数より小さい場合と全 context 数より大きい場合の境界ケースで、`document_prompt` の連番 (`Document 1..N`) と文書ブロック順序が整合することを検証する。
+
+## `tests/benchmarks/test_reasoning_requirement.py`: test for reasoning parser requirement in benchmark metrics
+- `test_eval_returns_zero_when_reasoning_required_and_missing`
+  - 目的: `settings.require_reasoning=True` かつ `output_reasoning is None` のとき、メトリクス本体を呼ばずに `BaseMetrics.eval` が 0.0 を返すことを確認する。
+- `test_eval_runs_metric_when_reasoning_required_and_present`
+  - 目的: `settings.require_reasoning=True` で `output_reasoning` が存在する場合は通常どおり各メトリクス関数へ処理が委譲されることを確認する。
+
+
+## `tests/benchmarks/test_runner_require_reasoning_setting.py`: test for settings-driven reasoning behavior without runner kwarg forwarding
+- `test_run_does_not_forward_require_reasoning_kwarg`
+  - 目的: `BaseBenchmarkRunner.run` が `_evaluate_subtask` に `require_reasoning` kwargs を渡さないことを確認する。
+- `test_run_scoring_still_uses_settings_require_reasoning_false`
+  - 目的: `settings.require_reasoning=False` のとき、`output_reasoning` 欠損でもメトリクス実行結果（1.0）が返ることを確認する。
+- `test_run_scoring_still_uses_settings_require_reasoning_true`
+  - 目的: `settings.require_reasoning=True` のとき、`output_reasoning` 欠損が共通ガードで 0.0 扱いになることを確認する。
+
+- `test_eval_uses_settings_field_even_if_kwargs_disagree`
+  - 目的: `require_reasoning` 引数が渡されても評価判定は `settings.require_reasoning` を優先して行われることを確認する。
