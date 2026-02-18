@@ -45,7 +45,7 @@ class TokenCounter:
             return len(self.tokenizer.encode(input, add_special_tokens=False))
 
         if isinstance(input, Prompt):
-            return len(self.tokenizer.encode(input.prompt))
+            return len(self.tokenizer.encode(input.prompt, disallowed_special=()))
         if isinstance(input, Conversation):
             # Reference: https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
             tokens_per_message = 3
@@ -59,10 +59,12 @@ class TokenCounter:
                         continue
                     if not isinstance(value, str):
                         value = str(value)
-                    num_tokens += len(self.tokenizer.encode(value))
+                    num_tokens += len(
+                        self.tokenizer.encode(value, disallowed_special=())
+                    )
                     if key == "name":
                         num_tokens += tokens_per_name
 
             num_tokens += 3
             return num_tokens
-        return len(self.tokenizer.encode(input))
+        return len(self.tokenizer.encode(input, disallowed_special=()))

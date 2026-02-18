@@ -22,3 +22,4 @@ llm:
             min_p: 0.0
         chat_template_kwargs:
             enable_thinking: false
+        buffer_tokens: 0
