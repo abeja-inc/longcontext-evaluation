@@ -3,7 +3,7 @@ base_config: scripts/benchmarks/run_configs/base.yaml
 run_name: ${OPENAI_MODEL_NAME}/trial_1
 llm:
     generator:
-        type: openai
+        type: openai_api
         client:
             api_key: ${OPENAI_API_KEY}
         model_name: ${OPENAI_MODEL_NAME}

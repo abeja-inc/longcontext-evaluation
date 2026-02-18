@@ -31,7 +31,7 @@ def count_conversation_tokens(
                     continue
                 if not isinstance(value, str):
                     value = str(value)
-                num_tokens += len(tokenizer.encode(value))
+                num_tokens += len(tokenizer.encode(value, disallowed_special=()))
                 if key == "name":
                     num_tokens += tokens_per_name
         num_tokens += 3
@@ -47,8 +47,14 @@ def _truncate_middle(
     max_output_tokens: int,
     buffer_tokens: int = 10,
 ) -> str:
-    input_ids = tokenizer.encode(text)
+    if tokenizer_type == "huggingface":
+        input_ids = tokenizer.encode(text)
+    elif tokenizer_type == "tiktoken":
+        input_ids = tokenizer.encode(text, disallowed_special=())
+    else:
+        raise NotImplementedError("Supported tokenizer_type: huggingface or tiktoken")
     input_length = len(input_ids)
+
     if input_length + max_output_tokens > max_context_length:
         max_len = max_context_length - max_output_tokens - buffer_tokens
         truncated_input_ids = input_ids[: max_len // 2] + input_ids[-max_len // 2 :]

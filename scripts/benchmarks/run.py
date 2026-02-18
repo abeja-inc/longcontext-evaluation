@@ -1,14 +1,17 @@
 import argparse
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-import wandb
+import dotenv
 import yaml
 from benchmarks import BenchmarkConfig, SubtaskConfig, TaskConfig, run_benchmarks
 from llm_inference import get_generator
 from openai import OpenAI
+
+import wandb
 
 
 def get_logger(name: str, level: int = logging.INFO) -> logging.Logger:
@@ -41,6 +44,16 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def expand_env_vars(obj: object) -> object:
+    if isinstance(obj, str):
+        return os.path.expandvars(obj)
+    elif isinstance(obj, dict):
+        return {k: expand_env_vars(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [expand_env_vars(i) for i in obj]
+    return obj
+
+
 def load_config(config_path: Path) -> dict[str, Any]:
     with config_path.open("r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
@@ -52,7 +65,7 @@ def load_config(config_path: Path) -> dict[str, Any]:
         with base_config_path.open("r", encoding="utf-8") as f:
             base_config = yaml.safe_load(f)
         config = merge_dicts(base_config, config)
-    return config
+    return expand_env_vars(config)
 
 
 def parse_benchmark_configs(
@@ -141,7 +154,7 @@ def main() -> None:
     generator_config = config["llm"]["generator"]
     generator_type = generator_config.pop("type")
     if "client" in generator_config:
-        client = OpenAI(**generator_config["client"])
+        client = OpenAI(**generator_config.pop("client"))
         generator = get_generator(
             type=generator_type, client=client, logger=logger, **generator_config
         )
@@ -169,4 +182,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    dotenv.load_dotenv()
     main()
