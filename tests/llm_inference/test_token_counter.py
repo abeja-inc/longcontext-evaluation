@@ -50,7 +50,7 @@ class DummyTikTokenizer:
     def __init__(self) -> None:
         self.encode_inputs: list[str] = []
 
-    def encode(self, text: str) -> list[int]:
+    def encode(self, text: str, disallowed_special: Any = None) -> list[int]:
         self.encode_inputs.append(text)
         return list(range(len(text)))
 
