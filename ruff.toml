@@ -33,4 +33,3 @@ line-ending = "auto"
 lines-after-imports = 2
 combine-as-imports = true
 order-by-type = true
-known-first-party = ["benchmarks", "llm_inference"]

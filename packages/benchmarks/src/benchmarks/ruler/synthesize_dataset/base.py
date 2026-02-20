@@ -4,7 +4,6 @@ from logging import Logger
 from typing import Any, Generic, Sequence, Type, TypeVar
 
 import numpy as np
-
 from llm_inference.data import Conversation, Message
 from llm_inference.token_counter import TokenCounter
 

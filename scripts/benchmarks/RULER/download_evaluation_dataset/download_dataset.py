@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 import yaml
-
 from benchmarks.dataset_downloader import (
     HuggingFaceDatasetConfig,
     HuggingFaceDatasetDownloader,

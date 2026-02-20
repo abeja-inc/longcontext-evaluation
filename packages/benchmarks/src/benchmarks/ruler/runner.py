@@ -2,10 +2,9 @@ import json
 from collections import defaultdict
 from typing import Any
 
-from tqdm import tqdm
-
 from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Prompt, Response
+from tqdm import tqdm
 
 from .._core.evaluate import mean_score_by_group, mean_score_by_group_and_context_bin
 from .._core.evaluate.table import (

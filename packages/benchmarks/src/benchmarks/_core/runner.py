@@ -2,9 +2,8 @@ from abc import ABC, abstractmethod
 from logging import Logger
 from typing import Any, Generic
 
-from pydantic import ValidationError
-
 from llm_inference.base import BaseGenerator
+from pydantic import ValidationError
 
 from ..config import BenchmarkConfig, SubtaskConfig
 from .evaluate import (
