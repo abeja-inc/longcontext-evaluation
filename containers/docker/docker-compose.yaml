@@ -21,5 +21,6 @@ services:
         environment:
             - HF_HUB_ENABLE_HF_TRANSFER=1
             - HF_HOME=/.cache/huggingface
+            - WANDB_DIR=/workspace/wandb_logs
             - NVIDIA_VISIBLE_DEVICES=all
             - NVIDIA_DRIVER_CAPABILITIES=utility,compute
