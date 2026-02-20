@@ -4,11 +4,12 @@ import logging
 from pathlib import Path
 
 import yaml
+from transformers import AutoTokenizer
+
 from benchmarks.dataset_downloader import (
     HuggingFaceDatasetConfig,
     HuggingFaceDatasetDownloader,
 )
-from transformers import AutoTokenizer
 
 
 def parse_args() -> argparse.Namespace:

@@ -5,11 +5,12 @@ from pathlib import Path
 from string import Template
 
 import yaml
+from transformers import AutoTokenizer
+
 from benchmarks.dataset_downloader import (
     HuggingFaceDatasetConfig,
     HuggingFaceDatasetDownloader,
 )
-from transformers import AutoTokenizer
 
 
 def parse_args() -> argparse.Namespace:

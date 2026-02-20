@@ -5,6 +5,7 @@ from copy import deepcopy
 from pathlib import Path
 
 import yaml
+
 from benchmarks.ruler.synthesize_dataset import (
     HotpotQAGenerator,
     JEMHopQAGenerator,

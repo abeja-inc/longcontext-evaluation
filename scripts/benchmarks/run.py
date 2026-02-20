@@ -7,11 +7,11 @@ from typing import Any
 
 import dotenv
 import yaml
-from benchmarks import BenchmarkConfig, SubtaskConfig, TaskConfig, run_benchmarks
-from llm_inference import get_generator
 from openai import OpenAI
 
 import wandb
+from benchmarks import BenchmarkConfig, SubtaskConfig, TaskConfig, run_benchmarks
+from llm_inference import get_generator
 
 
 def get_logger(name: str, level: int = logging.INFO) -> logging.Logger:
