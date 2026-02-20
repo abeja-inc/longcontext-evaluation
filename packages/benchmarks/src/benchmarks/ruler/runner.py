@@ -108,7 +108,7 @@ class RULERRunner(
             truncated_prompts: list[str] = []
             for sample in batch:
                 if settings.use_truncate:
-                    self.logger.info("Truncate input prompt")
+                    self.logger.debug("Truncate input prompt")
                     truncated_prompt = truncate_text(
                         text=sample.prompt,
                         tokenizer=generator.tokenizer,
@@ -126,14 +126,14 @@ class RULERRunner(
                 config.inference_mode == "chat"
                 or generator.tokenizer_type == "tiktoken"
             ):
-                self.logger.info("Make input prompt")
+                self.logger.debug("Make input prompt")
                 conversations: list[Conversation] = [
                     Conversation.model_validate(
                         {"messages": [{"role": "user", "content": user_prompt}]}
                     )
                     for user_prompt in truncated_prompts
                 ]
-                self.logger.info("Inference started")
+                self.logger.debug("Inference started")
                 responses: list[Response] = generator.chat(
                     conversations=conversations, **generation_kwargs
                 )
@@ -142,7 +142,7 @@ class RULERRunner(
                 config.inference_mode == "completion"
                 and generator.tokenizer_type == "huggingface"
             ):
-                self.logger.info("Make input prompt")
+                self.logger.debug("Make input prompt")
                 prompts_with_template = generator.tokenizer.apply_chat_template(
                     [
                         [{"role": "user", "content": user_prompt}]
@@ -161,7 +161,7 @@ class RULERRunner(
                     Prompt.model_validate({"prompt": _prompt})
                     for _prompt in prompts_with_answer_prefix
                 ]
-                self.logger.info("Inference started")
+                self.logger.debug("Inference started")
                 responses: list[Response] = generator.completion(
                     prompts=prompts, **generation_kwargs
                 )

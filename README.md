@@ -35,7 +35,7 @@ LLM のロングコンテキスト処理性能を評価するためのベンチ�
 docker compose -f containers/docker/docker-compose.yaml run --rm vllm
 
 # Start container
-docker compose -f containers/docker/docker-compose.yaml run --rm --entrypoint /bin/bash vllm
+docker compose -f containers/docker/docker-compose.yaml run --name lc_eval --rm --entrypoint /bin/bash vllm
 ```
 
 #### Optional) Update dependencies

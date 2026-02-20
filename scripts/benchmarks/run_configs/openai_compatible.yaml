@@ -13,5 +13,5 @@ llm:
 
     generation_kwargs:
         long_input_filter_kwargs:
-            buffer_tokens: 10
+            buffer_tokens: 0
         temperature: 0.2
