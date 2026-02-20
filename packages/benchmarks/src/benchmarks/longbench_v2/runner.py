@@ -119,7 +119,7 @@ class LongBenchV2Runner(
             cot_templates: list[Template] = []  # For settings.cot == True
             conversations: list[Conversation] = []
             for sample in batch:
-                self.logger.info("Make input prompt")
+                self.logger.debug("Make input prompt")
                 user_prompt, cot_template = build_input_prompt(
                     input=sample,
                     prompt_templates=prompt_templates,
@@ -132,7 +132,7 @@ class LongBenchV2Runner(
                     cot_templates.append(cot_template)
 
                 if settings.use_truncate:
-                    self.logger.info("Truncate input prompt")
+                    self.logger.debug("Truncate input prompt")
                     truncated_user_prompt = truncate_text(
                         text=user_prompt,
                         tokenizer=generator.tokenizer,
@@ -154,7 +154,7 @@ class LongBenchV2Runner(
                     )
                 )
             input_prompts += [conv.to_string for conv in conversations]
-            self.logger.info("Inference started")
+            self.logger.debug("Inference started")
             responses: list[Response] = generator.chat(
                 conversations=conversations, **generation_kwargs
             )

@@ -110,13 +110,13 @@ class OpenAIMRCRRunner(
 
             conversations: list[Conversation] = []
             for sample in batch:
-                self.logger.info("Make input prompt")
+                self.logger.debug("Make input prompt")
                 conversation = Conversation.model_validate(
                     {"messages": json.loads(sample.prompt)}
                 )
 
                 if settings.use_truncate:
-                    self.logger.info("Truncate input prompt")
+                    self.logger.debug("Truncate input prompt")
                     truncated_conversation = truncate_text(
                         text=conversation,
                         tokenizer=generator.tokenizer,
@@ -130,7 +130,7 @@ class OpenAIMRCRRunner(
                     truncated_conversation = conversation
                 conversations.append(truncated_conversation)
             input_prompts += [conv.to_string for conv in conversations]
-            self.logger.info("Inference started")
+            self.logger.debug("Inference started")
             responses: list[Response] = generator.chat(
                 conversations=conversations, **generation_kwargs
             )
