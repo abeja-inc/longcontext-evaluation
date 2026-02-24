@@ -1,6 +1,8 @@
 from logging import Logger
 from typing import Any
 
+import vllm
+from packaging.version import parse as parse_version
 from vllm import LLM, SamplingParams
 from vllm.outputs import RequestOutput as VLLMResponse
 
@@ -37,7 +39,7 @@ class VLLMOfflineGenerator(BaseGenerator):
         if isinstance(input, Conversation):
             return len(
                 self.tokenizer.apply_chat_template(
-                    input.prompt, tokenize=True, **kwargs
+                    input.prompt, tokenize=True, add_generation_prompt=True, **kwargs
                 )
             )
         else:
@@ -113,12 +115,45 @@ class VLLMOfflineGenerator(BaseGenerator):
             buffer_tokens=buffer_tokens,
             **chat_template_kwargs,
         )
-        responses: list[VLLMResponse] = self.llm.chat(
-            [conversation.prompt for conversation in filtered_conversations],
-            sampling_params=sampling_params,
-            chat_template_kwargs=chat_template_kwargs,
-            **kwargs,
-        )
+
+        vllm_version_raw = getattr(vllm, "__version__", None)
+        use_completion_fallback = vllm_version_raw is not None and parse_version(
+            vllm_version_raw
+        ) <= parse_version("0.8.5")
+
+        try:
+            if use_completion_fallback:
+                raise RuntimeError("Force completion mode for vLLM <= 0.8.5")
+
+            responses: list[VLLMResponse] = self.llm.chat(
+                [conversation.prompt for conversation in filtered_conversations],
+                sampling_params=sampling_params,
+                chat_template_kwargs=chat_template_kwargs,
+                **kwargs,
+            )
+        except Exception as e:
+            self.logger.warning(
+                "Using completion fallback "
+                f"(vLLM version={vllm_version_raw or 'unknown'}): {e}"
+            )
+
+            filtered_prompts = [
+                Prompt(
+                    prompt=self.tokenizer.apply_chat_template(
+                        conversation.prompt,
+                        **chat_template_kwargs,
+                        tokenize=False,
+                        add_generation_prompt=True,
+                    )
+                )
+                for conversation in filtered_conversations
+            ]
+
+            responses: list[VLLMResponse] = self.llm.generate(
+                [prompt.prompt for prompt in filtered_prompts],
+                sampling_params=sampling_params,
+                **kwargs,
+            )
         return self._format_response(
             inputs=conversations, vllm_responses=responses, skip_idx=skip_idx
         )
