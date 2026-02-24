@@ -113,12 +113,38 @@ class VLLMOfflineGenerator(BaseGenerator):
             buffer_tokens=buffer_tokens,
             **chat_template_kwargs,
         )
-        responses: list[VLLMResponse] = self.llm.chat(
-            [conversation.prompt for conversation in filtered_conversations],
-            sampling_params=sampling_params,
-            chat_template_kwargs=chat_template_kwargs,
-            **kwargs,
-        )
+        try:
+            responses: list[VLLMResponse] = self.llm.chat(
+                [conversation.prompt for conversation in filtered_conversations],
+                sampling_params=sampling_params,
+                chat_template_kwargs=chat_template_kwargs,
+                **kwargs,
+            )
+        except Exception as e:
+            self.logger.error(
+                f"Error occurred during VLLM chat inference: {e}\n"
+                "Use completion inference."
+            )
+
+            filtered_prompts = [
+                Prompt(
+                    prompt=self.tokenizer.apply_chat_template(
+                        conversation.prompt,
+                        **chat_template_kwargs,
+                        tokenize=False,
+                        add_generation_prompt=True,
+                    )
+                )
+                for conversation in filtered_conversations
+            ]
+
+            responses: list[VLLMResponse] = self.llm.generate(
+                [prompt.prompt for prompt in filtered_prompts],
+                sampling_params=sampling_params,
+                **kwargs,
+            )
+
+            raise e
         return self._format_response(
             inputs=conversations, vllm_responses=responses, skip_idx=skip_idx
         )
