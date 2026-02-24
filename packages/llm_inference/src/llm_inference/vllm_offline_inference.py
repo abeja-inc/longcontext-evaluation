@@ -39,7 +39,7 @@ class VLLMOfflineGenerator(BaseGenerator):
         if isinstance(input, Conversation):
             return len(
                 self.tokenizer.apply_chat_template(
-                    input.prompt, tokenize=True, **kwargs
+                    input.prompt, tokenize=True, add_generation_prompt=True, **kwargs
                 )
             )
         else:
@@ -116,8 +116,10 @@ class VLLMOfflineGenerator(BaseGenerator):
             **chat_template_kwargs,
         )
 
-        vllm_version = parse_version(vllm.__version__)
-        use_completion_fallback = vllm_version <= parse_version("0.8.5")
+        vllm_version_raw = getattr(vllm, "__version__", None)
+        use_completion_fallback = vllm_version_raw is not None and parse_version(
+            vllm_version_raw
+        ) <= parse_version("0.8.5")
 
         try:
             if use_completion_fallback:
@@ -131,7 +133,8 @@ class VLLMOfflineGenerator(BaseGenerator):
             )
         except Exception as e:
             self.logger.warning(
-                f"Using completion fallback (vLLM version={vllm.__version__}): {e}"
+                "Using completion fallback "
+                f"(vLLM version={vllm_version_raw or 'unknown'}): {e}"
             )
 
             filtered_prompts = [
@@ -151,8 +154,6 @@ class VLLMOfflineGenerator(BaseGenerator):
                 sampling_params=sampling_params,
                 **kwargs,
             )
-
-            raise e
         return self._format_response(
             inputs=conversations, vllm_responses=responses, skip_idx=skip_idx
         )
