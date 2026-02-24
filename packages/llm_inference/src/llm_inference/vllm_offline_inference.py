@@ -1,6 +1,8 @@
 from logging import Logger
 from typing import Any
 
+import vllm
+from packaging.version import parse as parse_version
 from vllm import LLM, SamplingParams
 from vllm.outputs import RequestOutput as VLLMResponse
 
@@ -113,7 +115,14 @@ class VLLMOfflineGenerator(BaseGenerator):
             buffer_tokens=buffer_tokens,
             **chat_template_kwargs,
         )
+
+        vllm_version = parse_version(vllm.__version__)
+        use_completion_fallback = vllm_version <= parse_version("0.8.5")
+
         try:
+            if use_completion_fallback:
+                raise RuntimeError("Force completion mode for vLLM <= 0.8.5")
+
             responses: list[VLLMResponse] = self.llm.chat(
                 [conversation.prompt for conversation in filtered_conversations],
                 sampling_params=sampling_params,
@@ -121,9 +130,8 @@ class VLLMOfflineGenerator(BaseGenerator):
                 **kwargs,
             )
         except Exception as e:
-            self.logger.error(
-                f"Error occurred during VLLM chat inference: {e}\n"
-                "Use completion inference."
+            self.logger.warning(
+                f"Using completion fallback (vLLM version={vllm.__version__}): {e}"
             )
 
             filtered_prompts = [
