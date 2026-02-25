@@ -3,6 +3,7 @@ from logging import Logger
 from typing import Any, Literal, TypeVar
 
 from .data import Conversation, Prompt, Response
+from .token_counter import TokenCounter
 
 
 InputType = TypeVar("InputType", Prompt, Conversation)
@@ -21,15 +22,24 @@ class BaseGenerator(ABC):
         self.max_context_length = max_context_length
         self.max_output_tokens = max_output_tokens
         self.logger = logger
+        # Backward compatibility for callsites that directly access tokenizer fields.
         self.tokenizer: Any
         self.tokenizer_type: Literal["huggingface", "tiktoken"]
+        self.token_counter: TokenCounter
 
     @property
     def default_too_long_input_error_message(self) -> str:
         return "[ERROR]: Input is too long."
 
-    @abstractmethod
-    def _count_tokens(self, input: Prompt | Conversation, **kwargs: Any) -> int: ...
+    def _count_tokens(self, input: Prompt | Conversation, **kwargs: Any) -> int:
+        """Default token counting path delegated to the shared TokenCounter."""
+        chat_template_kwargs = kwargs.get("chat_template_kwargs")
+        add_generation_prompt = kwargs.get("add_generation_prompt")
+        return self.token_counter.count_tokens(
+            input=input,
+            chat_template_kwargs=chat_template_kwargs,
+            add_generation_prompt=add_generation_prompt,
+        )
 
     def _is_over_context_length(
         self,

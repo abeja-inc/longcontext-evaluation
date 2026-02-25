@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from typing import Any
+from typing import Any, cast
 
 from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Response
@@ -117,14 +117,19 @@ class OpenAIMRCRRunner(
 
                 if settings.use_truncate:
                     self.logger.debug("Truncate input prompt")
-                    truncated_conversation = truncate_text(
-                        text=conversation,
-                        tokenizer=generator.tokenizer,
-                        max_context_length=generator.max_context_length,
-                        max_output_tokens=generator.max_output_tokens,
-                        tokenizer_type=generator.tokenizer_type,
-                        truncate_type=settings.truncate_type,
-                        buffer_tokens=settings.truncate_buffer_tokens,
+                    truncated_conversation = cast(
+                        Conversation,
+                        truncate_text(
+                            text=conversation,
+                            max_context_length=generator.max_context_length,
+                            max_output_tokens=generator.max_output_tokens,
+                            token_counter=generator.token_counter,
+                            truncate_type=settings.truncate_type,
+                            buffer_tokens=settings.truncate_buffer_tokens,
+                            chat_template_kwargs=generation_kwargs.get(
+                                "chat_template_kwargs"
+                            ),
+                        ),
                     )
                 else:
                     truncated_conversation = conversation

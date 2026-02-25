@@ -1,7 +1,7 @@
 import json
 from collections import defaultdict
 from string import Template
-from typing import Any
+from typing import Any, cast
 
 from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Response
@@ -133,14 +133,16 @@ class LongBenchV2Runner(
 
                 if settings.use_truncate:
                     self.logger.debug("Truncate input prompt")
-                    truncated_user_prompt = truncate_text(
-                        text=user_prompt,
-                        tokenizer=generator.tokenizer,
-                        max_context_length=generator.max_context_length,
-                        max_output_tokens=generator.max_output_tokens,
-                        tokenizer_type=generator.tokenizer_type,
-                        truncate_type=settings.truncate_type,
-                        buffer_tokens=settings.truncate_buffer_tokens,
+                    truncated_user_prompt = cast(
+                        str,
+                        truncate_text(
+                            text=user_prompt,
+                            max_context_length=generator.max_context_length,
+                            max_output_tokens=generator.max_output_tokens,
+                            token_counter=generator.token_counter,
+                            truncate_type=settings.truncate_type,
+                            buffer_tokens=settings.truncate_buffer_tokens,
+                        ),
                     )
                 else:
                     truncated_user_prompt = user_prompt
@@ -166,13 +168,15 @@ class LongBenchV2Runner(
                     next_prompt = cot_template.safe_substitute(
                         {"COT": resp.outputs[0].content.strip()}
                     )
-                    truncated_next_prompt = truncate_text(
-                        text=next_prompt,
-                        tokenizer=generator.tokenizer,
-                        max_context_length=generator.max_context_length,
-                        max_output_tokens=generator.max_output_tokens,
-                        tokenizer_type=generator.tokenizer_type,
-                        truncate_type=settings.truncate_type,
+                    truncated_next_prompt = cast(
+                        str,
+                        truncate_text(
+                            text=next_prompt,
+                            max_context_length=generator.max_context_length,
+                            max_output_tokens=generator.max_output_tokens,
+                            token_counter=generator.token_counter,
+                            truncate_type=settings.truncate_type,
+                        ),
                     )
 
                     conversations.append(

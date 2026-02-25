@@ -8,6 +8,7 @@ from sglang.srt.server_args import ServerArgs
 from .base import BaseGenerator
 from .data import Conversation, OutputContent, Prompt, Response
 from .reasoning_parser import BaseReasoningParser, resolve_reasoning_parser
+from .token_counter import TokenCounter
 
 
 class SGLangOfflineGenerator(BaseGenerator):
@@ -33,16 +34,9 @@ class SGLangOfflineGenerator(BaseGenerator):
         self.tokenizer = self.llm.tokenizer_manager.tokenizer
         self.reasoning_parser = resolve_reasoning_parser(reasoning_parser)
         self.tokenizer_type = "huggingface"
-
-    def _count_tokens(self, input: Prompt | Conversation, **kwargs: Any) -> int:
-        if isinstance(input, Conversation):
-            return len(
-                self.tokenizer.apply_chat_template(
-                    input.prompt, tokenize=True, **kwargs
-                )
-            )
-        else:
-            return len(self.tokenizer.encode(input.prompt, add_special_tokens=False))
+        self.token_counter = TokenCounter.from_tokenizer(
+            tokenizer=self.tokenizer, tokenizer_type=self.tokenizer_type
+        )
 
     def _format_response(
         self,
@@ -115,26 +109,28 @@ class SGLangOfflineGenerator(BaseGenerator):
         sampling_params["max_tokens"] = self.max_output_tokens
         self.logger.info(f"Sampling parameters: {sampling_params}")
 
-        chat_template_kwargs["tokenize"] = False
-        chat_template_kwargs["add_generation_prompt"] = True
+        template_kwargs_for_prompt = dict(chat_template_kwargs)
+        template_kwargs_for_prompt["tokenize"] = False
+        template_kwargs_for_prompt["add_generation_prompt"] = True
 
         filtered_conversations, skip_idx = self._filter_long_inputs(
             inputs=conversations,
             max_context_length=self.max_context_length,
             max_output_tokens=self.max_output_tokens,
             buffer_tokens=buffer_tokens,
-            **chat_template_kwargs,
+            chat_template_kwargs=chat_template_kwargs,
+            add_generation_prompt=True,
         )
         responses: list[dict[str, Any]] = self._generate(
             [
                 self.tokenizer.apply_chat_template(
                     conversation.prompt,
-                    **chat_template_kwargs,
+                    **template_kwargs_for_prompt,
                 )
                 for conversation in filtered_conversations
             ],
             sampling_params=sampling_params,
-            chat_template_kwargs=chat_template_kwargs,
+            chat_template_kwargs=template_kwargs_for_prompt,
             **kwargs,
         )
         return self._format_response(

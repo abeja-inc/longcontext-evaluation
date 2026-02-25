@@ -9,6 +9,7 @@ from vllm.outputs import RequestOutput as VLLMResponse
 from .base import BaseGenerator
 from .data import Conversation, OutputContent, Prompt, Response
 from .reasoning_parser import BaseReasoningParser, resolve_reasoning_parser
+from .token_counter import TokenCounter
 
 
 class VLLMOfflineGenerator(BaseGenerator):
@@ -34,16 +35,9 @@ class VLLMOfflineGenerator(BaseGenerator):
         self.tokenizer = self.llm.get_tokenizer()
         self.reasoning_parser = resolve_reasoning_parser(reasoning_parser)
         self.tokenizer_type = "huggingface"
-
-    def _count_tokens(self, input: Prompt | Conversation, **kwargs: Any) -> int:
-        if isinstance(input, Conversation):
-            return len(
-                self.tokenizer.apply_chat_template(
-                    input.prompt, tokenize=True, add_generation_prompt=True, **kwargs
-                )
-            )
-        else:
-            return len(self.tokenizer.encode(input.prompt, add_special_tokens=False))
+        self.token_counter = TokenCounter.from_tokenizer(
+            tokenizer=self.tokenizer, tokenizer_type=self.tokenizer_type
+        )
 
     def _format_response(
         self,
@@ -113,7 +107,8 @@ class VLLMOfflineGenerator(BaseGenerator):
             max_context_length=self.max_context_length,
             max_output_tokens=self.max_output_tokens,
             buffer_tokens=buffer_tokens,
-            **chat_template_kwargs,
+            chat_template_kwargs=chat_template_kwargs,
+            add_generation_prompt=True,
         )
 
         vllm_version_raw = getattr(vllm, "__version__", None)
