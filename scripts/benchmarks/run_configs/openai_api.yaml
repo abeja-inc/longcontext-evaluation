@@ -1,16 +1,18 @@
+# Run config for OpenAI's official API backend.
+# Inherits benchmark/task definitions from `base.yaml` and only specifies model/runtime params.
 base_config: scripts/benchmarks/run_configs/base.yaml
 
-run_name: ${OPENAI_MODEL_NAME}/trial_1
+run_name: ${OPENAI_MODEL_NAME}/trial_1 # Output subdirectory naming convention.
 llm:
     generator:
-        type: openai_api
+        type: openai_api # Use packages/llm_inference OpenAI API client.
         client:
-            api_key: ${OPENAI_API_KEY}
-        model_name: ${OPENAI_MODEL_NAME}
-        max_context_length: 8192
-        max_output_tokens: 256
+            api_key: ${OPENAI_API_KEY} # Read from environment variable.
+        model_name: ${OPENAI_MODEL_NAME} # e.g. gpt-4o-mini.
+        max_context_length: 8192 # Max tokens accepted as input context.
+        max_output_tokens: 256 # Max tokens generated per request.
 
     generation_kwargs:
         long_input_filter_kwargs:
-            buffer_tokens: 0
-        temperature: 0.2
+            buffer_tokens: 0 # Inference-time reservation when packing requests for the model backend; separate from `settings.truncate_buffer_tokens`, which is used earlier during benchmark prompt truncation.
+        temperature: 0.2 # Sampling temperature.

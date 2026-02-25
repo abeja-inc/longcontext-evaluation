@@ -1,25 +1,27 @@
+# Run config for local offline inference via vLLM (no OpenAI-compatible HTTP server required).
+# Inherits benchmark definitions from `base.yaml` and configures local model execution.
 base_config: scripts/benchmarks/run_configs/base.yaml
 
-run_name: Qwen3-0.6B-enable-thinking/trial_2
+run_name: Qwen3-0.6B-enable-thinking/trial_2 # Output subdirectory naming convention.
 llm:
     generator:
-        type: vllm_offline_inference
-        model_name: /workspace/models/Qwen3-0.6B
+        type: vllm_offline_inference # Use direct vLLM Python inference path.
+        model_name: /workspace/models/Qwen3-0.6B # Local model path or HF model id.
         max_context_length: 8192
         max_output_tokens: 1024
-        dtype: float32
-        tensor_parallel_size: 1
-        trust_remote_code: true
-        max_num_seqs: 256
-        reasoning_parser: qwen3
+        dtype: float32 # Inference precision.
+        tensor_parallel_size: 1 # Number of GPU shards.
+        trust_remote_code: true # Allow custom model code.
+        max_num_seqs: 256 # Max concurrent sequences in vLLM scheduler.
+        reasoning_parser: qwen3 # Parser for reasoning-format outputs.
 
     generation_kwargs:
         sampling_params:
-            n: 1
+            n: 1 # Number of generations per prompt.
             temperature: 0.7
             top_p: 0.8
             top_k: 20
             min_p: 0.0
         chat_template_kwargs:
-            enable_thinking: false
-        buffer_tokens: 0
+            enable_thinking: false # Toggle model-specific thinking mode in chat template.
+        buffer_tokens: 0 # Inference-time reservation when packing requests for the model backend; separate from `settings.truncate_buffer_tokens`, which is used earlier during benchmark prompt truncation.
