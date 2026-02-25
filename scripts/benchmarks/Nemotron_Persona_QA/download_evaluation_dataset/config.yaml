@@ -1,0 +1,13 @@
+download_datasource: true
+count_tokens: true
+tokenizer_path: models/Qwen3-0.6B
+dataset_configs:
+    nemotron_persona_qa_easy:
+        output_filepath: datasets/benchmarks/nemotron_persona_qa/japanese/nemotron_persona_qa_easy.jsonl
+        huggingface_dataset_name: abeja/Nemotron-Personas-Japan-LongContext-QA
+        split: easy
+
+    nemotron_persona_qa_hard:
+        output_filepath: datasets/benchmarks/nemotron_persona_qa/japanese/nemotron_persona_qa_hard.jsonl
+        huggingface_dataset_name: abeja/Nemotron-Personas-Japan-LongContext-QA
+        split: hard
