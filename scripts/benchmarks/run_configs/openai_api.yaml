@@ -14,5 +14,5 @@ llm:
 
     generation_kwargs:
         long_input_filter_kwargs:
-            buffer_tokens: 0 # Extra tokens reserved when fitting long input.
+            buffer_tokens: 0 # Inference-time reservation when packing requests for the model backend; separate from `settings.truncate_buffer_tokens`, which is used earlier during benchmark prompt truncation.
         temperature: 0.2 # Sampling temperature.

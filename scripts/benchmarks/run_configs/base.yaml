@@ -24,6 +24,7 @@ benchmarks:
                 settings:
                     require_reasoning: false # Whether to enforce reasoning-style output.
                     use_truncate: true # Truncate over-length inputs to fit context length.
+                    truncate_buffer_tokens: 10 # Safety margin used during dataset/prompt-side truncation before inference. Unlike `generation_kwargs.*.buffer_tokens`, this controls benchmark preprocessing, not model-side request packing.
                     rag_topn: 0 # Number of retrieved chunks for RAG prompt.
                     cot: false # Use chain-of-thought prompt variant.
                     no_context: false # Run without context passages.
@@ -47,6 +48,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
             4needle:
                 language: english
                 dataset_filename: english/4needle/mrcr_with_token_count.jsonl
@@ -55,6 +57,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
             8needle:
                 language: english
                 dataset_filename: english/8needle/mrcr_with_token_count.jsonl
@@ -63,6 +66,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
         mrcr_jpn:
             2needle:
                 language: japanese
@@ -72,6 +76,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
             4needle:
                 language: japanese
                 dataset_filename: japanese/4needle/mrcr_japanese_with_token_count.jsonl
@@ -80,6 +85,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
             8needle:
                 language: japanese
                 dataset_filename: japanese/8needle/mrcr_japanese_with_token_count.jsonl
@@ -88,6 +94,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
 
     ruler:
         niah:
@@ -99,6 +106,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
             niah_multikey_1:
                 language: english
                 dataset_filename: niah/niah_multikey_1.jsonl
@@ -107,6 +115,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
             niah_multikey_2:
                 language: english
                 dataset_filename: niah/niah_multikey_2.jsonl
@@ -115,6 +124,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
             niah_multikey_3:
                 language: english
                 dataset_filename: niah/niah_multikey_3.jsonl
@@ -123,6 +133,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
         qa:
             squad:
                 language: english
@@ -132,6 +143,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
             hotpotqa:
                 language: english
                 dataset_filename: qa/hotpotqa.jsonl
@@ -140,6 +152,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
             jsquad:
                 language: japanese
                 dataset_filename: qa/jsquad.jsonl
@@ -148,6 +161,7 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10
             jemhopqa:
                 language: japanese
                 dataset_filename: qa/jemhopqa.jsonl
@@ -156,3 +170,4 @@ benchmarks:
                 settings:
                     require_reasoning: false
                     use_truncate: true
+                    truncate_buffer_tokens: 10

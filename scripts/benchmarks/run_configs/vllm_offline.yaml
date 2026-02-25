@@ -24,4 +24,4 @@ llm:
             min_p: 0.0
         chat_template_kwargs:
             enable_thinking: false # Toggle model-specific thinking mode in chat template.
-        buffer_tokens: 0 # Reserved tokens when filtering long inputs.
+        buffer_tokens: 0 # Inference-time reservation when packing requests for the model backend; separate from `settings.truncate_buffer_tokens`, which is used earlier during benchmark prompt truncation.
