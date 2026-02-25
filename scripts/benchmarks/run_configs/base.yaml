@@ -1,33 +1,35 @@
-output_root: outputs/benchmarks
-dataset_root: datasets/benchmarks
-batchsize: 128
+# Common benchmark run defaults.
+# Other run configs inherit this file via `base_config` and override only LLM-specific fields.
+output_root: outputs/benchmarks # Directory where benchmark outputs/metrics are saved.
+dataset_root: datasets/benchmarks # Root directory that contains benchmark datasets.
+batchsize: 128 # Number of prompts processed per batch.
 
-run_name: null
-llm: null
+run_name: null # Optional run name. Child configs usually override this.
+llm: null # Placeholder. Child configs must define generator/generation settings.
 
 wandb:
-    null
+    null # Set to null to disable Weights & Biases logging.
     # entity: xxx
     # project: longcontext_evaluation_benchmark
 
 benchmarks:
-    # Add your benchmark configurations here
+    # Benchmark suite definitions. Structure: <suite> -> <dataset_group> -> <task_variant>.
     longbench_v2:
         longbench_v2_eng:
             all:
-                language: english
-                dataset_filename: english/longbench_v2_with_token_count.jsonl
-                inference_mode: chat
-                metric: parsed_answer_match
+                language: english # Prompt language used for the dataset.
+                dataset_filename: english/longbench_v2_with_token_count.jsonl # Dataset file under `dataset_root/longbench_v2`.
+                inference_mode: chat # Inference interface type.
+                metric: parsed_answer_match # Evaluation metric for this task.
                 settings:
-                    require_reasoning: false
-                    use_truncate: true
-                    rag_topn: 0
-                    cot: false
-                    no_context: false
-                    compensate_missing: false
+                    require_reasoning: false # Whether to enforce reasoning-style output.
+                    use_truncate: true # Truncate over-length inputs to fit context length.
+                    rag_topn: 0 # Number of retrieved chunks for RAG prompt.
+                    cot: false # Use chain-of-thought prompt variant.
+                    no_context: false # Run without context passages.
+                    compensate_missing: false # Compensate if dataset context is missing.
                     prompt:
-                        dirpath: scripts/benchmarks/LongBench_v2/prompts
+                        dirpath: scripts/benchmarks/LongBench_v2/prompts # Prompt template directory.
                         files:
                             zero_shot: 0shot.txt
                             zero_shot_cot: 0shot_cot.txt
@@ -41,7 +43,7 @@ benchmarks:
                 language: english
                 dataset_filename: english/2needle/mrcr_with_token_count.jsonl
                 inference_mode: chat
-                metric: prefix_match_similarity
+                metric: prefix_match_similarity # Compare prefix similarity against expected answer.
                 settings:
                     require_reasoning: false
                     use_truncate: true

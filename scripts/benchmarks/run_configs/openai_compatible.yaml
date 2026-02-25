@@ -1,13 +1,15 @@
+# Run config for OpenAI-compatible APIs (vLLM server, LiteLLM, custom gateways, etc.).
+# Inherits task definitions from `base.yaml` and sets connection/model options.
 base_config: scripts/benchmarks/run_configs/base.yaml
 
-run_name: ${MODEL_NAME}/trial_1
+run_name: ${MODEL_NAME}/trial_1 # Output subdirectory naming convention.
 llm:
     generator:
-        type: openai_api_compatible
+        type: openai_api_compatible # Uses OpenAI-compatible HTTP schema.
         client:
-            base_url: ${BASE_URL}
-            api_key: ${API_KEY}
-        model_name: ${MODEL_NAME}
+            base_url: ${BASE_URL} # Endpoint root of the compatible API service.
+            api_key: ${API_KEY} # API key/token expected by that service.
+        model_name: ${MODEL_NAME} # Model identifier exposed by the endpoint.
         max_context_length: 8192
         max_output_tokens: 256
 

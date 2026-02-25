@@ -1,14 +1,16 @@
-output_root: outputs/benchmarks
-dataset_root: datasets/benchmarks
-batchsize: 1
+# Minimal template for ad-hoc/experimental runs.
+# Use this file when you want to define benchmarks from scratch without inherited defaults.
+output_root: outputs/benchmarks # Output destination for this experimental run.
+dataset_root: datasets/benchmarks # Dataset root for all configured benchmark suites.
+batchsize: 1 # Small default to ease debugging.
 
-run_name: null
-llm: null
+run_name: null # Set a unique run name before execution.
+llm: null # Fill in generator and generation_kwargs for your target model/backend.
 
 wandb:
-    null
+    null # Enable by replacing with `entity` and `project`.
     # entity: xxx
     # project: longcontext_evaluation_benchmark
 
 benchmarks:
-    # Add your benchmark configurations here
+    # Add benchmark suite/task definitions here (same schema as `base.yaml`).
