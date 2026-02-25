@@ -118,3 +118,15 @@
 
 - `test_eval_uses_settings_field_even_if_kwargs_disagree`
   - 目的: `require_reasoning` 引数が渡されても評価判定は `settings.require_reasoning` を優先して行われることを確認する。
+
+## `tests/benchmarks/ruler/evaluate/test_metrics.py`: test for `RULERMetrics`
+- `TestEvalSubstrAny`
+  - 目的: `_eval_substr_any` の基本挙動（大文字小文字を無視した一致で 1.0、不一致で 0.0）と、空出力/デフォルトエラーメッセージ時の 0.0 返却を検証する。
+- `TestEvalSubstrCoverage`
+  - 目的: `_eval_substr_coverage` の hit 比率計算（1/2、2/3 の混在ケース）と、空出力/デフォルトエラーメッセージ時の 0.0 返却を検証する。
+- `TestEvalLcsF1Max`
+  - 目的: `_eval_lcs_f1_max` の LCS-F1 計算について、完全一致 1.0・部分一致 0.5（0<score<1）・空出力/デフォルトエラーメッセージ時 0.0 を検証する。
+- `TestEvalLcsF1Coverage`
+  - 目的: `_eval_lcs_f1_coverage` が参照列の平均 F1（`pytest.approx`）を返すこと、`ref_list` 空配列時 0.0、空出力/デフォルトエラーメッセージ時 0.0 を検証する。
+- `test_eval_substr_any_forwards_settings_metric_kwargs`
+  - 目的: 公開メソッド `eval_substr_any` が `RULERSettings.metric_kwargs` と呼び出し側 kwargs を内部 `_eval_substr_any` へ透過的に委譲することを検証する。
