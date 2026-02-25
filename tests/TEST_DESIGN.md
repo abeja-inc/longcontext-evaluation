@@ -118,3 +118,17 @@
 
 - `test_eval_uses_settings_field_even_if_kwargs_disagree`
   - 目的: `require_reasoning` 引数が渡されても評価判定は `settings.require_reasoning` を優先して行われることを確認する。
+
+## `tests/benchmarks/mrcr/evaluate/test_metrics.py`: test for `OpenAIMRCRMetrics`
+- `test_prefix_match_similarity_returns_zero_for_empty_output`
+  - 目的: `output.output` が空文字のとき `_prefix_match_similarity` が 0 を返すことを確認する。
+- `test_prefix_match_similarity_returns_zero_for_default_error_message`
+  - 目的: `output.output` が `default_error_message` と一致する場合に `_prefix_match_similarity` が 0 を返すことを確認する。
+- `test_prefix_match_similarity_returns_zero_when_output_does_not_start_with_prefix`
+  - 目的: 出力が `random_string_to_prepend` で始まらない場合に `_prefix_match_similarity` が 0 を返すことを確認する。
+- `test_prefix_match_similarity_returns_one_for_identical_suffix_after_prefix`
+  - 目的: prefix 一致かつ suffix が正解と一致する場合に `_prefix_match_similarity` が 1.0 を返すことを確認する。
+- `test_prefix_match_similarity_returns_sequence_matcher_ratio_for_different_suffix`
+  - 目的: prefix 一致だが suffix が異なる場合に `_prefix_match_similarity` が `SequenceMatcher.ratio()` と一致し、0 と 1 の間になることを確認する。
+- `test_eval_prefix_match_similarity_forwards_metric_kwargs`
+  - 目的: `eval_prefix_match_similarity(...)` が `settings.metric_kwargs` を `_prefix_match_similarity` に委譲することを確認する。
