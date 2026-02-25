@@ -118,3 +118,23 @@
 
 - `test_eval_uses_settings_field_even_if_kwargs_disagree`
   - 目的: `require_reasoning` 引数が渡されても評価判定は `settings.require_reasoning` を優先して行われることを確認する。
+
+## `tests/benchmarks/longbench_v2/evaluate/test_metrics.py`: test for `LongBenchV2Metrics`
+- `test_parsed_answer_match_valid_extraction_with_parenthesized_label`
+  - 目的: `"The correct answer is (A)"` 形式が正しく抽出され、gold `A` と一致して 1.0 になることを確認する。
+- `test_parsed_answer_match_valid_extraction_with_plain_label`
+  - 目的: `"The correct answer is B"` 形式が正しく抽出され、gold `B` と一致して 1.0 になることを確認する。
+- `test_parsed_answer_match_accepts_decorated_output_with_asterisks`
+  - 目的: 出力が `*...*` で装飾されていても `*` を除去したうえで抽出され、正解判定できることを確認する。
+- `test_parsed_answer_match_empty_output_returns_policy_values`
+  - 目的: `output.output` が空文字のとき、`compensate_missing=False` で 0.0、`True` で 0.25 を返す欠損補償ポリシーを確認する。
+- `test_parsed_answer_match_default_error_message_returns_policy_values`
+  - 目的: `output.output` が `default_error_message` と一致する場合も空文字と同じ欠損補償ポリシーになることを確認する。
+- `test_parsed_answer_match_parse_failure_returns_policy_values`
+  - 目的: 回答形式にパース失敗した場合、`compensate_missing` の値に応じて 0.0/0.25 を返すことを確認する。
+- `test_parsed_answer_match_invalid_gold_answer_returns_zero`
+  - 目的: gold が `A-D` 以外の不正値のとき、常に 0.0 を返すことを確認する。
+- `test_parsed_answer_match_label_mismatch_returns_zero`
+  - 目的: パース結果と gold ラベルが不一致の場合に 0.0 を返すことを確認する。
+- `test_eval_parsed_answer_match_uses_settings_metric_kwargs`
+  - 目的: 公開メソッド `eval_parsed_answer_match(...)` が `settings.metric_kwargs` を内部評価に透過し、`compensate_missing=True` が有効になることを確認する。
