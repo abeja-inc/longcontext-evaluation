@@ -61,7 +61,7 @@ TBD
 hf download Qwen/Qwen3-0.6B --local-dir models/Qwen3-0.6B
 hf download openai/gpt-oss-20b --local-dir models/gpt-oss-20b
 ```
-ローカル実行や smoke test では `/workspace/models/` を想定するテストがあるため、Docker コンテナ内では `models/` を `/workspace/models` にマウントしてください。
+ローカル実行や smoke test では `/workspace/models/` を想定するテストを用意しているため、デフォルトの設定ではローカルの `models/` を `/workspace/models` （コンテナ内）でマウントする形になっています。
 
 ## Dataset Preparation
 ダウンロードしたデータセットはデフォルトで `datasets/benchmarks` に配置されます（`scripts/benchmarks/run_configs/base.yaml` の `dataset_root` 参照）。
