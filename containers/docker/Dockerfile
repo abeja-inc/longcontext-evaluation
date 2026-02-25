@@ -16,12 +16,12 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv export --frozen --no-dev --format requirements-txt \
     --no-emit-workspace \
     -o /tmp/requirements.txt \
-    && uv pip install --python $(command -v python3) -r /tmp/requirements.txt
+    && pip install -r /tmp/requirements.txt
 
 # Install local workspace packages (editable)
 COPY packages ./packages
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --python $(command -v python3) --no-deps \
+    pip install --no-deps \
     -e /workspace/packages/benchmarks \
     -e /workspace/packages/llm_inference
 
