@@ -1,3 +1,10 @@
+# Portions of this file are derived from https://github.com/NVIDIA/RULER implementation.
+# Copyright (c) 2024, NVIDIA CORPORATION.
+# Licensed under the Apache License, Version 2.0.
+# Original Works: 
+#   - https://github.com/NVIDIA/RULER/blob/main/scripts/data/synthetic/niah.py 
+#   - https://github.com/NVIDIA/RULER/blob/main/scripts/data/synthetic/qa.py
+
 import random
 from abc import ABC, abstractmethod
 from logging import Logger

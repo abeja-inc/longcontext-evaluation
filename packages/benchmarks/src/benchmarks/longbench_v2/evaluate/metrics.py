@@ -1,3 +1,8 @@
+# Portions of this file are derived from https://github.com/THUDM/LongBench implementation.
+# Copyright (c) 2023 THU-KEG & Zhipu AI.
+# Licensed under the MIT License.
+# Original Work: https://github.com/THUDM/LongBench/blob/main/pred.py
+
 import re
 from typing import Any
 
