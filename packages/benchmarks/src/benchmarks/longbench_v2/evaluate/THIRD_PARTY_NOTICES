@@ -1,0 +1,11 @@
+This project contains refactored and extended implementations inspired by the following projects:
+
+1. LongBench v2
+   URL: https://github.com/THUDM/LongBench
+   License: MIT License
+   Copyright (c) 2023 THU-KEG & Zhipu AI
+
+2. RULER
+   URL: https://github.com/NVIDIA/RULER
+   License: Apache License 2.0
+   Copyright (c) 2024, NVIDIA CORPORATION
