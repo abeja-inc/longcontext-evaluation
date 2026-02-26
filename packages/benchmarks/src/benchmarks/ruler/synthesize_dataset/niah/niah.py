@@ -1,3 +1,8 @@
+# Portions of this file are derived from https://github.com/NVIDIA/RULER implementation.
+# Copyright (c) 2024, NVIDIA CORPORATION.
+# Licensed under the Apache License, Version 2.0.
+# Original Work: https://github.com/NVIDIA/RULER/blob/main/scripts/data/synthetic/niah.py
+
 import json
 import random
 import re
