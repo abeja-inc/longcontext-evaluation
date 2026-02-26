@@ -146,56 +146,10 @@ python3 scripts/benchmarks/run.py \
 - `scripts/benchmarks`: データセットのダウンロード/合成/評価実行
 - `smoke_tests/llm_inference`: 推論モジュールの簡易動作チェック
 
-# Other information
-## LongBench v2 dataset
-Total records: 503
+## Third-party notice
+[THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES)
 
-### `domain`
+このプロジェクトの一部は以下のプロジェクトの派生物を含みます。
 
-| value | count |
-|-------|-------|
-| Single-Document QA | 175 |
-| Multi-Document QA | 125 |
-| Long In-context Learning | 81 |
-| Code Repository Understanding | 50 |
-| Long-dialogue History Understanding | 39 |
-| Long Structured Data Understanding | 33 |
-
-
-### `sub_domain`
-
-| value | count |
-|-------|-------|
-| Academic | 94 |
-| Code repo QA | 50 |
-| Governmental | 41 |
-| User guide QA | 40 |
-| Financial | 37 |
-| Legal | 33 |
-| Literary | 30 |
-| Multi-news | 23 |
-| Detective | 22 |
-| Many-shot learning | 21 |
-| New language translation | 20 |
-| Event ordering | 20 |
-| Agent history QA | 20 |
-| Dialogue history QA | 19 |
-| Table QA | 18 |
-| Knowledge graph reasoning | 15 |
-
-
-### `difficulty`
-
-| value | count |
-|-------|-------|
-| hard | 311 |
-| easy | 192 |
-
-
-### `length`
-
-| value | count |
-|-------|-------|
-| medium | 215 |
-| short | 180 |
-| long | 108 |
+- [NVIDIA/RULER](https://github.com/NVIDIA/RULER)
+- [THUDM/LongBench](https://github.com/THUDM/LongBench)
