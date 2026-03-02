@@ -147,7 +147,8 @@ python3 scripts/benchmarks/run.py \
 - `smoke_tests/llm_inference`: 推論モジュールの簡易動作チェック
 
 ## NOTICE
-[NOTICE](NOTICE)
+- [NOTICE](NOTICE)
+- [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)
 
 このプロジェクトの一部は以下のプロジェクトの派生物を含みます。
 
