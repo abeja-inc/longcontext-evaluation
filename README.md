@@ -19,14 +19,22 @@ LLM のロングコンテキスト処理性能を評価するためのベンチ�
     - Context-Poisoning-Make-10-Puzzle (To be added)
       - 日
 
-補助機能
-- chat mode (text generation with chat-template), completion-mode (text completion without chat-template)
+## 補助機能
+- `inference_mode`: chat mode (text generation using chat api), completion-mode (text generation using completion api)
     - データセットの形式に依存するためベンチマークごとにサポート状況が異なる
         - chat: LongBench v2, OpenAI-MRCR, RULER
         - completion: RULER
-- truncation: 入力プロンプト＋最大出力トークン数がモデルのコンテキスト長を超える場合に、入力プロンプトの一部を切り取る
+- `use_truncate`: Truncation の ON/OFF を制御
+  - `use_truncate: false` に設定すると、 Truncation なしでの性能評価が可能
+  -  `truncate_buffer_tokens`: Truncation の際のトークン数カウントにおいて、指定する値だけバッファを設けて Truncation する
+    - `truncate_buffer_tokens: 10` (Default) とすると、計測されたトークン数 + 10トークンが入力プロンプトのトークン数と見做される（トークン数のカウントが正確にできない時に使用する）
+- `truncate_type`: 入力プロンプト＋最大出力トークン数がモデルのコンテキスト長を超える場合に、入力プロンプトの一部を切り取る
     - `middle` truncation (for LongBench v2, RULER): 入力プロンプトの中央を切り取る。プロンプトがテキスト形式のデータに使用。
-    - `last_n_turns` truncation (for RULER): 入力プロンプトの末尾の会話（最後のユーザプロンプトを除く）からNターンを切り取る。プロンプトが Messages (`[{"role": "user", "content": "..."}, ...]`)形式のデータに使用。
+    - `last_n_turns` truncation (for MRCR): 入力プロンプトの末尾の会話（最後のユーザプロンプトを除く）からNターンを切り取る。プロンプトが Messages (`[{"role": "user", "content": "..."}, ...]`)形式のデータに使用。
+- require_reasoning: Reasoning モデルの評価において、 reasoning content がパースできない場合に不正解とする
+    - `require_reasoning: true` を指定すると、`output_reasoning` が欠損したサンプルは全ベンチマーク共通で不正解（score=0.0）として扱います。
+- filtering long inputs:　入力プロンプトがモデルのコンテキスト長を超える場合に、事前にフィルタリングする機能
+  - LLM 側の推論設定にある `buffer_tokens: 0` はフィルタリング時のトークン数のカウントにバッファを設けるために用いる
 
 ## Installation
 ### For Docker
@@ -104,8 +112,6 @@ python3 scripts/benchmarks/RULER/synthesize_evaluation_dataset/qa/make_dataset.p
 
 **Configuration**
 - benchmark settings: [base_config.yaml](scripts/benchmarks/run_configs/base.yaml)
-- 各 subtask `settings` には `require_reasoning` を指定できます（`base.yaml` では明示的に `false` を設定）。
-- `require_reasoning: true` を指定すると、`output_reasoning` が欠損したサンプルは全ベンチマーク共通で不正解（score=0.0）として扱います。
 - model setting examples:
     - [OpenAI API](scripts/benchmarks/run_configs/openai_api.yml)
     - [vLLM OpenAI-compatible Server](scripts/benchmarks/run_configs/openai_compatible.yml)
