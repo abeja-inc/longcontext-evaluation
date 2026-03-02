@@ -147,10 +147,14 @@ python3 scripts/benchmarks/run.py \
 - `smoke_tests/llm_inference`: 推論モジュールの簡易動作チェック
 
 ## NOTICE
+このプロジェクトは以下の既存ベンチマークの実装をリファクタリング・拡張したものを一部含んでいます。
+
+- [NVIDIA/RULER](https://github.com/NVIDIA/RULER), which is licensed under the Apache License 2.0.
+- [THUDM/LongBench](https://github.com/THUDM/LongBench), which is licensed under the MIT License.
+
+このリポジトリ自体のライセンスは [LICENSE](LICENSE) に記載の Apache License 2.0 です。
+派生元コードに関する著作権表示・ライセンステキストは [NOTICE](NOTICE) と [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) に記載しています。
+既存ベンチマーク実装のリファクタリング・拡張を含むファイルには、個々のファイル冒頭に派生元の著作権・ライセンス情報を記載しています。
+
 - [NOTICE](NOTICE)
 - [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)
-
-このプロジェクトの一部は以下のプロジェクトの派生物を含みます。
-
-- [NVIDIA/RULER](https://github.com/NVIDIA/RULER), which is licensed under the Apache License Version 2.0.
-- [THUDM/LongBench](https://github.com/THUDM/LongBench), which is licensed under the MIT License.
