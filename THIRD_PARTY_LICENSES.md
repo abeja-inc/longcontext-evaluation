@@ -39,3 +39,8 @@ Original license: Apache License 2.0
 
 The Apache License 2.0 text is provided in this repository at [`LICENSE`](./LICENSE).
 Additional attribution details are in [`NOTICE`](./NOTICE).
+
+## Notes on license placement
+
+- `LICENSE` describes the license applied to this repository as a whole (Apache-2.0).
+- Third-party derived portions retain their original attribution and notices, documented in `NOTICE` and this file.
