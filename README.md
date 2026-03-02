@@ -146,10 +146,10 @@ python3 scripts/benchmarks/run.py \
 - `scripts/benchmarks`: データセットのダウンロード/合成/評価実行
 - `smoke_tests/llm_inference`: 推論モジュールの簡易動作チェック
 
-## Third-party notice
-[THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES)
+## NOTICE
+[NOTICE](NOTICE)
 
 このプロジェクトの一部は以下のプロジェクトの派生物を含みます。
 
-- [NVIDIA/RULER](https://github.com/NVIDIA/RULER)
-- [THUDM/LongBench](https://github.com/THUDM/LongBench)
+- [NVIDIA/RULER](https://github.com/NVIDIA/RULER), which is licensed under the Apache License Version 2.0.
+- [THUDM/LongBench](https://github.com/THUDM/LongBench), which is licensed under the MIT License.
