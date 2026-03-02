@@ -9,3 +9,8 @@ This project contains refactored and extended implementations inspired by the fo
    URL: https://github.com/NVIDIA/RULER
    License: Apache License 2.0
    Copyright (c) 2024, NVIDIA CORPORATION
+
+Full third-party license texts are available in THIRD_PARTY_LICENSES.md.
+
+Repository license: see LICENSE (Apache-2.0 for this repository).
+Third-party attributions and license texts: see THIRD_PARTY_LICENSES.md.
