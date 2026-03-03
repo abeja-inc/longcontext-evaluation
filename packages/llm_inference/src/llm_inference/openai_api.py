@@ -7,6 +7,7 @@ from openai.types.responses import Response as OpenAIResponse
 
 from .base import BaseGenerator
 from .data import Conversation, OutputContent, Prompt, Response
+from .token_counter import TokenCounter
 
 
 class OpenAIGenerator(BaseGenerator):
@@ -28,33 +29,9 @@ class OpenAIGenerator(BaseGenerator):
         self.client = client
         self.tokenizer = tiktoken.encoding_for_model(model_name)
         self.tokenizer_type = "tiktoken"
-
-    def _count_tokens(self, input: Prompt | Conversation, **kwargs: Any) -> int:
-        if isinstance(input, Prompt):
-            return len(self.tokenizer.encode(input.prompt, disallowed_special=()))
-        elif isinstance(input, Conversation):
-            # Reference: https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
-            tokens_per_message = 3
-            tokens_per_name = 1
-
-            num_tokens = 0
-            for message in input.prompt:
-                num_tokens += tokens_per_message
-                for key, value in message.items():
-                    if value is None:
-                        continue
-                    if not isinstance(value, str):
-                        value = str(value)
-                    num_tokens += len(
-                        self.tokenizer.encode(value, disallowed_special=())
-                    )
-                    if key == "name":
-                        num_tokens += tokens_per_name
-
-            num_tokens += 3
-            return num_tokens
-        else:
-            raise TypeError(f"Unsupported input type: {type(input)}")
+        self.token_counter = TokenCounter.from_tokenizer(
+            tokenizer=self.tokenizer, tokenizer_type=self.tokenizer_type
+        )
 
     def _call_response_api(
         self,

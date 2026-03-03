@@ -1,11 +1,10 @@
 from logging import Logger
-from typing import Any
 
 from openai import OpenAI
 from transformers import AutoTokenizer
 
-from .data import Conversation, Prompt
 from .openai_api import OpenAIGenerator
+from .token_counter import TokenCounter
 
 
 class OpenAICompatibleGenerator(OpenAIGenerator):
@@ -28,13 +27,6 @@ class OpenAICompatibleGenerator(OpenAIGenerator):
         )
         self.tokenizer = tokenizer
         self.tokenizer_type = "huggingface"
-
-    def _call_token_count_api(self, input: Prompt | Conversation, **kwargs: Any) -> int:
-        if isinstance(input, Conversation):
-            return len(
-                self.tokenizer.apply_chat_template(
-                    input.prompt, tokenize=True, **kwargs
-                )
-            )
-        else:
-            return len(self.tokenizer.encode(input.prompt, add_special_tokens=False))
+        self.token_counter = TokenCounter.from_tokenizer(
+            tokenizer=self.tokenizer, tokenizer_type=self.tokenizer_type
+        )

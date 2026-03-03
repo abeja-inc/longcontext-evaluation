@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from typing import Any
+from typing import Any, cast
 
 from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Prompt, Response
@@ -109,14 +109,16 @@ class RULERRunner(
             for sample in batch:
                 if settings.use_truncate:
                     self.logger.debug("Truncate input prompt")
-                    truncated_prompt = truncate_text(
-                        text=sample.prompt,
-                        tokenizer=generator.tokenizer,
-                        max_context_length=generator.max_context_length,
-                        max_output_tokens=generator.max_output_tokens,
-                        tokenizer_type=generator.tokenizer_type,
-                        truncate_type=settings.truncate_type,
-                        buffer_tokens=settings.truncate_buffer_tokens,
+                    truncated_prompt = cast(
+                        str,
+                        truncate_text(
+                            text=sample.prompt,
+                            max_context_length=generator.max_context_length,
+                            max_output_tokens=generator.max_output_tokens,
+                            token_counter=generator.token_counter,
+                            truncate_type=settings.truncate_type,
+                            buffer_tokens=settings.truncate_buffer_tokens,
+                        ),
                     )
                 else:
                     truncated_prompt = sample.prompt
