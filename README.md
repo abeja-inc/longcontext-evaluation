@@ -1,4 +1,8 @@
 # longcontext-evaluation
+各種ベンチマーク・タスクの選定理由等は以下のブログに記載しています。
+
+[GENIAC3期のLLM開発で使用したロングコンテキスト評価のベンチマーク公開](https://tech-blog.abeja.asia/entry/geniac3-longcontext-benchmark-pr-202603)
+
 ## Overview
 LLM のロングコンテキスト処理性能を評価するためのベンチマーク実装
 
@@ -12,7 +16,7 @@ LLM のロングコンテキスト処理性能を評価するためのベンチ�
 - LongBench v2: [THUDM/LongBench](https://github.com/THUDM/LongBench)
   - 英
 - OpenAI-MRCR: [openai/mrcr](https://huggingface.co/datasets/openai/mrcr)
-  - 日英（日本語は英語データセットを翻訳）
+  - 日英（日本語は英語データセットを翻訳）: [abejaOpenAI-MRCR-Translation-JPN](https://huggingface.co/datasets/abeja/OpenAI-MRCR-Translation-JPN)
 - experimental
     - Nemotron-Persona_Japanese_QA (To be added)
       - 日
