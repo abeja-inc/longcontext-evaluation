@@ -1,0 +1,2 @@
+output_filepath: datasets/benchmarks/context_poisoning_resistance/japanese/make_ten_puzzles.jsonl
+source_filepath: scripts/benchmarks/Context_Poisoning_Resistance/set_evaluation_dataset/puzzles.jsonl
