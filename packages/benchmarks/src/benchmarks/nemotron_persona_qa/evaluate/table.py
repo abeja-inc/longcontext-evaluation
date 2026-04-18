@@ -11,3 +11,9 @@ class NemotronPersonaQAOutputsTableRow(OutputsTableRow):
 @dataclass(frozen=True)
 class NemotronPersonaQALeaderBoardTableRow(BaseTableRow):
     overall: float
+
+
+@dataclass(frozen=True)
+class NemotronPersonaQANumPersonasTableRow(BaseTableRow):
+    num_personas: int
+    accuracy: float

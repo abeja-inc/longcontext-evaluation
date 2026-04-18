@@ -12,11 +12,13 @@ from .._core.evaluate.table import (
     OutputsTable,
 )
 from .._core.predict import truncate_text
+from .._core.predict.truncate import count_conversation_tokens
 from .._core.runner import BaseBenchmarkRunner
 from ..config import SubtaskConfig
 from .evaluate.metrics import NemotronPersonaQAMetrics
 from .evaluate.table import (
     NemotronPersonaQALeaderBoardTableRow,
+    NemotronPersonaQANumPersonasTableRow,
     NemotronPersonaQAOutputsTableRow,
 )
 from .predict.data import NemotronPersonaQAInput, NemotronPersonaQAOutput
@@ -102,6 +104,7 @@ class NemotronPersonaQARunner(
         # Prediction
         total = len(filtered_data)
         input_prompts: list[str] = []
+        context_lengths: list[int] = []
         new_responses: list[Response] = []
         for start in tqdm(
             range(0, total, batchsize),
@@ -133,6 +136,15 @@ class NemotronPersonaQARunner(
                 )
 
             input_prompts += [conv.to_string for conv in conversations]
+            context_lengths += [
+                count_conversation_tokens(
+                    conv,
+                    generator.tokenizer,
+                    generator.tokenizer_type,
+                    generation_kwargs.get("chat_template_kwargs", {}),
+                )
+                for conv in conversations
+            ]
             self.logger.info("Inference started")
             responses: list[Response] = generator.chat(
                 conversations=conversations, **generation_kwargs
@@ -140,14 +152,14 @@ class NemotronPersonaQARunner(
             new_responses += responses
 
         # Format
-        for input, prompt, response in zip(
-            filtered_data, input_prompts, new_responses, strict=True
+        for input, prompt, context_length, response in zip(
+            filtered_data, input_prompts, context_lengths, new_responses, strict=True
         ):
             outputs.append(
                 NemotronPersonaQAOutput(
                     id=input.id,
                     input=prompt,
-                    context_length=input.tokens,
+                    context_length=context_length,
                     output=response.outputs[0].content.strip(),
                     output_reasoning=response.outputs[0].reasoning_content.strip()
                     if response.outputs[0].reasoning_content
@@ -219,4 +231,20 @@ class NemotronPersonaQARunner(
     def _make_additional_tables(
         self, outputs: list[NemotronPersonaQAOutputsTableRow]
     ) -> list[BaseTable[Any]]:
-        return []
+        by_num_personas = mean_score_by_group(rows=outputs, group_by="num_personas")
+        return [
+            BaseTable(
+                name="nemotron-persona-qa_accuracy_by_num_personas",
+                rows=[
+                    NemotronPersonaQANumPersonasTableRow(
+                        model_name=model_name,
+                        num_personas=int(num_personas),
+                        accuracy=score,
+                    )
+                    for model_name, group_scores in sorted(by_num_personas.items())
+                    for num_personas, score in sorted(
+                        group_scores.items(), key=lambda item: int(item[0])
+                    )
+                ],
+            )
+        ]
