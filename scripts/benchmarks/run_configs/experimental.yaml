@@ -12,3 +12,102 @@ wandb:
 
 benchmarks:
     # Add your benchmark configurations here
+    context_poisoning_resistance:
+        make_ten_jpn:
+            clean_k1:
+                language: japanese
+                dataset_filename: japanese/k1/clean.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: &context_poisoning_settings
+                    use_truncate: false
+                    prompt:
+                        dirpath: scripts/benchmarks/Context_Poisoning_Resistance/prompts
+                        files:
+                            system_prompt: system_prompt.txt
+                            question: question.txt
+                            question_prefix: question_prefix.txt
+            poisoned_k1:
+                language: japanese
+                dataset_filename: japanese/k1/poisoned.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            poisoned_marked_incorrect_k1:
+                language: japanese
+                dataset_filename: japanese/k1/poisoned_marked_incorrect.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            clean_k2:
+                language: japanese
+                dataset_filename: japanese/k2/clean.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            poisoned_k2:
+                language: japanese
+                dataset_filename: japanese/k2/poisoned.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            poisoned_marked_incorrect_k2:
+                language: japanese
+                dataset_filename: japanese/k2/poisoned_marked_incorrect.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            clean_k4:
+                language: japanese
+                dataset_filename: japanese/k4/clean.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            poisoned_k4:
+                language: japanese
+                dataset_filename: japanese/k4/poisoned.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            poisoned_marked_incorrect_k4:
+                language: japanese
+                dataset_filename: japanese/k4/poisoned_marked_incorrect.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            clean_k8:
+                language: japanese
+                dataset_filename: japanese/k8/clean.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            poisoned_k8:
+                language: japanese
+                dataset_filename: japanese/k8/poisoned.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            poisoned_marked_incorrect_k8:
+                language: japanese
+                dataset_filename: japanese/k8/poisoned_marked_incorrect.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            clean_k16:
+                language: japanese
+                dataset_filename: japanese/k16/clean.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            poisoned_k16:
+                language: japanese
+                dataset_filename: japanese/k16/poisoned.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings
+            poisoned_marked_incorrect_k16:
+                language: japanese
+                dataset_filename: japanese/k16/poisoned_marked_incorrect.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings: *context_poisoning_settings

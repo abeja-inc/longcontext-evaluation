@@ -41,3 +41,10 @@ class ContextPoisoningResistanceConditionComparisonRow(BaseTableRow):
     marked_incorrect_delta: float | None
     changed_by_poison: bool | None
     changed_by_marked_incorrect: bool | None
+
+
+@dataclass(frozen=True)
+class ContextPoisoningResistanceSupportLengthRow(BaseTableRow):
+    condition: str
+    requested_support_length: int
+    accuracy: float

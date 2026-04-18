@@ -82,7 +82,7 @@ def _write_condition_dataset(
             f.write("\n")
 
 
-def main(source_filepath: Path, output_dir: Path, support_length: int) -> None:
+def main(source_filepath: Path, output_dir: Path, support_lengths: list[int]) -> None:
     logger = build_logger()
     raw_puzzles = [
         json.loads(line)
@@ -90,32 +90,43 @@ def main(source_filepath: Path, output_dir: Path, support_length: int) -> None:
         if line.strip()
     ]
     number_orders = _build_orders(raw_puzzles)
+    max_support_length = len(raw_puzzles) - 1
 
     logger.info("Writing evaluation datasets to %s", output_dir)
-    _write_condition_dataset(
-        raw_puzzles=raw_puzzles,
-        number_orders=number_orders,
-        output_filepath=output_dir / "clean.jsonl",
-        condition="clean",
-        judge_label="correct",
-        support_length=support_length,
-    )
-    _write_condition_dataset(
-        raw_puzzles=raw_puzzles,
-        number_orders=number_orders,
-        output_filepath=output_dir / "poisoned.jsonl",
-        condition="poisoned",
-        judge_label="correct",
-        support_length=support_length,
-    )
-    _write_condition_dataset(
-        raw_puzzles=raw_puzzles,
-        number_orders=number_orders,
-        output_filepath=output_dir / "poisoned_marked_incorrect.jsonl",
-        condition="poisoned_marked_incorrect",
-        judge_label="incorrect",
-        support_length=support_length,
-    )
+    for support_length in support_lengths:
+        if support_length > max_support_length:
+            logger.warning(
+                "Skip support_length=%d because max available support length is %d",
+                support_length,
+                max_support_length,
+            )
+            continue
+
+        length_dir = output_dir / f"k{support_length}"
+        _write_condition_dataset(
+            raw_puzzles=raw_puzzles,
+            number_orders=number_orders,
+            output_filepath=length_dir / "clean.jsonl",
+            condition="clean",
+            judge_label="correct",
+            support_length=support_length,
+        )
+        _write_condition_dataset(
+            raw_puzzles=raw_puzzles,
+            number_orders=number_orders,
+            output_filepath=length_dir / "poisoned.jsonl",
+            condition="poisoned",
+            judge_label="correct",
+            support_length=support_length,
+        )
+        _write_condition_dataset(
+            raw_puzzles=raw_puzzles,
+            number_orders=number_orders,
+            output_filepath=length_dir / "poisoned_marked_incorrect.jsonl",
+            condition="poisoned_marked_incorrect",
+            judge_label="incorrect",
+            support_length=support_length,
+        )
 
 
 if __name__ == "__main__":
@@ -126,5 +137,5 @@ if __name__ == "__main__":
     main(
         source_filepath=Path(config["source_filepath"]),
         output_dir=Path(config["output_dir"]),
-        support_length=int(config["support_length"]),
+        support_lengths=[int(length) for length in config["support_lengths"]],
     )

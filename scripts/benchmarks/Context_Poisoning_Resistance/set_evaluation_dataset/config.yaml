@@ -1,3 +1,9 @@
 output_dir: datasets/benchmarks/context_poisoning_resistance/japanese
 source_filepath: scripts/benchmarks/Context_Poisoning_Resistance/set_evaluation_dataset/puzzles.jsonl
-support_length: 8
+support_lengths:
+  - 1
+  - 2
+  - 4
+  - 8
+  - 16
+  - 32

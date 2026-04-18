@@ -21,6 +21,7 @@ from .evaluate.table import (
     ContextPoisoningResistanceConditionComparisonRow,
     ContextPoisoningResistanceLeaderBoardTableRow,
     ContextPoisoningResistanceOutputsTableRow,
+    ContextPoisoningResistanceSupportLengthRow,
 )
 from .predict.data import (
     ContextPoisoningResistanceInput,
@@ -463,9 +464,38 @@ class ContextPoisoningResistanceRunner(
                 )
             )
 
+        by_condition_and_support_length: defaultdict[
+            tuple[str, str], list[ContextPoisoningResistanceOutputsTableRow]
+        ] = defaultdict(list)
+        for row in outputs:
+            by_condition_and_support_length[(row.model_name, row.condition)].append(row)
+
+        support_length_rows: list[ContextPoisoningResistanceSupportLengthRow] = []
+        for (model_name, condition), condition_rows in sorted(
+            by_condition_and_support_length.items()
+        ):
+            grouped_scores = mean_score_by_group(
+                rows=condition_rows, group_by="requested_support_length"
+            )
+            for requested_support_length, accuracy in sorted(
+                grouped_scores[model_name].items(), key=lambda item: int(item[0])
+            ):
+                support_length_rows.append(
+                    ContextPoisoningResistanceSupportLengthRow(
+                        model_name=model_name,
+                        condition=condition,
+                        requested_support_length=int(requested_support_length),
+                        accuracy=accuracy,
+                    )
+                )
+
         return [
             BaseTable(
                 name="context_poisoning_resistance_condition_comparison_table",
                 rows=comparison_rows,
-            )
+            ),
+            BaseTable(
+                name="context_poisoning_resistance_accuracy_by_support_length",
+                rows=support_length_rows,
+            ),
         ]

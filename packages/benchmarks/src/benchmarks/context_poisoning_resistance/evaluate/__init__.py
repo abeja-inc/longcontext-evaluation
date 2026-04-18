@@ -3,4 +3,5 @@ from .table import (
     ContextPoisoningResistanceConditionComparisonRow,
     ContextPoisoningResistanceLeaderBoardTableRow,
     ContextPoisoningResistanceOutputsTableRow,
+    ContextPoisoningResistanceSupportLengthRow,
 )
