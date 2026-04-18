@@ -12,6 +12,48 @@ wandb:
 
 benchmarks:
     # Add your benchmark configurations here
+    context_poisoning_resistance:
+        make_ten_jpn:
+            clean:
+                language: japanese
+                dataset_filename: japanese/clean.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings:
+                    use_truncate: false
+                    prompt:
+                        dirpath: scripts/benchmarks/Context_Poisoning_Resistance/prompts
+                        files:
+                            system_prompt: system_prompt.txt
+                            question: question.txt
+                            question_prefix: question_prefix.txt
+            poisoned:
+                language: japanese
+                dataset_filename: japanese/poisoned.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings:
+                    use_truncate: false
+                    prompt:
+                        dirpath: scripts/benchmarks/Context_Poisoning_Resistance/prompts
+                        files:
+                            system_prompt: system_prompt.txt
+                            question: question.txt
+                            question_prefix: question_prefix.txt
+            poisoned_marked_incorrect:
+                language: japanese
+                dataset_filename: japanese/poisoned_marked_incorrect.jsonl
+                inference_mode: chat
+                metric: equation_validity_accuracy
+                settings:
+                    use_truncate: false
+                    prompt:
+                        dirpath: scripts/benchmarks/Context_Poisoning_Resistance/prompts
+                        files:
+                            system_prompt: system_prompt.txt
+                            question: question.txt
+                            question_prefix: question_prefix.txt
+
     longbench_v2:
         longbench_v2_eng:
             all:

@@ -1,6 +1,6 @@
 import argparse
+import json
 import logging
-import shutil
 from pathlib import Path
 
 import yaml
@@ -29,13 +29,93 @@ def build_logger() -> logging.Logger:
     return logger
 
 
-def main(source_filepath: Path, output_filepath: Path) -> None:
-    logger = build_logger()
+def _rotate_numbers(numbers: list[str], shift: int) -> list[str]:
+    shift = shift % len(numbers)
+    return numbers[shift:] + numbers[:shift]
 
+
+def _build_orders(raw_puzzles: list[dict[str, str]]) -> dict[str, list[str]]:
+    orders: dict[str, list[str]] = {}
+    for idx, puzzle in enumerate(raw_puzzles):
+        numbers = [
+            puzzle["num_1"],
+            puzzle["num_2"],
+            puzzle["num_3"],
+            puzzle["num_4"],
+        ]
+        orders[puzzle["id"]] = _rotate_numbers(numbers, idx)
+    return orders
+
+
+def _write_condition_dataset(
+    *,
+    raw_puzzles: list[dict[str, str]],
+    number_orders: dict[str, list[str]],
+    output_filepath: Path,
+    condition: str,
+    judge_label: str,
+    support_length: int,
+) -> None:
     output_filepath.parent.mkdir(parents=True, exist_ok=True)
+    with output_filepath.open("w", encoding="utf-8") as f:
+        for target_idx, puzzle in enumerate(raw_puzzles):
+            target_id = puzzle["id"]
+            support_ids = [
+                raw_puzzles[(target_idx + offset + 1) % len(raw_puzzles)]["id"]
+                for offset in range(support_length)
+            ]
+            record = {
+                "id": f"target-{target_id}__{condition}__k{support_length}",
+                "sample_id": f"target-{target_id}__{condition}__k{support_length}",
+                "target_id": target_id,
+                "support_ids": support_ids,
+                "condition": condition,
+                "language": "japanese",
+                "target_numbers": number_orders[target_id],
+                "support_number_orders": {
+                    support_id: number_orders[support_id] for support_id in support_ids
+                },
+                "judge_label": judge_label,
+                "tokens": 0,
+            }
+            json.dump(record, f, ensure_ascii=False)
+            f.write("\n")
 
-    logger.info(f"Copying {source_filepath} to {output_filepath}")
-    shutil.copy(source_filepath, output_filepath)
+
+def main(source_filepath: Path, output_dir: Path, support_length: int) -> None:
+    logger = build_logger()
+    raw_puzzles = [
+        json.loads(line)
+        for line in source_filepath.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    number_orders = _build_orders(raw_puzzles)
+
+    logger.info("Writing evaluation datasets to %s", output_dir)
+    _write_condition_dataset(
+        raw_puzzles=raw_puzzles,
+        number_orders=number_orders,
+        output_filepath=output_dir / "clean.jsonl",
+        condition="clean",
+        judge_label="correct",
+        support_length=support_length,
+    )
+    _write_condition_dataset(
+        raw_puzzles=raw_puzzles,
+        number_orders=number_orders,
+        output_filepath=output_dir / "poisoned.jsonl",
+        condition="poisoned",
+        judge_label="correct",
+        support_length=support_length,
+    )
+    _write_condition_dataset(
+        raw_puzzles=raw_puzzles,
+        number_orders=number_orders,
+        output_filepath=output_dir / "poisoned_marked_incorrect.jsonl",
+        condition="poisoned_marked_incorrect",
+        judge_label="incorrect",
+        support_length=support_length,
+    )
 
 
 if __name__ == "__main__":
@@ -45,5 +125,6 @@ if __name__ == "__main__":
 
     main(
         source_filepath=Path(config["source_filepath"]),
-        output_filepath=Path(config["output_filepath"]),
+        output_dir=Path(config["output_dir"]),
+        support_length=int(config["support_length"]),
     )
