@@ -99,6 +99,23 @@ python3 scripts/benchmarks/RULER/synthesize_evaluation_dataset/qa/make_dataset.p
     --config scripts/benchmarks/RULER/synthesize_evaluation_dataset/qa/config.yaml
 ```
 
+### Context Poisoning Resistance
+Make 10 Puzzle の context poisoning 評価データセットを作成
+```sh
+uv run python scripts/benchmarks/Context_Poisoning_Resistance/set_evaluation_dataset/set_dataset.py \
+    --config scripts/benchmarks/Context_Poisoning_Resistance/set_evaluation_dataset/config.yaml
+```
+
+このスクリプトは `scripts/benchmarks/Context_Poisoning_Resistance/set_evaluation_dataset/puzzles.jsonl` を入力に使い、デフォルトでは以下のファイルを生成します。
+
+- `datasets/benchmarks/context_poisoning_resistance/japanese/k1/{clean,poisoned,poisoned_marked_incorrect}.jsonl`
+- `datasets/benchmarks/context_poisoning_resistance/japanese/k2/{clean,poisoned,poisoned_marked_incorrect}.jsonl`
+- `datasets/benchmarks/context_poisoning_resistance/japanese/k4/{clean,poisoned,poisoned_marked_incorrect}.jsonl`
+- `datasets/benchmarks/context_poisoning_resistance/japanese/k8/{clean,poisoned,poisoned_marked_incorrect}.jsonl`
+- `datasets/benchmarks/context_poisoning_resistance/japanese/k16/{clean,poisoned,poisoned_marked_incorrect}.jsonl`
+
+`config.yaml` には `k32` も指定されていますが、現在の `puzzles.jsonl` は 30 件なので `k32` はスキップされます。
+
 ## Benchmark Execution
 統一実行スクリプトでベンチマーク評価を実行します。
 
@@ -129,6 +146,8 @@ export OPENAI_MODEL_NAME=gpt-4o-2024-11-20
 python3 scripts/benchmarks/run.py \
     --config scripts/benchmarks/run_configs/openai_api.yaml
 ```
+
+Context Poisoning Resistance を評価する場合は、実行に使う model config の `base_config` を `scripts/benchmarks/run_configs/experimental.yaml` に変更してから実行してください。`experimental.yaml` に `context_poisoning_resistance` のタスク定義が入っています。
 
 ### vLLM OpenAI-compatible Server
 ```sh
