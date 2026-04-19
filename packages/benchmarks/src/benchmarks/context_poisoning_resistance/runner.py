@@ -1,8 +1,8 @@
 import json
 from collections import defaultdict
 from pathlib import Path
-from zlib import crc32
 from typing import Any
+from zlib import crc32
 
 from llm_inference.base import BaseGenerator
 from llm_inference.data import Conversation, Response
@@ -19,6 +19,8 @@ from .evaluate.metrics import (
 )
 from .evaluate.table import (
     ContextPoisoningResistanceConditionComparisonRow,
+    ContextPoisoningResistanceFilteredComparisonRow,
+    ContextPoisoningResistanceFilteredLeaderBoardTableRow,
     ContextPoisoningResistanceLeaderBoardTableRow,
     ContextPoisoningResistanceOutputsTableRow,
     ContextPoisoningResistanceSupportLengthRow,
@@ -178,7 +180,9 @@ class ContextPoisoningResistanceRunner(
                 output_text = response.outputs[0].content.strip()
                 cache[puzzle_id] = {
                     "output": output_text,
-                    "is_correct": is_valid_equation_text(output_text, puzzles[puzzle_id]),
+                    "is_correct": is_valid_equation_text(
+                        output_text, puzzles[puzzle_id]
+                    ),
                 }
 
         self._save_stage1_cache(cache_path, cache)
@@ -244,7 +248,9 @@ class ContextPoisoningResistanceRunner(
 
         all_data = self._load_dataset(config.dataset_filepath)
         outputs, processed_ids = self._load_existing_outputs(config.output_filepath)
-        filtered_data = [sample for sample in all_data if sample.id not in processed_ids]
+        filtered_data = [
+            sample for sample in all_data if sample.id not in processed_ids
+        ]
         self.logger.info(
             "Skip %s already processed samples. Remaining: %d / %d",
             len(processed_ids),
@@ -332,7 +338,9 @@ class ContextPoisoningResistanceRunner(
                         used_stage1_support_count=len(sample.support_ids)
                         - len(skipped_support_ids),
                         target_numbers=sample.target_numbers,
-                        stage1_target_output=str(stage1_cache[sample.target_id]["output"]),
+                        stage1_target_output=str(
+                            stage1_cache[sample.target_id]["output"]
+                        ),
                         stage1_target_is_correct=bool(
                             stage1_cache[sample.target_id]["is_correct"]
                         ),
@@ -377,7 +385,9 @@ class ContextPoisoningResistanceRunner(
         name: str,
         rows: list[ContextPoisoningResistanceOutputsTableRow],
     ) -> OutputsTable[ContextPoisoningResistanceOutputsTableRow]:
-        return OutputsTable(name="context_poisoning_resistance_outputs_table", rows=rows)
+        return OutputsTable(
+            name="context_poisoning_resistance_outputs_table", rows=rows
+        )
 
     def _make_leaderboard_table(
         self, outputs: list[ContextPoisoningResistanceOutputsTableRow]
@@ -418,9 +428,11 @@ class ContextPoisoningResistanceRunner(
             grouped[key][row.condition] = row
 
         comparison_rows: list[ContextPoisoningResistanceConditionComparisonRow] = []
-        for (model_name, target_id, requested_support_length), rows_by_condition in sorted(
-            grouped.items()
-        ):
+        for (
+            model_name,
+            target_id,
+            requested_support_length,
+        ), rows_by_condition in sorted(grouped.items()):
             clean_row = rows_by_condition.get("clean")
             poisoned_row = rows_by_condition.get("poisoned")
             marked_row = rows_by_condition.get("poisoned_marked_incorrect")
@@ -435,7 +447,9 @@ class ContextPoisoningResistanceRunner(
                 else poisoned_score - clean_score
             )
             marked_delta = (
-                None if poisoned_score is None or marked_score is None else marked_score - poisoned_score
+                None
+                if poisoned_score is None or marked_score is None
+                else marked_score - poisoned_score
             )
 
             comparison_rows.append(
@@ -461,6 +475,82 @@ class ContextPoisoningResistanceRunner(
                     changed_by_marked_incorrect=None
                     if poisoned_score is None or marked_score is None
                     else poisoned_score != marked_score,
+                )
+            )
+
+        filtered_comparison_rows: list[
+            ContextPoisoningResistanceFilteredComparisonRow
+        ] = []
+        for (
+            model_name,
+            target_id,
+            requested_support_length,
+        ), rows_by_condition in sorted(grouped.items()):
+            clean_row = rows_by_condition.get("clean")
+            poisoned_row = rows_by_condition.get("poisoned")
+            marked_row = rows_by_condition.get("poisoned_marked_incorrect")
+            if not clean_row or not poisoned_row or not marked_row:
+                continue
+
+            rows = [clean_row, poisoned_row, marked_row]
+            has_full_support = all(
+                row.support_length == row.requested_support_length for row in rows
+            )
+            if (
+                not clean_row.stage1_target_is_correct
+                or clean_row.score < 1.0
+                or not has_full_support
+            ):
+                continue
+
+            poison_drop = clean_row.score - poisoned_row.score
+            marked_incorrect_recovery = marked_row.score - poisoned_row.score
+            filtered_comparison_rows.append(
+                ContextPoisoningResistanceFilteredComparisonRow(
+                    model_name=model_name,
+                    target_id=target_id,
+                    requested_support_length=requested_support_length,
+                    clean_score=clean_row.score,
+                    poisoned_score=poisoned_row.score,
+                    poisoned_marked_incorrect_score=marked_row.score,
+                    poison_drop=poison_drop,
+                    marked_incorrect_recovery=marked_incorrect_recovery,
+                    changed_by_poison=clean_row.score != poisoned_row.score,
+                    changed_by_marked_incorrect=poisoned_row.score != marked_row.score,
+                )
+            )
+
+        filtered_leaderboard_rows: list[
+            ContextPoisoningResistanceFilteredLeaderBoardTableRow
+        ] = []
+        filtered_by_model: defaultdict[
+            str, list[ContextPoisoningResistanceFilteredComparisonRow]
+        ] = defaultdict(list)
+        for row in filtered_comparison_rows:
+            filtered_by_model[row.model_name].append(row)
+
+        for model_name, model_rows in sorted(filtered_by_model.items()):
+            eligible_pairs = len(model_rows)
+            poisoned_accuracy = (
+                sum(row.poisoned_score for row in model_rows) / eligible_pairs
+            )
+            marked_accuracy = (
+                sum(row.poisoned_marked_incorrect_score for row in model_rows)
+                / eligible_pairs
+            )
+            poison_drop = sum(row.poison_drop for row in model_rows) / eligible_pairs
+            marked_recovery = (
+                sum(row.marked_incorrect_recovery for row in model_rows)
+                / eligible_pairs
+            )
+            filtered_leaderboard_rows.append(
+                ContextPoisoningResistanceFilteredLeaderBoardTableRow(
+                    model_name=model_name,
+                    eligible_pairs=eligible_pairs,
+                    poisoned_accuracy=poisoned_accuracy,
+                    poisoned_marked_incorrect_accuracy=marked_accuracy,
+                    poison_drop=poison_drop,
+                    marked_incorrect_recovery=marked_recovery,
                 )
             )
 
@@ -493,6 +583,14 @@ class ContextPoisoningResistanceRunner(
             BaseTable(
                 name="context_poisoning_resistance_condition_comparison_table",
                 rows=comparison_rows,
+            ),
+            BaseTable(
+                name="context_poisoning_resistance_filtered_condition_comparison_table",
+                rows=filtered_comparison_rows,
+            ),
+            BaseTable(
+                name="context_poisoning_resistance_filtered_leaderboard_table",
+                rows=filtered_leaderboard_rows,
             ),
             BaseTable(
                 name="context_poisoning_resistance_accuracy_by_support_length",

@@ -44,6 +44,28 @@ class ContextPoisoningResistanceConditionComparisonRow(BaseTableRow):
 
 
 @dataclass(frozen=True)
+class ContextPoisoningResistanceFilteredComparisonRow(BaseTableRow):
+    target_id: str
+    requested_support_length: int
+    clean_score: float
+    poisoned_score: float
+    poisoned_marked_incorrect_score: float
+    poison_drop: float
+    marked_incorrect_recovery: float
+    changed_by_poison: bool
+    changed_by_marked_incorrect: bool
+
+
+@dataclass(frozen=True)
+class ContextPoisoningResistanceFilteredLeaderBoardTableRow(BaseTableRow):
+    eligible_pairs: int
+    poisoned_accuracy: float
+    poisoned_marked_incorrect_accuracy: float
+    poison_drop: float
+    marked_incorrect_recovery: float
+
+
+@dataclass(frozen=True)
 class ContextPoisoningResistanceSupportLengthRow(BaseTableRow):
     condition: str
     requested_support_length: int
