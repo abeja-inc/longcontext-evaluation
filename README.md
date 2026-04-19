@@ -14,7 +14,7 @@ LLM のロングコンテキスト処理性能を評価するためのベンチ�
 - OpenAI-MRCR: [openai/mrcr](https://huggingface.co/datasets/openai/mrcr)
   - 日英（日本語は英語データセットを翻訳）
 - experimental
-    - Nemotron-Persona_Japanese_QA (To be added)
+    - Nemotron-Persona_Japanese_QA
       - 日
     - Context-Poisoning-Make-10-Puzzle (To be added)
       - 日
@@ -79,6 +79,20 @@ python3 scripts/benchmarks/LongBench_v2/download_evaluation_dataset/download_dat
 python3 scripts/benchmarks/OpenAI_MRCR/download_evaluation_dataset/download_dataset.py \
     --config scripts/benchmarks/OpenAI_MRCR/download_evaluation_dataset/config.yaml
 ```
+
+### Nemotron Persona QA
+評価用データセットをダウンロード
+```sh
+python3 scripts/benchmarks/Nemotron_Persona_QA/download_evaluation_dataset/download_dataset.py \
+    --config scripts/benchmarks/Nemotron_Persona_QA/download_evaluation_dataset/config.yaml
+```
+
+このスクリプトは Hugging Face の `abeja/Nemotron-Personas-Japan-LongContext-QA` から `easy` / `hard` split を取得し、デフォルトでは以下のファイルを生成します。
+
+- `datasets/benchmarks/nemotron_persona_qa/japanese/nemotron_persona_qa_easy.jsonl`
+- `datasets/benchmarks/nemotron_persona_qa/japanese/nemotron_persona_qa_hard.jsonl`
+
+`config.yaml` の `count_tokens: true` の場合は `tokenizer_path: models/Qwen3-0.6B` を使って token count 付きの sidecar も作成します。事前に `hf download Qwen/Qwen3-0.6B --local-dir models/Qwen3-0.6B` で tokenizer を用意してください。token count が不要な場合は `count_tokens: false` に変更して実行できます。
 
 
 ### RULER
