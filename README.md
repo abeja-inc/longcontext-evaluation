@@ -102,7 +102,7 @@ python3 scripts/benchmarks/RULER/synthesize_evaluation_dataset/qa/make_dataset.p
 ### Context Poisoning Resistance
 Make 10 Puzzle の context poisoning 評価データセットを作成
 ```sh
-uv run python scripts/benchmarks/Context_Poisoning_Resistance/set_evaluation_dataset/set_dataset.py \
+python3 scripts/benchmarks/Context_Poisoning_Resistance/set_evaluation_dataset/set_dataset.py \
     --config scripts/benchmarks/Context_Poisoning_Resistance/set_evaluation_dataset/config.yaml
 ```
 
