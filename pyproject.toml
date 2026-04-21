@@ -11,7 +11,7 @@ dependencies = [
     "ruff>=0.14.13",
     "benchmarks",
     "llm_inference",
-    "python-dotenv>=1.2.1",
+    "python-dotenv>=1.2.2",
     "numpy<2.3.0",
     "huggingface-hub<1.0",
 ]
